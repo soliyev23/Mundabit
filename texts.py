@@ -74,6 +74,33 @@ BOT = {
             "Format: <code>KK.OO.YYYY</code> — masalan: <code>15.06.2000</code>"
         ),
         "updated": "✅ Saqlandi",
+        # Admin panel
+        "btn_admin": "🛠 Admin Panel",
+        "btn_users": "👥 Foydalanuvchilar",
+        "btn_stats": "📊 Statistika",
+        "admin_title": "🛠 <b>Admin Panel</b>",
+        "stats": (
+            "📊 <b>Statistika</b>\n\n"
+            "Foydalanuvchilar: <b>{total}</b>\n"
+            "Erkak: {males} · Ayol: {females} · Belgilanmagan: {unknown}\n"
+            "Til: uz {uz} · ru {ru}\n"
+            "O'rtacha yosh: {avg} (erkak {avg_m} · ayol {avg_f})\n"
+            "Hafta baholari: 🟢 {good} · 🔴 {bad}"
+        ),
+        "users_title": "👥 <b>Foydalanuvchilar: {total}</b>",
+        "col_name": "Ism",
+        "col_age": "Yosh",
+        "col_gender": "Jins",
+        "col_lang": "Til",
+        "g_m": "Erkak",
+        "g_f": "Ayol",
+        "new_user": (
+            "🆕 <b>Yangi foydalanuvchi!</b>\n\n"
+            "{name} · {age} yosh · {gender} · {lang}\n"
+            "{handle}\n\n"
+            "Jami: {total} ta"
+        ),
+        "no_username": "username yo'q",
         "caption": "Yashaldi: <b>{lived} hafta</b> — {p}%\nQoldi: <b>{left} hafta</b> — {q}%",
     },
     "ru": {
@@ -131,6 +158,33 @@ BOT = {
             "Формат: <code>ДД.ММ.ГГГГ</code> — например: <code>15.06.2000</code>"
         ),
         "updated": "✅ Сохранено",
+        # Админ-панель
+        "btn_admin": "🛠 Админ-панель",
+        "btn_users": "👥 Пользователи",
+        "btn_stats": "📊 Статистика",
+        "admin_title": "🛠 <b>Админ-панель</b>",
+        "stats": (
+            "📊 <b>Статистика</b>\n\n"
+            "Пользователи: <b>{total}</b>\n"
+            "Мужчины: {males} · Женщины: {females} · Не указан: {unknown}\n"
+            "Язык: uz {uz} · ru {ru}\n"
+            "Средний возраст: {avg} (муж. {avg_m} · жен. {avg_f})\n"
+            "Оценки недель: 🟢 {good} · 🔴 {bad}"
+        ),
+        "users_title": "👥 <b>Пользователи: {total}</b>",
+        "col_name": "Имя",
+        "col_age": "Возр",
+        "col_gender": "Пол",
+        "col_lang": "Язык",
+        "g_m": "Муж",
+        "g_f": "Жен",
+        "new_user": (
+            "🆕 <b>Новый пользователь!</b>\n\n"
+            "{name} · {age} лет · {gender} · {lang}\n"
+            "{handle}\n\n"
+            "Всего: {total}"
+        ),
+        "no_username": "без username",
         "caption": "Прожито: <b>{lived} недель</b> — {p}%\nОсталось: <b>{left} недель</b> — {q}%",
     },
 }

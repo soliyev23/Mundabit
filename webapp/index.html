@@ -111,9 +111,25 @@
   };
 
   var T = {
-    uz: { title: 'Hayot <em>Kalendari</em>', past: "O'tgan", left: "Qoldi" },
-    ru: { title: 'Календарь <em>жизни</em>', past: "Прожито", left: "Осталось" }
+    uz: {
+      title: 'Hayot <em>Kalendari</em>', past: "O'tgan", left: "Qoldi",
+      loading: "Yuklanmoqda…",
+      not_registered: "Avval botda /start buyrug'ini bosib ro'yxatdan o'ting.",
+      error: "Ma'lumotni yuklab bo'lmadi. Keyinroq urinib ko'ring."
+    },
+    ru: {
+      title: 'Календарь <em>жизни</em>', past: "Прожито", left: "Осталось",
+      loading: "Загрузка…",
+      not_registered: "Сначала отправьте боту команду /start.",
+      error: "Не удалось загрузить данные. Попробуйте позже."
+    }
   };
+
+  /* Bot javobi kelgunicha til Telegram interfeysidan olinadi */
+  var tgUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || {};
+  var uiLang = (tgUser.language_code || "").indexOf("ru") === 0 ? "ru" : "uz";
+  var UI = T[uiLang];
+  document.documentElement.lang = uiLang;
 
   function showState(text) {
     $("app").hidden = true;
@@ -217,6 +233,7 @@
 
   function render(data) {
     var L = T[data.lang] || T.uz;
+    document.documentElement.lang = T[data.lang] ? data.lang : "uz";
     $("titleEl").innerHTML = L.title;
 
     $("statsEl").innerHTML =
@@ -263,7 +280,7 @@
     render(demoData());
     return;
   }
-  showState("Yuklanmoqda…");
+  showState(UI.loading);
   fetch("api/me", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -276,9 +293,7 @@
     })
     .then(render)
     .catch(function (e) {
-      showState(e.message === "not_registered"
-        ? "Avval botda /start buyrug'ini bosib ro'yxatdan o'ting."
-        : "Ma'lumotni yuklab bo'lmadi. Keyinroq urinib ko'ring.");
+      showState(e.message === "not_registered" ? UI.not_registered : UI.error);
     });
 })();
 </script>

@@ -24,6 +24,7 @@ from aiogram.types import (
     MenuButtonWebApp,
     Message,
     ReplyKeyboardMarkup,
+    User as TgUser,
     WebAppInfo,
 )
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -88,6 +89,14 @@ def webapp_keyboard(lang: str) -> InlineKeyboardMarkup | None:
     ]])
 
 
+def user_lang(user: dict | None, tg_user: TgUser | None = None) -> str:
+    """Til: bazadagi tanlov, u yo'q bo'lsa — Telegram interfeysi tili."""
+    if user and user.get("lang"):
+        return user["lang"]
+    code = (tg_user.language_code or "") if tg_user else ""
+    return "ru" if code.startswith("ru") else "uz"
+
+
 def btn_variants(key: str) -> set[str]:
     """Tugma matni foydalanuvchi tilidan qat'i nazar tanilsin."""
     return {BOT[lang][key] for lang in BOT}
@@ -96,7 +105,7 @@ def btn_variants(key: str) -> set[str]:
 def main_keyboard(lang: str, user_id: int) -> ReplyKeyboardMarkup:
     rows = [[KeyboardButton(text=t(lang, "btn_settings"))]]
     if user_id in ADMIN_IDS:
-        rows.append([KeyboardButton(text=BTN_ADMIN)])
+        rows.append([KeyboardButton(text=t(lang, "btn_admin"))])
     return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
 
 
@@ -291,7 +300,7 @@ async def onboarding_non_text(message: Message, state: FSMContext) -> None:
 async def cmd_hayot(message: Message) -> None:
     user = db.get_user(message.from_user.id)
     if not user or not user.get("gender"):
-        await message.answer(t("uz", "not_registered"))
+        await message.answer(t(user_lang(user, message.from_user), "not_registered"))
         return
     await send_calendar(message.bot, user)
 
@@ -299,7 +308,7 @@ async def cmd_hayot(message: Message) -> None:
 @router.message(Command("help"))
 async def cmd_help(message: Message) -> None:
     user = db.get_user(message.from_user.id)
-    lang = (user or {}).get("lang") or "uz"
+    lang = user_lang(user, message.from_user)
     await message.answer(t(lang, "help"))
 
 
@@ -313,7 +322,7 @@ async def process_rating(callback: CallbackQuery) -> None:
         await callback.answer()
         return
     user = db.get_user(callback.from_user.id)
-    lang = (user or {}).get("lang") or "uz"
+    lang = user_lang(user, callback.from_user)
     db.set_week_rating(callback.from_user.id, week_index, rating)
     await callback.answer(t(lang, "rating_saved"))
     try:
@@ -329,7 +338,7 @@ async def show_settings(message: Message, state: FSMContext, prefix: str = "") -
     await state.clear()
     user = db.get_user(message.from_user.id)
     if not user:
-        await message.answer(t("uz", "not_registered"))
+        await message.answer(t(user_lang(None, message.from_user), "not_registered"))
         return
     lang = user.get("lang") or "uz"
     text = settings_text(user)
@@ -343,7 +352,7 @@ async def ask_settings_field(message: Message, state: FSMContext, field: State,
     """Sozlamada bir maydonni so'rash: holatni o'rnatib, savol yuboradi."""
     user = db.get_user(message.from_user.id)
     if not user:
-        await message.answer(t("uz", "not_registered"))
+        await message.answer(t(user_lang(None, message.from_user), "not_registered"))
         return
     lang = user.get("lang") or "uz"
     await state.set_state(field)
@@ -380,7 +389,7 @@ async def settings_save_name(message: Message, state: FSMContext) -> None:
         await show_settings(message, state)
         return
     user = db.get_user(message.from_user.id)
-    lang = (user or {}).get("lang") or "uz"
+    lang = user_lang(user, message.from_user)
     name = message.text.strip()
     if not name or len(name) > 64:
         await message.answer(t(lang, "name_too_long"))
@@ -395,7 +404,7 @@ async def settings_save_birth(message: Message, state: FSMContext) -> None:
         await show_settings(message, state)
         return
     user = db.get_user(message.from_user.id)
-    lang = (user or {}).get("lang") or "uz"
+    lang = user_lang(user, message.from_user)
     birth = parse_birth_date(message.text)
     if birth is None:
         await message.answer(t(lang, "bad_birth"))
@@ -411,7 +420,7 @@ async def settings_save_gender(message: Message, state: FSMContext) -> None:
         await show_settings(message, state)
         return
     user = db.get_user(message.from_user.id)
-    lang = (user or {}).get("lang") or "uz"
+    lang = user_lang(user, message.from_user)
     if message.text in btn_variants("btn_male"):
         gender = "m"
     elif message.text in btn_variants("btn_female"):
@@ -429,7 +438,7 @@ async def settings_save_gender(message: Message, state: FSMContext) -> None:
 @router.message(Settings.gender)
 async def settings_non_text(message: Message) -> None:
     user = db.get_user(message.from_user.id)
-    await message.answer(t((user or {}).get("lang") or "uz", "text_only"))
+    await message.answer(t(user_lang(user, message.from_user), "text_only"))
 
 
 @router.message(F.text.in_(btn_variants("btn_back")))
@@ -437,7 +446,7 @@ async def go_back(message: Message, state: FSMContext) -> None:
     """Sozlamalardan ham, admin paneldan ham asosiy menyuga qaytaradi."""
     await state.clear()
     user = db.get_user(message.from_user.id)
-    lang = (user or {}).get("lang") or "uz"
+    lang = user_lang(user, message.from_user)
     await message.answer(t(lang, "menu"),
                          reply_markup=main_keyboard(lang, message.from_user.id))
 
@@ -445,18 +454,17 @@ async def go_back(message: Message, state: FSMContext) -> None:
 # ── Admin ────────────────────────────────────────────────────────────────────
 
 USERS_PER_PAGE = 20
-BTN_ADMIN = "🛠 Admin Panel"
-BTN_USERS = "👥 Foydalanuvchilar"
-BTN_STATS = "📊 Statistika"
-BTN_BACK = "⬅️ Orqaga"
 
-ADMIN_PANEL_KB = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text=BTN_USERS), KeyboardButton(text=BTN_STATS)],
-        [KeyboardButton(text=BTN_BACK)],
-    ],
-    resize_keyboard=True,
-)
+
+def admin_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text=t(lang, "btn_users")),
+             KeyboardButton(text=t(lang, "btn_stats"))],
+            [KeyboardButton(text=t(lang, "btn_back"))],
+        ],
+        resize_keyboard=True,
+    )
 
 
 def age_of(u: dict) -> int:
@@ -465,7 +473,7 @@ def age_of(u: dict) -> int:
     return today.year - b.year - ((today.month, today.day) < (b.month, b.day))
 
 
-def admin_summary() -> str:
+def admin_summary(lang: str) -> str:
     users = db.get_all_users()
     counts = db.get_rating_counts()
     males = [u for u in users if u.get("gender") == "m"]
@@ -475,32 +483,38 @@ def admin_summary() -> str:
     def avg_age(group: list[dict]) -> str:
         return f"{sum(age_of(u) for u in group) / len(group):.1f}" if group else "—"
 
-    return "\n".join([
-        f"📊 <b>Statistika</b>\n",
-        f"Foydalanuvchilar: <b>{len(users)}</b>",
-        f"Erkak: {len(males)} · Ayol: {len(females)} · Belgilanmagan: {len(unknown)}",
-        f"Til: uz {sum(1 for u in users if u.get('lang') == 'uz')} · "
-        f"ru {sum(1 for u in users if u.get('lang') == 'ru')}",
-        f"O'rtacha yosh: {avg_age(users)} (erkak {avg_age(males)} · ayol {avg_age(females)})",
-        f"Hafta baholari: 🟢 {counts.get('good', 0)} · 🔴 {counts.get('bad', 0)}",
-    ])
+    return t(lang, "stats").format(
+        total=len(users),
+        males=len(males),
+        females=len(females),
+        unknown=len(unknown),
+        uz=sum(1 for u in users if u.get("lang") == "uz"),
+        ru=sum(1 for u in users if u.get("lang") == "ru"),
+        avg=avg_age(users),
+        avg_m=avg_age(males),
+        avg_f=avg_age(females),
+        good=counts.get("good", 0),
+        bad=counts.get("bad", 0),
+    )
 
 
-def users_table(page: int) -> tuple[str, InlineKeyboardMarkup | None]:
+def users_table(page: int, lang: str) -> tuple[str, InlineKeyboardMarkup | None]:
     """Tartibli jadval: № · Ism · Yosh · Jins · Til (user ID ko'rsatilmaydi)."""
     users = db.get_all_users()
     pages = max(1, (len(users) + USERS_PER_PAGE - 1) // USERS_PER_PAGE)
     page = max(0, min(page, pages - 1))
     chunk = users[page * USERS_PER_PAGE:(page + 1) * USERS_PER_PAGE]
 
-    header = f"{'№':<4}{'Ism':<15}{'Yosh':<6}{'Jins':<7}{'Til'}"
+    header = (f"{'№':<4}{t(lang, 'col_name'):<15}{t(lang, 'col_age'):<6}"
+              f"{t(lang, 'col_gender'):<6}{t(lang, 'col_lang')}")
     rows = []
     for i, u in enumerate(chunk, start=page * USERS_PER_PAGE + 1):
-        name = html.escape(u["name"][:14])
-        g = {"m": "Erkak", "f": "Ayol"}.get(u.get("gender") or "", "—")
-        rows.append(f"{i:<4}{name:<15}{age_of(u):<6}{g:<7}{u.get('lang') or '—'}")
+        # Tekislash buzilmasligi uchun avval bo'shliq qo'shiladi, keyin escape
+        name = html.escape(u["name"][:14].ljust(15))
+        g = {"m": t(lang, "g_m"), "f": t(lang, "g_f")}.get(u.get("gender") or "", "—")
+        rows.append(f"{i:<4}{name}{age_of(u):<6}{g:<6}{u.get('lang') or '—'}")
 
-    title = f"👥 <b>Foydalanuvchilar: {len(users)}</b>"
+    title = t(lang, "users_title").format(total=len(users))
     if pages > 1:
         title += f" · {page + 1}/{pages}"
     text = f"{title}\n<pre>{header}\n" + "\n".join(rows) + "</pre>"
@@ -516,13 +530,14 @@ def users_table(page: int) -> tuple[str, InlineKeyboardMarkup | None]:
 
 
 async def notify_admin_new_user(bot: Bot, user: dict, username: str | None) -> None:
-    g = {"m": "Erkak", "f": "Ayol"}.get(user.get("gender") or "", "?")
-    handle = f"@{username}" if username else "username yo'q"
-    text = (
-        f"🆕 <b>Yangi user!</b>\n\n"
-        f"{html.escape(user['name'])} · {age_of(user)} yosh · {g} · {user.get('lang') or '?'}\n"
-        f"{handle}\n\n"
-        f"Jami: {len(db.get_all_users())} ta"
+    lang = user_lang(db.get_user(ADMIN_ID))          # xabar admin tilida yoziladi
+    text = t(lang, "new_user").format(
+        name=html.escape(user["name"]),
+        age=age_of(user),
+        gender={"m": t(lang, "g_m"), "f": t(lang, "g_f")}.get(user.get("gender") or "", "?"),
+        lang=user.get("lang") or "?",
+        handle=f"@{username}" if username else t(lang, "no_username"),
+        total=len(db.get_all_users()),
     )
     try:
         await bot.send_message(ADMIN_ID, text)
@@ -531,26 +546,29 @@ async def notify_admin_new_user(bot: Bot, user: dict, username: str | None) -> N
 
 
 @router.message(Command("admin"))
-@router.message(F.text == BTN_ADMIN)
+@router.message(F.text.in_(btn_variants("btn_admin")))
 async def admin_panel(message: Message) -> None:
     if message.from_user.id not in ADMIN_IDS:
         return
-    await message.answer("🛠 <b>Admin Panel</b>", reply_markup=ADMIN_PANEL_KB)
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    await message.answer(t(lang, "admin_title"), reply_markup=admin_keyboard(lang))
 
 
-@router.message(F.text == BTN_USERS)
+@router.message(F.text.in_(btn_variants("btn_users")))
 async def admin_users(message: Message) -> None:
     if message.from_user.id not in ADMIN_IDS:
         return
-    text, kb = users_table(0)
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    text, kb = users_table(0, lang)
     await message.answer(text, reply_markup=kb)
 
 
-@router.message(F.text == BTN_STATS)
+@router.message(F.text.in_(btn_variants("btn_stats")))
 async def admin_stats(message: Message) -> None:
     if message.from_user.id not in ADMIN_IDS:
         return
-    await message.answer(admin_summary())
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    await message.answer(admin_summary(lang))
 
 
 @router.callback_query(F.data.startswith("adm:users:"))
@@ -558,7 +576,8 @@ async def admin_users_nav(callback: CallbackQuery) -> None:
     if callback.from_user.id not in ADMIN_IDS:
         await callback.answer()
         return
-    text, kb = users_table(int(callback.data.split(":")[2]))
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    text, kb = users_table(int(callback.data.split(":")[2]), lang)
     await callback.answer()
     try:
         await callback.message.edit_text(text, reply_markup=kb)
@@ -617,11 +636,17 @@ async def main() -> None:
     dp = Dispatcher()
     dp.include_router(router)
 
+    # Buyruqlar ro'yxati Telegram interfeysi tiliga qarab ko'rsatiladi
     await bot.set_my_commands([
-        BotCommand(command="start", description="Boshlash / Начать"),
-        BotCommand(command="hayot", description="Hayot kalendari / Календарь жизни"),
-        BotCommand(command="help", description="Yordam / Помощь"),
+        BotCommand(command="start", description="Boshlash"),
+        BotCommand(command="hayot", description="Hayot kalendari"),
+        BotCommand(command="help", description="Yordam"),
     ])
+    await bot.set_my_commands([
+        BotCommand(command="start", description="Начать"),
+        BotCommand(command="hayot", description="Календарь жизни"),
+        BotCommand(command="help", description="Помощь"),
+    ], language_code="ru")
     if WEBAPP_URL:
         await bot.set_chat_menu_button(
             menu_button=MenuButtonWebApp(text="Mundabit", web_app=WebAppInfo(url=WEBAPP_URL))
