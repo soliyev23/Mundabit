@@ -1,0 +1,16 @@
+[Unit]
+Description=Mundabit Telegram bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=opc
+WorkingDirectory=/opt/mundabit
+ExecStart=/opt/mundabit/start.sh
+Restart=always
+RestartSec=5
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target

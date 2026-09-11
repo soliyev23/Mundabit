@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Mundabit</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #faf7f2;
+    --ink: #3a3a3a;
+    --accent: #a94442;
+    --meta: #8c8a86;
+    --cell-gray: #d8d5d0;
+    --xmark: #b2544c;
+    --good: #7ba88f;
+    --bad: #c25b54;
+    --current: #e8896b;
+    --future-fill: #ffffff;
+    --future-edge: #dfdbd4;
+    --out-fill: #f6f3ed;
+    --out-edge: #eeeae3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+
+  main {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: max(26px, env(safe-area-inset-top)) 14px
+             max(26px, env(safe-area-inset-bottom));
+    opacity: 0;
+    animation: page-in .5s ease .05s forwards;
+  }
+  @keyframes page-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .title {
+    text-align: center;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: -0.01em;
+  }
+  .title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .stats {
+    text-align: center;
+    font-family: "SF Mono", Menlo, "Courier New", monospace;
+    margin: 12px 0 18px;
+    font-size: 14px;
+  }
+  .stats b { font-weight: 700; }
+  .stats .past b { color: var(--accent); }
+  .stats .dot { color: var(--meta); padding: 0 8px; }
+
+  canvas { display: block; width: 100%; }
+
+  .state {
+    min-height: 70vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+  }
+  .state .glyph { font-size: 44px; }
+  .state p { color: var(--meta); font-size: 15px; line-height: 1.5; max-width: 260px; }
+</style>
+</head>
+<body>
+<main id="app" hidden>
+  <div class="title" id="titleEl">Hayot <em>Kalendari</em></div>
+  <div class="stats" id="statsEl"></div>
+  <canvas id="grid"></canvas>
+</main>
+
+<main class="state" id="state">
+  <div class="glyph">🌙</div>
+  <p id="stateText">Yuklanmoqda…</p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    try {
+      tg.setHeaderColor("#faf7f2");
+      tg.setBackgroundColor("#faf7f2");
+    } catch (e) { /* eski Telegram versiyalari */ }
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var cssVar = function (name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  };
+
+  var T = {
+    uz: { title: 'Hayot <em>Kalendari</em>', past: "O'tgan", left: "Qoldi" },
+    ru: { title: 'Календарь <em>жизни</em>', past: "Прожито", left: "Осталось" }
+  };
+
+  function showState(text) {
+    $("app").hidden = true;
+    var st = $("state");
+    st.style.display = "flex";
+    $("stateText").textContent = text;
+  }
+
+  var COLS = 52;
+  var canvas = $("grid");
+  var ctx = canvas.getContext("2d");
+
+  function drawCalendar(data) {
+    var birth = new Date(data.birth_date + "T00:00:00");
+    var birthYear = birth.getFullYear();
+    var DAY = 864e5;
+
+    var lastWs = new Date(birth.getTime() + (data.total_weeks - 1) * 7 * DAY);
+    var nRows = lastWs.getFullYear() - birthYear + 1;
+
+    var cssW = canvas.getBoundingClientRect().width - 0.5;
+    var dpr = Math.min(3, window.devicePixelRatio || 1);
+    var pitch = cssW / COLS;
+    var gap = Math.max(1, pitch * 0.22);
+    var cell = pitch - gap;
+    var cssH = nRows * pitch;
+    canvas.style.height = cssH + "px";
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+
+    var s = cell * dpr;
+    var r = Math.max(1, cell * 0.25) * dpr;
+    var ratings = data.ratings || {};
+
+    function box(row, col) {
+      return [col * pitch * dpr, row * pitch * dpr];
+    }
+    function cellRect(row, col, fill, stroke) {
+      var p = box(row, col);
+      ctx.beginPath();
+      if (ctx.roundRect) { ctx.roundRect(p[0], p[1], s, s, r); }
+      else { ctx.rect(p[0], p[1], s, s); }
+      ctx.fillStyle = fill;
+      ctx.fill();
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = dpr * 0.7;
+        ctx.stroke();
+      }
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    /* tashqi kataklar */
+    for (var row = 0; row < nRows; row++) {
+      for (var col = 0; col < COLS; col++) {
+        cellRect(row, col, cssVar("--out-fill"), cssVar("--out-edge"));
+      }
+    }
+
+    /* hayot haftalari */
+    var xm = cssVar("--xmark");
+    var grayC = cssVar("--cell-gray");
+    var goodC = cssVar("--good");
+    var badC = cssVar("--bad");
+    var curC = cssVar("--current");
+    var futF = cssVar("--future-fill");
+    var futE = cssVar("--future-edge");
+    var inset = Math.max(1.2, cell * 0.24) * dpr;
+
+    for (var i = 0; i < data.total_weeks; i++) {
+      var ws = new Date(birth.getTime() + i * 7 * DAY);
+      var rr = ws.getFullYear() - birthYear;
+      if (rr >= nRows) { break; }
+      var jan1 = new Date(ws.getFullYear(), 0, 1);
+      var cc = Math.min(COLS - 1, Math.floor((ws - jan1) / (7 * DAY)));
+
+      if (i < data.weeks_lived) {
+        var rating = ratings[i];
+        if (rating === "good") { cellRect(rr, cc, goodC); }
+        else if (rating === "bad") { cellRect(rr, cc, badC); }
+        else {
+          cellRect(rr, cc, grayC);
+          var p = box(rr, cc);
+          ctx.strokeStyle = xm;
+          ctx.lineWidth = dpr * 0.9;
+          ctx.beginPath();
+          ctx.moveTo(p[0] + inset, p[1] + inset);
+          ctx.lineTo(p[0] + s - inset, p[1] + s - inset);
+          ctx.moveTo(p[0] + s - inset, p[1] + inset);
+          ctx.lineTo(p[0] + inset, p[1] + s - inset);
+          ctx.stroke();
+        }
+      } else if (i === data.weeks_lived) {
+        cellRect(rr, cc, curC);
+      } else {
+        cellRect(rr, cc, futF, futE);
+      }
+    }
+  }
+
+  function render(data) {
+    var L = T[data.lang] || T.uz;
+    $("titleEl").innerHTML = L.title;
+
+    $("statsEl").innerHTML =
+      '<span class="past">' + L.past + ": <b>" + data.pct_lived + "%</b></span>" +
+      '<span class="dot">·</span>' +
+      '<span class="left">' + L.left + ": <b>" + data.pct_left + "%</b></span>";
+
+    $("state").style.display = "none";
+    $("app").hidden = false;
+    drawCalendar(data);
+
+    var resizeT = null;
+    window.addEventListener("resize", function () {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(function () { drawCalendar(data); }, 150);
+    });
+  }
+
+  /* Telegram'dan tashqarida (dev) — namunaviy ma'lumot */
+  function demoData() {
+    var birth = new Date(2002, 10, 23);
+    var total = 72 * 52;
+    var lived = Math.floor((Date.now() - birth.getTime()) / 6048e5);
+    var pct = Math.min(100, lived / total * 100);
+    var ratings = {};
+    for (var i = Math.max(0, lived - 20); i < lived; i++) {
+      ratings[i] = (i % 4 === 2) ? "bad" : "good";
+    }
+    return {
+      weeks_lived: lived,
+      weeks_left: Math.max(0, total - lived),
+      pct_lived: Math.round(pct * 10) / 10,
+      pct_left: Math.round((100 - pct) * 10) / 10,
+      total_weeks: total,
+      birth_date: "2002-11-23",
+      gender: "m",
+      lang: "uz",
+      ratings: ratings
+    };
+  }
+
+  var initData = (tg && tg.initData) || "";
+  if (!initData) {
+    render(demoData());
+    return;
+  }
+  showState("Yuklanmoqda…");
+  fetch("api/me", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ initData: initData })
+  })
+    .then(function (r) {
+      if (r.status === 404) { throw new Error("not_registered"); }
+      if (!r.ok) { throw new Error("server"); }
+      return r.json();
+    })
+    .then(render)
+    .catch(function (e) {
+      showState(e.message === "not_registered"
+        ? "Avval botda /start buyrug'ini bosib ro'yxatdan o'ting."
+        : "Ma'lumotni yuklab bo'lmadi. Keyinroq urinib ko'ring.");
+    });
+})();
+</script>
+</body>
+</html>
