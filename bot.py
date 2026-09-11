@@ -44,7 +44,7 @@ from config import (
     WEBAPP_URL,
     expectancy_for,
 )
-from texts import t
+from texts import BOT, fmt_date, t
 from visual import life_stats, render_life_poster, stats_caption
 from webserver import start_webserver
 
@@ -56,6 +56,13 @@ router = Router()
 
 class Onboarding(StatesGroup):
     lang = State()
+    name = State()
+    birth_date = State()
+    gender = State()
+
+
+class Settings(StatesGroup):
+    """Sozlamalar orqali ma'lumotni o'zgartirish holatlari."""
     name = State()
     birth_date = State()
     gender = State()
@@ -79,6 +86,59 @@ def webapp_keyboard(lang: str) -> InlineKeyboardMarkup | None:
     return InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text=t(lang, "webapp_btn"), web_app=WebAppInfo(url=WEBAPP_URL))
     ]])
+
+
+def btn_variants(key: str) -> set[str]:
+    """Tugma matni foydalanuvchi tilidan qat'i nazar tanilsin."""
+    return {BOT[lang][key] for lang in BOT}
+
+
+def main_keyboard(lang: str, user_id: int) -> ReplyKeyboardMarkup:
+    rows = [[KeyboardButton(text=t(lang, "btn_settings"))]]
+    if user_id in ADMIN_IDS:
+        rows.append([KeyboardButton(text=BTN_ADMIN)])
+    return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
+
+
+def settings_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text=t(lang, "btn_name"))],
+            [KeyboardButton(text=t(lang, "btn_birth"))],
+            [KeyboardButton(text=t(lang, "btn_gender"))],
+            [KeyboardButton(text=t(lang, "btn_back"))],
+        ],
+        resize_keyboard=True,
+    )
+
+
+def back_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text=t(lang, "btn_back"))]], resize_keyboard=True
+    )
+
+
+def gender_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text=t(lang, "btn_male")),
+             KeyboardButton(text=t(lang, "btn_female"))],
+            [KeyboardButton(text=t(lang, "btn_back"))],
+        ],
+        resize_keyboard=True,
+    )
+
+
+def settings_text(user: dict) -> str:
+    lang = user.get("lang") or "uz"
+    gender = {"m": t(lang, "btn_male"), "f": t(lang, "btn_female")}.get(
+        user.get("gender") or "", "—"
+    )
+    return t(lang, "settings").format(
+        name=html.escape(user["name"]),
+        birth=fmt_date(date.fromisoformat(user["birth_date"]), lang),
+        gender=gender,
+    )
 
 
 def rate_keyboard(lang: str, week_index: int) -> InlineKeyboardMarkup:
@@ -120,9 +180,12 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     await state.clear()
     user = db.get_user(message.from_user.id)
     if user and user.get("gender") and user.get("lang"):
+        lang = user.get("lang") or "uz"
         await send_calendar(message.bot, user)
-        if message.from_user.id in ADMIN_IDS:
-            await message.answer("🛠 Admin Panel ↓", reply_markup=ADMIN_MAIN_KB)
+        await message.answer(
+            t(lang, "menu"),
+            reply_markup=main_keyboard(lang, message.from_user.id),
+        )
         return
     await message.answer(
         "Tilni tanlang / Выберите язык:",
@@ -207,7 +270,10 @@ async def process_gender(callback: CallbackQuery, state: FSMContext) -> None:
 
     user = db.get_user(callback.from_user.id)
     await send_calendar(callback.bot, user)
-    await callback.message.answer(t(lang, "saved"))
+    await callback.message.answer(
+        t(lang, "saved"),
+        reply_markup=main_keyboard(lang, callback.from_user.id),
+    )
     if is_new:
         await notify_admin_new_user(callback.bot, user, callback.from_user.username)
 
@@ -256,6 +322,126 @@ async def process_rating(callback: CallbackQuery) -> None:
         pass
 
 
+# ── Sozlamalar ───────────────────────────────────────────────────────────────
+
+async def show_settings(message: Message, state: FSMContext, prefix: str = "") -> None:
+    """Sozlamalar menyusi: joriy ma'lumot + o'zgartirish tugmalari."""
+    await state.clear()
+    user = db.get_user(message.from_user.id)
+    if not user:
+        await message.answer(t("uz", "not_registered"))
+        return
+    lang = user.get("lang") or "uz"
+    text = settings_text(user)
+    if prefix:
+        text = f"{prefix}\n\n{text}"
+    await message.answer(text, reply_markup=settings_keyboard(lang))
+
+
+async def ask_settings_field(message: Message, state: FSMContext, field: State,
+                             key: str, keyboard) -> None:
+    """Sozlamada bir maydonni so'rash: holatni o'rnatib, savol yuboradi."""
+    user = db.get_user(message.from_user.id)
+    if not user:
+        await message.answer(t("uz", "not_registered"))
+        return
+    lang = user.get("lang") or "uz"
+    await state.set_state(field)
+    await message.answer(t(lang, key), reply_markup=keyboard(lang))
+
+
+@router.message(Command("sozlamalar"))
+@router.message(F.text.in_(btn_variants("btn_settings")))
+async def settings_menu(message: Message, state: FSMContext) -> None:
+    await show_settings(message, state)
+
+
+@router.message(F.text.in_(btn_variants("btn_name")))
+async def settings_ask_name(message: Message, state: FSMContext) -> None:
+    await ask_settings_field(message, state, Settings.name, "ask_new_name",
+                             back_keyboard)
+
+
+@router.message(F.text.in_(btn_variants("btn_birth")))
+async def settings_ask_birth(message: Message, state: FSMContext) -> None:
+    await ask_settings_field(message, state, Settings.birth_date, "ask_new_birth",
+                             back_keyboard)
+
+
+@router.message(F.text.in_(btn_variants("btn_gender")))
+async def settings_ask_gender(message: Message, state: FSMContext) -> None:
+    await ask_settings_field(message, state, Settings.gender, "ask_gender",
+                             gender_keyboard)
+
+
+@router.message(Settings.name, F.text)
+async def settings_save_name(message: Message, state: FSMContext) -> None:
+    if message.text in btn_variants("btn_back"):
+        await show_settings(message, state)
+        return
+    user = db.get_user(message.from_user.id)
+    lang = (user or {}).get("lang") or "uz"
+    name = message.text.strip()
+    if not name or len(name) > 64:
+        await message.answer(t(lang, "name_too_long"))
+        return
+    db.update_user(message.from_user.id, name=name)
+    await show_settings(message, state, prefix=t(lang, "updated"))
+
+
+@router.message(Settings.birth_date, F.text)
+async def settings_save_birth(message: Message, state: FSMContext) -> None:
+    if message.text in btn_variants("btn_back"):
+        await show_settings(message, state)
+        return
+    user = db.get_user(message.from_user.id)
+    lang = (user or {}).get("lang") or "uz"
+    birth = parse_birth_date(message.text)
+    if birth is None:
+        await message.answer(t(lang, "bad_birth"))
+        return
+    db.update_user(message.from_user.id, birth_date=birth.isoformat())
+    await show_settings(message, state, prefix=t(lang, "updated"))
+    await send_calendar(message.bot, db.get_user(message.from_user.id))
+
+
+@router.message(Settings.gender, F.text)
+async def settings_save_gender(message: Message, state: FSMContext) -> None:
+    if message.text in btn_variants("btn_back"):
+        await show_settings(message, state)
+        return
+    user = db.get_user(message.from_user.id)
+    lang = (user or {}).get("lang") or "uz"
+    if message.text in btn_variants("btn_male"):
+        gender = "m"
+    elif message.text in btn_variants("btn_female"):
+        gender = "f"
+    else:
+        await message.answer(t(lang, "ask_gender"), reply_markup=gender_keyboard(lang))
+        return
+    db.update_user(message.from_user.id, gender=gender)
+    await show_settings(message, state, prefix=t(lang, "updated"))
+    await send_calendar(message.bot, db.get_user(message.from_user.id))
+
+
+@router.message(Settings.name)
+@router.message(Settings.birth_date)
+@router.message(Settings.gender)
+async def settings_non_text(message: Message) -> None:
+    user = db.get_user(message.from_user.id)
+    await message.answer(t((user or {}).get("lang") or "uz", "text_only"))
+
+
+@router.message(F.text.in_(btn_variants("btn_back")))
+async def go_back(message: Message, state: FSMContext) -> None:
+    """Sozlamalardan ham, admin paneldan ham asosiy menyuga qaytaradi."""
+    await state.clear()
+    user = db.get_user(message.from_user.id)
+    lang = (user or {}).get("lang") or "uz"
+    await message.answer(t(lang, "menu"),
+                         reply_markup=main_keyboard(lang, message.from_user.id))
+
+
 # ── Admin ────────────────────────────────────────────────────────────────────
 
 USERS_PER_PAGE = 20
@@ -264,9 +450,6 @@ BTN_USERS = "👥 Foydalanuvchilar"
 BTN_STATS = "📊 Statistika"
 BTN_BACK = "⬅️ Orqaga"
 
-ADMIN_MAIN_KB = ReplyKeyboardMarkup(
-    keyboard=[[KeyboardButton(text=BTN_ADMIN)]], resize_keyboard=True
-)
 ADMIN_PANEL_KB = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text=BTN_USERS), KeyboardButton(text=BTN_STATS)],
@@ -368,13 +551,6 @@ async def admin_stats(message: Message) -> None:
     if message.from_user.id not in ADMIN_IDS:
         return
     await message.answer(admin_summary())
-
-
-@router.message(F.text == BTN_BACK)
-async def admin_back(message: Message) -> None:
-    if message.from_user.id not in ADMIN_IDS:
-        return
-    await message.answer("Asosiy menyu", reply_markup=ADMIN_MAIN_KB)
 
 
 @router.callback_query(F.data.startswith("adm:users:"))

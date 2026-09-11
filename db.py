@@ -69,6 +69,20 @@ def save_user(user_id: int, name: str, birth_date: date, lang: str, gender: str)
         )
 
 
+def update_user(user_id: int, **fields) -> None:
+    """Faqat berilgan ustunlarni yangilaydi (sozlamalar uchun)."""
+    allowed = ("name", "birth_date", "lang", "gender")
+    cols = {k: v for k, v in fields.items() if k in allowed}
+    if not cols:
+        return
+    assignments = ", ".join(f"{k} = ?" for k in cols)
+    with _conn() as c:
+        c.execute(
+            f"UPDATE users SET {assignments} WHERE user_id = ?",
+            (*cols.values(), user_id),
+        )
+
+
 def get_user(user_id: int) -> dict | None:
     with _conn() as c:
         row = c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()

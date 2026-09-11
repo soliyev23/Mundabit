@@ -55,6 +55,25 @@ BOT = {
             "Har juma 14:00 — kalendar, har dushanba — hafta yakuni so'rovi."
         ),
         "webapp_btn": "Ilovada ko'rish",
+        "btn_settings": "⚙️ Sozlamalar",
+        "btn_name": "✏️ Ismni o'zgartirish",
+        "btn_birth": "🎂 Tug'ilgan sanani o'zgartirish",
+        "btn_gender": "⚧ Jinsni o'zgartirish",
+        "btn_back": "⬅️ Orqaga",
+        "menu": "Asosiy menyu",
+        "settings": (
+            "⚙️ <b>Sozlamalar</b>\n\n"
+            "Ism: <b>{name}</b>\n"
+            "Tug'ilgan sana: <b>{birth}</b>\n"
+            "Jins: <b>{gender}</b>\n\n"
+            "Nimani o'zgartiramiz?"
+        ),
+        "ask_new_name": "Yangi ismingizni yozing:",
+        "ask_new_birth": (
+            "Yangi tug'ilgan sanangizni kiriting.\n"
+            "Format: <code>KK.OO.YYYY</code> — masalan: <code>15.06.2000</code>"
+        ),
+        "updated": "✅ Saqlandi",
         "caption": "Yashaldi: <b>{lived} hafta</b> — {p}%\nQoldi: <b>{left} hafta</b> — {q}%",
     },
     "ru": {
@@ -93,6 +112,25 @@ BOT = {
             "Каждую пятницу в 14:00 — календарь, каждый понедельник — опрос о неделе."
         ),
         "webapp_btn": "Открыть приложение",
+        "btn_settings": "⚙️ Настройки",
+        "btn_name": "✏️ Изменить имя",
+        "btn_birth": "🎂 Изменить дату рождения",
+        "btn_gender": "⚧ Изменить пол",
+        "btn_back": "⬅️ Назад",
+        "menu": "Главное меню",
+        "settings": (
+            "⚙️ <b>Настройки</b>\n\n"
+            "Имя: <b>{name}</b>\n"
+            "Дата рождения: <b>{birth}</b>\n"
+            "Пол: <b>{gender}</b>\n\n"
+            "Что изменим?"
+        ),
+        "ask_new_name": "Напишите новое имя:",
+        "ask_new_birth": (
+            "Введите новую дату рождения.\n"
+            "Формат: <code>ДД.ММ.ГГГГ</code> — например: <code>15.06.2000</code>"
+        ),
+        "updated": "✅ Сохранено",
         "caption": "Прожито: <b>{lived} недель</b> — {p}%\nОсталось: <b>{left} недель</b> — {q}%",
     },
 }
