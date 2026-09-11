@@ -67,6 +67,10 @@ class Settings(StatesGroup):
     name = State()
     birth_date = State()
     gender = State()
+    lang = State()
+
+
+LANG_NAMES = {"uz": "O'zbekcha", "ru": "Русский"}
 
 
 def parse_birth_date(text: str) -> date | None:
@@ -115,6 +119,7 @@ def settings_keyboard(lang: str) -> ReplyKeyboardMarkup:
             [KeyboardButton(text=t(lang, "btn_name"))],
             [KeyboardButton(text=t(lang, "btn_birth"))],
             [KeyboardButton(text=t(lang, "btn_gender"))],
+            [KeyboardButton(text=t(lang, "btn_lang"))],
             [KeyboardButton(text=t(lang, "btn_back"))],
         ],
         resize_keyboard=True,
@@ -138,6 +143,17 @@ def gender_keyboard(lang: str) -> ReplyKeyboardMarkup:
     )
 
 
+def lang_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text=t(lang, "btn_uz")),
+             KeyboardButton(text=t(lang, "btn_ru"))],
+            [KeyboardButton(text=t(lang, "btn_back"))],
+        ],
+        resize_keyboard=True,
+    )
+
+
 def settings_text(user: dict) -> str:
     lang = user.get("lang") or "uz"
     gender = {"m": t(lang, "btn_male"), "f": t(lang, "btn_female")}.get(
@@ -147,6 +163,7 @@ def settings_text(user: dict) -> str:
         name=html.escape(user["name"]),
         birth=fmt_date(date.fromisoformat(user["birth_date"]), lang),
         gender=gender,
+        lang=LANG_NAMES.get(lang, lang),
     )
 
 
@@ -199,8 +216,8 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     await message.answer(
         "Tilni tanlang / Выберите язык:",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-            InlineKeyboardButton(text="🇺🇿 O'zbekcha", callback_data="setlang:uz"),
-            InlineKeyboardButton(text="🇷🇺 Русский", callback_data="setlang:ru"),
+            InlineKeyboardButton(text=t("uz", "btn_uz"), callback_data="setlang:uz"),
+            InlineKeyboardButton(text=t("uz", "btn_ru"), callback_data="setlang:ru"),
         ]]),
     )
     await state.set_state(Onboarding.lang)
@@ -383,6 +400,12 @@ async def settings_ask_gender(message: Message, state: FSMContext) -> None:
                              gender_keyboard)
 
 
+@router.message(F.text.in_(btn_variants("btn_lang")))
+async def settings_ask_lang(message: Message, state: FSMContext) -> None:
+    await ask_settings_field(message, state, Settings.lang, "ask_lang",
+                             lang_keyboard)
+
+
 @router.message(Settings.name, F.text)
 async def settings_save_name(message: Message, state: FSMContext) -> None:
     if message.text in btn_variants("btn_back"):
@@ -433,9 +456,30 @@ async def settings_save_gender(message: Message, state: FSMContext) -> None:
     await send_calendar(message.bot, db.get_user(message.from_user.id))
 
 
+@router.message(Settings.lang, F.text)
+async def settings_save_lang(message: Message, state: FSMContext) -> None:
+    user = db.get_user(message.from_user.id)
+    lang = user_lang(user, message.from_user)
+    if message.text in btn_variants("btn_back"):
+        await show_settings(message, state)
+        return
+    if message.text in btn_variants("btn_uz"):
+        new_lang = "uz"
+    elif message.text in btn_variants("btn_ru"):
+        new_lang = "ru"
+    else:
+        await message.answer(t(lang, "ask_lang"), reply_markup=lang_keyboard(lang))
+        return
+    db.update_user(message.from_user.id, lang=new_lang)
+    # Bundan keyingi barcha javoblar — kalendar posteri ham — yangi tilda
+    await show_settings(message, state, prefix=t(new_lang, "updated"))
+    await send_calendar(message.bot, db.get_user(message.from_user.id))
+
+
 @router.message(Settings.name)
 @router.message(Settings.birth_date)
 @router.message(Settings.gender)
+@router.message(Settings.lang)
 async def settings_non_text(message: Message) -> None:
     user = db.get_user(message.from_user.id)
     await message.answer(t(user_lang(user, message.from_user), "text_only"))

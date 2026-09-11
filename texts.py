@@ -59,13 +59,18 @@ BOT = {
         "btn_name": "✏️ Ismni o'zgartirish",
         "btn_birth": "🎂 Tug'ilgan sanani o'zgartirish",
         "btn_gender": "⚧ Jinsni o'zgartirish",
+        "btn_lang": "🌐 Tilni o'zgartirish",
+        "ask_lang": "Tilni tanlang:",
+        "btn_uz": "🇺🇿 O'zbekcha",
+        "btn_ru": "🇷🇺 Русский",
         "btn_back": "⬅️ Orqaga",
         "menu": "Asosiy menyu",
         "settings": (
             "⚙️ <b>Sozlamalar</b>\n\n"
             "Ism: <b>{name}</b>\n"
             "Tug'ilgan sana: <b>{birth}</b>\n"
-            "Jins: <b>{gender}</b>\n\n"
+            "Jins: <b>{gender}</b>\n"
+            "Til: <b>{lang}</b>\n\n"
             "Nimani o'zgartiramiz?"
         ),
         "ask_new_name": "Yangi ismingizni yozing:",
@@ -143,13 +148,18 @@ BOT = {
         "btn_name": "✏️ Изменить имя",
         "btn_birth": "🎂 Изменить дату рождения",
         "btn_gender": "⚧ Изменить пол",
+        "btn_lang": "🌐 Изменить язык",
+        "ask_lang": "Выберите язык:",
+        "btn_uz": "🇺🇿 O'zbekcha",
+        "btn_ru": "🇷🇺 Русский",
         "btn_back": "⬅️ Назад",
         "menu": "Главное меню",
         "settings": (
             "⚙️ <b>Настройки</b>\n\n"
             "Имя: <b>{name}</b>\n"
             "Дата рождения: <b>{birth}</b>\n"
-            "Пол: <b>{gender}</b>\n\n"
+            "Пол: <b>{gender}</b>\n"
+            "Язык: <b>{lang}</b>\n\n"
             "Что изменим?"
         ),
         "ask_new_name": "Напишите новое имя:",
