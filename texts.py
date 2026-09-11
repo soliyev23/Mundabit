@@ -84,14 +84,24 @@ BOT = {
         "btn_users": "👥 Foydalanuvchilar",
         "btn_stats": "📊 Statistika",
         "admin_title": "🛠 <b>Admin Panel</b>",
-        "stats": (
-            "📊 <b>Statistika</b>\n\n"
-            "Foydalanuvchilar: <b>{total}</b>\n"
-            "Erkak: {males} · Ayol: {females} · Belgilanmagan: {unknown}\n"
-            "Til: uz {uz} · ru {ru}\n"
-            "O'rtacha yosh: {avg} (erkak {avg_m} · ayol {avg_f})\n"
-            "Hafta baholari: 🟢 {good} · 🔴 {bad}"
-        ),
+        "stats_title": "📊 <b>Statistika</b>",
+        "stats_empty": "Hali foydalanuvchi yo'q.",
+        "stats_total": "JAMI",
+        "sec_gender": "JINS",
+        "sec_lang": "TIL",
+        "sec_age": "YOSH",
+        "sec_weeks": "HAFTA BAHOLARI",
+        "sec_new": "RO'YXATDAN O'TISH",
+        "st_male": "Erkak",
+        "st_female": "Ayol",
+        "st_unknown": "Noma'lum",
+        "st_avg": "O'rtacha",
+        "st_good": "Samarali",
+        "st_bad": "Behuda",
+        "st_rated": "Baho bergan",
+        "st_today": "Bugun",
+        "st_7d": "7 kun",
+        "st_30d": "30 kun",
         "users_title": "👥 <b>Foydalanuvchilar: {total}</b>",
         "col_name": "Ism",
         "col_age": "Yosh",
@@ -173,14 +183,24 @@ BOT = {
         "btn_users": "👥 Пользователи",
         "btn_stats": "📊 Статистика",
         "admin_title": "🛠 <b>Админ-панель</b>",
-        "stats": (
-            "📊 <b>Статистика</b>\n\n"
-            "Пользователи: <b>{total}</b>\n"
-            "Мужчины: {males} · Женщины: {females} · Не указан: {unknown}\n"
-            "Язык: uz {uz} · ru {ru}\n"
-            "Средний возраст: {avg} (муж. {avg_m} · жен. {avg_f})\n"
-            "Оценки недель: 🟢 {good} · 🔴 {bad}"
-        ),
+        "stats_title": "📊 <b>Статистика</b>",
+        "stats_empty": "Пользователей пока нет.",
+        "stats_total": "ВСЕГО",
+        "sec_gender": "ПОЛ",
+        "sec_lang": "ЯЗЫК",
+        "sec_age": "ВОЗРАСТ",
+        "sec_weeks": "ОЦЕНКИ НЕДЕЛЬ",
+        "sec_new": "РЕГИСТРАЦИИ",
+        "st_male": "Мужчины",
+        "st_female": "Женщины",
+        "st_unknown": "Не указан",
+        "st_avg": "Средний",
+        "st_good": "Продуктивно",
+        "st_bad": "Впустую",
+        "st_rated": "Оценили",
+        "st_today": "Сегодня",
+        "st_7d": "7 дней",
+        "st_30d": "30 дней",
         "users_title": "👥 <b>Пользователи: {total}</b>",
         "col_name": "Имя",
         "col_age": "Возр",

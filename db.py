@@ -118,9 +118,15 @@ def get_week_ratings(user_id: int) -> dict[int, str]:
         return {r["week_index"]: r["rating"] for r in rows}
 
 
-def get_rating_counts() -> dict[str, int]:
+def get_rating_summary() -> dict[str, int]:
+    """Baholar soni va nechta foydalanuvchi baho bergani."""
     with _conn() as c:
-        rows = c.execute(
-            "SELECT rating, COUNT(*) AS n FROM week_ratings GROUP BY rating"
-        ).fetchall()
-        return {r["rating"]: r["n"] for r in rows}
+        row = c.execute(
+            """
+            SELECT COALESCE(SUM(rating = 'good'), 0) AS good,
+                   COALESCE(SUM(rating = 'bad'), 0)  AS bad,
+                   COUNT(DISTINCT user_id)           AS raters
+            FROM week_ratings
+            """
+        ).fetchone()
+        return {"good": row["good"], "bad": row["bad"], "raters": row["raters"]}

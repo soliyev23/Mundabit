@@ -6,7 +6,7 @@ Dushanba: o'tgan hafta haqida so'rov (yashil/qizil). Juma 13:30: kalendar.
 import asyncio
 import html
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
@@ -517,29 +517,76 @@ def age_of(u: dict) -> int:
     return today.year - b.year - ((today.month, today.day) < (b.month, b.day))
 
 
+BAR_W = 6          # diagramma uzunligi
+LABEL_W = 12       # chapdagi nom ustuni
+NUM_W = 5          # raqam ustuni — barcha bo'limlarda bir xil tekislanadi
+
+
+def _bar(pct: float) -> str:
+    filled = int(round(pct / 100 * BAR_W))
+    return "\u2588" * filled + "\u2591" * (BAR_W - filled)
+
+
+def _row(label: str, count: int, total: int) -> str:
+    """Nom · son · foiz · diagramma."""
+    pct = count / total * 100 if total else 0
+    return f"{label:<{LABEL_W}}{count:>{NUM_W}} {pct:>3.0f}%  {_bar(pct)}"
+
+
+def _plain_row(label: str, value) -> str:
+    """Diagrammasiz qator (yosh, ro'yxatdan o'tish)."""
+    return f"{label:<{LABEL_W}}{value:>{NUM_W}}"
+
+
 def admin_summary(lang: str) -> str:
     users = db.get_all_users()
-    counts = db.get_rating_counts()
+    total = len(users)
+    if not total:
+        return f"{t(lang, 'stats_title')}\n\n{t(lang, 'stats_empty')}"
+
     males = [u for u in users if u.get("gender") == "m"]
     females = [u for u in users if u.get("gender") == "f"]
     unknown = [u for u in users if not u.get("gender")]
+    ratings = db.get_rating_summary()
+    rated_total = ratings["good"] + ratings["bad"]
 
     def avg_age(group: list[dict]) -> str:
-        return f"{sum(age_of(u) for u in group) / len(group):.1f}" if group else "—"
+        return f"{sum(age_of(u) for u in group) / len(group):.1f}" if group else "\u2014"
 
-    return t(lang, "stats").format(
-        total=len(users),
-        males=len(males),
-        females=len(females),
-        unknown=len(unknown),
-        uz=sum(1 for u in users if u.get("lang") == "uz"),
-        ru=sum(1 for u in users if u.get("lang") == "ru"),
-        avg=avg_age(users),
-        avg_m=avg_age(males),
-        avg_f=avg_age(females),
-        good=counts.get("good", 0),
-        bad=counts.get("bad", 0),
-    )
+    def joined_within(days: int) -> int:
+        edge = date.today() - timedelta(days=days)
+        return sum(1 for u in users
+                   if u.get("created_at") and
+                   date.fromisoformat(u["created_at"][:10]) >= edge)
+
+    lines = [
+        _plain_row(t(lang, "stats_total"), total),
+        "",
+        t(lang, "sec_gender"),
+        _row(t(lang, "st_male"), len(males), total),
+        _row(t(lang, "st_female"), len(females), total),
+        _row(t(lang, "st_unknown"), len(unknown), total),
+        "",
+        t(lang, "sec_lang"),
+        _row(LANG_NAMES["uz"], sum(1 for u in users if u.get("lang") == "uz"), total),
+        _row(LANG_NAMES["ru"], sum(1 for u in users if u.get("lang") == "ru"), total),
+        "",
+        t(lang, "sec_age"),
+        _plain_row(t(lang, "st_avg"), avg_age(users)),
+        _plain_row(t(lang, "st_male"), avg_age(males)),
+        _plain_row(t(lang, "st_female"), avg_age(females)),
+        "",
+        t(lang, "sec_weeks"),
+        _row(t(lang, "st_good"), ratings["good"], rated_total),
+        _row(t(lang, "st_bad"), ratings["bad"], rated_total),
+        _plain_row(t(lang, "st_rated"), f'{ratings["raters"]}/{total}'),
+        "",
+        t(lang, "sec_new"),
+        _plain_row(t(lang, "st_today"), joined_within(0)),
+        _plain_row(t(lang, "st_7d"), joined_within(7)),
+        _plain_row(t(lang, "st_30d"), joined_within(30)),
+    ]
+    return f"{t(lang, 'stats_title')}\n\n<pre>" + "\n".join(lines) + "</pre>"
 
 
 def users_table(page: int, lang: str) -> tuple[str, InlineKeyboardMarkup | None]:
