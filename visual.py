@@ -6,6 +6,7 @@ hafta yashil, behuda qizil, joriy hafta losos rang, kelajak oq katak.
 """
 import io
 from dataclasses import dataclass
+from functools import lru_cache
 from datetime import date, timedelta
 
 from PIL import Image, ImageDraw, ImageFont
@@ -117,6 +118,34 @@ def _mono(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     )
 
 
+@lru_cache(maxsize=None)
+def _cell_sprite(size: int, radius: int, fill: tuple, outline: tuple | None = None,
+                 xmark: bool = False) -> Image.Image:
+    """Bitta katakning tayyor rasmi. Burchaklari fon rangida: barcha kataklar bir
+    xil shaklda va bir joyga tushgani uchun ustma-ust qo'yilganda ham burchak
+    piksellari baribir fon bo'ladi — natija to'g'ridan-to'g'ri chizilgani bilan
+    piksel-piksel bir xil, lekin chizish o'rniga tayyor nusxa qo'yiladi."""
+    spr = Image.new("RGB", (size + 1, size + 1), BG)
+    d = ImageDraw.Draw(spr)
+    d.rounded_rectangle([0, 0, size, size], radius=radius, fill=fill, outline=outline)
+    if xmark:
+        d.line([4, 4, size - 4, size - 4], fill=XMARK, width=2)
+        d.line([size - 4, 4, 4, size - 4], fill=XMARK, width=2)
+    return spr
+
+
+@lru_cache(maxsize=None)
+def _empty_row(cell: int, gap: int, radius: int) -> Image.Image:
+    """Bir yillik bo'sh qator (52 ta "umrdan tashqari" katak) — fon uchun
+    3 800 ta katak o'rniga 73 ta qator tasmasi qo'yiladi."""
+    pitch = cell + gap
+    row = Image.new("RGB", (WEEKS_PER_YEAR * pitch - gap + 1, cell + 1), BG)
+    spr = _cell_sprite(cell, radius, OUT_FILL, OUT_EDGE)
+    for col in range(WEEKS_PER_YEAR):
+        row.paste(spr, (col * pitch, 0))
+    return row
+
+
 def _fmt(n: int) -> str:
     return f"{n:,}".replace(",", " ")
 
@@ -193,11 +222,16 @@ def render_life_poster(stats: LifeStats, ratings: dict[int, str] | None = None,
 
     # ── Katakchalar (kalendar bo'yicha) ──
     radius = 4
+    sprites = {
+        "future": _cell_sprite(cell, radius, FUTURE_FILL, FUTURE_EDGE),
+        "gray": _cell_sprite(cell, radius, CELL_GRAY, xmark=True),
+        "good": _cell_sprite(cell, radius, GOOD),
+        "bad": _cell_sprite(cell, radius, BAD),
+        "current": _cell_sprite(cell, radius, CURRENT),
+    }
 
-    def cell_box(row: int, col: int) -> list[int]:
-        x = ml + col * pitch
-        y = grid_y + row * pitch
-        return [x, y, x + cell, y + cell]
+    def put(kind: str, row: int, col: int) -> None:
+        img.paste(sprites[kind], (ml + col * pitch, grid_y + row * pitch))
 
     # Barcha kataklarni "umrdan tashqari" uslubda chizamiz, keyin ustiga
     # hayot haftalarini qo'yamiz (birinchi qatorda tug'ilishgacha bo'lgan va
@@ -207,9 +241,7 @@ def render_life_poster(stats: LifeStats, ratings: dict[int, str] | None = None,
         label = age_label(year, row, lang)
         lw = d.textlength(label, font=f_label)
         d.text((ml - 18 - lw, grid_y + row * pitch + 1), label, font=f_label, fill=LABEL)
-        for col in range(WEEKS_PER_YEAR):
-            d.rounded_rectangle(cell_box(row, col), radius=radius,
-                                fill=OUT_FILL, outline=OUT_EDGE)
+        img.paste(_empty_row(cell, gap, radius), (ml, grid_y + row * pitch))
 
     for i in range(stats.total_weeks):
         ws = birth + timedelta(days=i * 7)
@@ -217,24 +249,15 @@ def render_life_poster(stats: LifeStats, ratings: dict[int, str] | None = None,
         if row >= n_rows:
             break
         col = min(WEEKS_PER_YEAR - 1, (ws - date(ws.year, 1, 1)).days // 7)
-        box = cell_box(row, col)
         if i < stats.weeks_lived:
-            rating = ratings.get(i)
-            if rating == "good":
-                d.rounded_rectangle(box, radius=radius, fill=GOOD)
-            elif rating == "bad":
-                d.rounded_rectangle(box, radius=radius, fill=BAD)
-            else:
-                d.rounded_rectangle(box, radius=radius, fill=CELL_GRAY)
-                d.line([box[0] + 4, box[1] + 4, box[2] - 4, box[3] - 4], fill=XMARK, width=2)
-                d.line([box[2] - 4, box[1] + 4, box[0] + 4, box[3] - 4], fill=XMARK, width=2)
+            put(ratings.get(i, "gray"), row, col)      # 'good' | 'bad' | 'gray'
         elif i == stats.weeks_lived and not stats.over_expectancy:
-            d.rounded_rectangle(box, radius=radius, fill=CURRENT)
+            put("current", row, col)
         else:
-            d.rounded_rectangle(box, radius=radius, fill=FUTURE_FILL, outline=FUTURE_EDGE)
+            put("future", row, col)
 
     buf = io.BytesIO()
-    img.save(buf, format="PNG")
+    img.save(buf, format="PNG", compress_level=1)
     return buf.getvalue()
 
 
