@@ -6,6 +6,7 @@ Dushanba: o'tgan hafta haqida so'rov (yashil/qizil). Juma 13:30: kalendar.
 import asyncio
 import html
 import logging
+import time
 from datetime import date, datetime, timedelta
 
 from aiogram import Bot, Dispatcher, F, Router
@@ -27,6 +28,7 @@ from aiogram.types import (
     User as TgUser,
     WebAppInfo,
 )
+from aiogram.exceptions import TelegramForbiddenError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
@@ -35,6 +37,7 @@ from config import (
     ADMIN_ID,
     ADMIN_IDS,
     BOT_TOKEN,
+    BROADCAST_WINDOW_MINUTES,
     CALENDAR_DAY_OF_WEEK,
     CALENDAR_HOUR,
     CALENDAR_MINUTE,
@@ -55,6 +58,17 @@ log = logging.getLogger("mundabit")
 router = Router()
 
 
+@router.message.outer_middleware()
+async def clear_blocked_flag(handler, event, data):
+    """Foydalanuvchi yozdi — demak bot bloklanmagan. Bloklangan deb
+    belgilanganlar tarqatishdan chiqarilgan; yozgan zahoti qaytariladi."""
+    user = db.get_user(event.from_user.id)
+    if user and user.get("blocked"):
+        db.set_blocked(event.from_user.id, False)
+        log.info("Blokdan chiqdi: user_id=%s", event.from_user.id)
+    return await handler(event, data)
+
+
 class Onboarding(StatesGroup):
     lang = State()
     name = State()
@@ -63,9 +77,13 @@ class Onboarding(StatesGroup):
 
 
 class Settings(StatesGroup):
-    """Sozlamalar orqali ma'lumotni o'zgartirish holatlari."""
+    """Sozlamalar orqali ma'lumotni o'zgartirish holatlari.
+
+    Tug'ilgan sana ataylab yo'q — u faqat admin orqali o'zgartiriladi
+    (o'zgarganda db.change_birth_date baholarni real kalendar haftalariga
+    qarab ko'chiradi).
+    """
     name = State()
-    birth_date = State()
     gender = State()
     lang = State()
 
@@ -117,7 +135,6 @@ def settings_keyboard(lang: str) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=t(lang, "btn_name"))],
-            [KeyboardButton(text=t(lang, "btn_birth"))],
             [KeyboardButton(text=t(lang, "btn_gender"))],
             [KeyboardButton(text=t(lang, "btn_lang"))],
             [KeyboardButton(text=t(lang, "btn_back"))],
@@ -186,8 +203,12 @@ def user_stats(user: dict):
 async def send_calendar(bot: Bot, user: dict, prefix: str = "") -> None:
     lang = user.get("lang") or "uz"
     stats = user_stats(user)
-    png = render_life_poster(stats, db.get_week_ratings(user["user_id"]), lang,
-                             user.get("gender"))
+    # Render ~120 ms CPU oladi; alohida oqimda bajarilsa bot shu vaqtda ham
+    # boshqa xabarlarga javob bera oladi.
+    png = await asyncio.to_thread(
+        render_life_poster, stats, db.get_week_ratings(user["user_id"]), lang,
+        user.get("gender"),
+    )
     caption = stats_caption(stats, lang)
     if prefix:
         caption = f"{prefix}\n\n{caption}"
@@ -316,8 +337,8 @@ async def onboarding_non_text(message: Message, state: FSMContext) -> None:
 @router.message(Command("hayot"))
 async def cmd_hayot(message: Message) -> None:
     user = db.get_user(message.from_user.id)
-    if not user or not user.get("gender"):
-        await message.answer(t(user_lang(user, message.from_user), "not_registered"))
+    if not user:
+        await message.answer(t(user_lang(None, message.from_user), "not_registered"))
         return
     await send_calendar(message.bot, user)
 
@@ -388,12 +409,6 @@ async def settings_ask_name(message: Message, state: FSMContext) -> None:
                              back_keyboard)
 
 
-@router.message(F.text.in_(btn_variants("btn_birth")))
-async def settings_ask_birth(message: Message, state: FSMContext) -> None:
-    await ask_settings_field(message, state, Settings.birth_date, "ask_new_birth",
-                             back_keyboard)
-
-
 @router.message(F.text.in_(btn_variants("btn_gender")))
 async def settings_ask_gender(message: Message, state: FSMContext) -> None:
     await ask_settings_field(message, state, Settings.gender, "ask_gender",
@@ -419,22 +434,6 @@ async def settings_save_name(message: Message, state: FSMContext) -> None:
         return
     db.update_user(message.from_user.id, name=name)
     await show_settings(message, state, prefix=t(lang, "updated"))
-
-
-@router.message(Settings.birth_date, F.text)
-async def settings_save_birth(message: Message, state: FSMContext) -> None:
-    if message.text in btn_variants("btn_back"):
-        await show_settings(message, state)
-        return
-    user = db.get_user(message.from_user.id)
-    lang = user_lang(user, message.from_user)
-    birth = parse_birth_date(message.text)
-    if birth is None:
-        await message.answer(t(lang, "bad_birth"))
-        return
-    db.update_user(message.from_user.id, birth_date=birth.isoformat())
-    await show_settings(message, state, prefix=t(lang, "updated"))
-    await send_calendar(message.bot, db.get_user(message.from_user.id))
 
 
 @router.message(Settings.gender, F.text)
@@ -477,7 +476,6 @@ async def settings_save_lang(message: Message, state: FSMContext) -> None:
 
 
 @router.message(Settings.name)
-@router.message(Settings.birth_date)
 @router.message(Settings.gender)
 @router.message(Settings.lang)
 async def settings_non_text(message: Message) -> None:
@@ -561,6 +559,7 @@ def admin_summary(lang: str) -> str:
 
     lines = [
         _plain_row(t(lang, "stats_total"), total),
+        _plain_row(t(lang, "st_blocked"), sum(1 for u in users if u.get("blocked"))),
         "",
         t(lang, "sec_gender"),
         _row(t(lang, "st_male"), len(males), total),
@@ -676,42 +675,90 @@ async def admin_users_nav(callback: CallbackQuery) -> None:
         pass
 
 
+# ── Tushunilmagan xabarlar ─────────────────────────────────────────────────────
+# Eng oxirida turishi shart: undan yuqoridagi handlerlarning hech biri mos
+# kelmasa, shu ishlaydi. Ilgari bunday xabarga bot umuman javob bermasdi.
+
+@router.message(Onboarding.lang)
+@router.message(Onboarding.gender)
+async def onboarding_use_buttons(message: Message, state: FSMContext) -> None:
+    """Til va jins tugma orqali tanlanadi — matn yozilsa eslatib qo'yiladi."""
+    data = await state.get_data()
+    lang = data.get("lang") or user_lang(None, message.from_user)
+    await message.answer(t(lang, "use_buttons"))
+
+
+@router.message()
+async def unknown_message(message: Message) -> None:
+    user = db.get_user(message.from_user.id)
+    lang = user_lang(user, message.from_user)
+    if not user:
+        await message.answer(t(lang, "not_registered"))
+        return
+    await message.answer(t(lang, "unknown"),
+                         reply_markup=main_keyboard(lang, message.from_user.id))
+
+
 # ── Rejalashtirilgan yuborishlar ─────────────────────────────────────────────
 
+BROADCAST_MIN_DELAY = 0.1     # eng tez sur'at, userlar ko'p bo'lganda
+
+
+async def spread_send(bot: Bot, users: list[dict], send_one, label: str) -> None:
+    """Xabarlarni belgilangan oyna bo'ylab tekis yoyib yuboradi.
+
+    Har xabardan keyin "qolgan vaqt ÷ qolgan foydalanuvchi" qadar kutiladi —
+    sur'at o'zini to'g'irlaydi: 5 ta user bo'lsa bir necha soniyada tugaydi,
+    1 000 ta bo'lsa soatga tekis yoyiladi, oynaga sig'masa minimal oraliqda
+    davom etadi. Yoyilgani uchun protsessor bir joyda tiqilib qolmaydi va bot
+    tarqatish paytida ham odatdagidek javob beradi.
+
+    Botni bloklagan foydalanuvchi belgilanadi va keyingi tarqatishlarga
+    qo'shilmaydi (qaytib yozsa, avtomatik tiklanadi).
+    """
+    window = BROADCAST_WINDOW_MINUTES * 60
+    started = time.monotonic()
+    sent = blocked = failed = 0
+    for idx, user in enumerate(users):
+        try:
+            await send_one(bot, user)
+            sent += 1
+        except TelegramForbiddenError:
+            db.set_blocked(user["user_id"], True)
+            blocked += 1
+        except Exception as e:
+            failed += 1
+            log.warning("%s yuborilmadi user_id=%s: %s", label, user["user_id"], e)
+        left = len(users) - idx - 1
+        if not left:
+            break
+        remaining = window - (time.monotonic() - started)
+        await asyncio.sleep(max(BROADCAST_MIN_DELAY, remaining / left))
+    log.info("%s yakunlandi: %d yuborildi, %d bloklagan, %d xato, %.1f daqiqa",
+             label, sent, blocked, failed, (time.monotonic() - started) / 60)
+
+
 async def monday_feedback(bot: Bot) -> None:
-    """Dushanba: o'tgan hafta haqida so'rov."""
-    users = db.get_all_users()
-    log.info("Dushanba so'rovi: %d ta foydalanuvchi", len(users))
-    for user in users:
-        if not user.get("gender"):
-            continue
+    """Dushanba 08:00–09:00: o'tgan hafta haqida so'rov."""
+    users = db.get_active_users()
+    log.info("Dushanba so'rovi boshlandi: %d ta foydalanuvchi", len(users))
+
+    async def send_one(bot: Bot, user: dict) -> None:
         lang = user.get("lang") or "uz"
         last_week = user_stats(user).weeks_lived - 1
         if last_week < 0:
-            continue
-        try:
-            await bot.send_message(
-                user["user_id"],
-                t(lang, "weekly_q"),
-                reply_markup=rate_keyboard(lang, last_week),
-            )
-        except Exception as e:
-            log.warning("Dushanba yuborilmadi user_id=%s: %s", user["user_id"], e)
-        await asyncio.sleep(0.1)
+            return
+        await bot.send_message(user["user_id"], t(lang, "weekly_q"),
+                               reply_markup=rate_keyboard(lang, last_week))
+
+    await spread_send(bot, users, send_one, "Dushanba so'rovi")
 
 
 async def friday_calendar(bot: Bot) -> None:
-    """Juma 13:30: hayot kalendarini yuborish."""
-    users = db.get_all_users()
-    log.info("Juma kalendari: %d ta foydalanuvchi", len(users))
-    for user in users:
-        if not user.get("gender"):
-            continue
-        try:
-            await send_calendar(bot, user)
-        except Exception as e:
-            log.warning("Juma yuborilmadi user_id=%s: %s", user["user_id"], e)
-        await asyncio.sleep(0.1)
+    """Juma 13:00–14:00: hayot kalendarini yuborish."""
+    users = db.get_active_users()
+    log.info("Juma kalendari boshlandi: %d ta foydalanuvchi", len(users))
+    await spread_send(bot, users, send_calendar, "Juma kalendari")
 
 
 # ── Ishga tushirish ──────────────────────────────────────────────────────────
@@ -730,12 +777,10 @@ async def main() -> None:
     # Buyruqlar ro'yxati Telegram interfeysi tiliga qarab ko'rsatiladi
     await bot.set_my_commands([
         BotCommand(command="start", description="Boshlash"),
-        BotCommand(command="hayot", description="Hayot kalendari"),
         BotCommand(command="help", description="Yordam"),
     ])
     await bot.set_my_commands([
         BotCommand(command="start", description="Начать"),
-        BotCommand(command="hayot", description="Календарь жизни"),
         BotCommand(command="help", description="Помощь"),
     ], language_code="ru")
     if WEBAPP_URL:

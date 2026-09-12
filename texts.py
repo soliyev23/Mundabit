@@ -38,9 +38,9 @@ BOT = {
         "btn_male": "Erkak",
         "btn_female": "Ayol",
         "saved": (
-            "🔔 Har juma 14:00 da hayot kalendaringiz yuboriladi, "
-            "har dushanba o'tgan hafta haqida so'rayman.\n\n"
-            "/hayot — kalendarni ko'rish"
+            "🔔 Har juma <b>13:00–14:00</b> oralig'ida hayot kalendaringiz yuboriladi, "
+            "har dushanba ertalab o'tgan hafta haqida so'rayman.\n\n"
+            "⚙️ Sozlamalar — ism, jins va tilni o'zgartirish."
         ),
         "weekly_q": "O'tgan hafta qanday o'tdi?",
         "btn_good": "🟢 Samarali",
@@ -50,14 +50,14 @@ BOT = {
         "text_only": "Iltimos, matn ko'rinishida yozing 🙏",
         "help": (
             "<b>Mundabit</b> — vaqt qadrini anglash boti.\n\n"
-            "/start — ro'yxatdan o'tish\n"
-            "/hayot — hayot kalendarini ko'rish\n\n"
-            "Har juma 14:00 — kalendar, har dushanba — hafta yakuni so'rovi."
+            "/start — kalendarni ko'rish va menyuni ochish\n"
+            "⚙️ Sozlamalar — ism, jins va til\n\n"
+            "Har juma 13:00–14:00 — hayot kalendari.\n"
+            "Har dushanba ertalab — o'tgan hafta qanday o'tdi degan so'rov."
         ),
         "webapp_btn": "Ilovada ko'rish",
         "btn_settings": "⚙️ Sozlamalar",
         "btn_name": "✏️ Ismni o'zgartirish",
-        "btn_birth": "🎂 Tug'ilgan sanani o'zgartirish",
         "btn_gender": "⚧ Jinsni o'zgartirish",
         "btn_lang": "🌐 Tilni o'zgartirish",
         "ask_lang": "Tilni tanlang:",
@@ -74,11 +74,12 @@ BOT = {
             "Nimani o'zgartiramiz?"
         ),
         "ask_new_name": "Yangi ismingizni yozing:",
-        "ask_new_birth": (
-            "Yangi tug'ilgan sanangizni kiriting.\n"
-            "Format: <code>KK.OO.YYYY</code> — masalan: <code>15.06.2000</code>"
-        ),
         "updated": "✅ Saqlandi",
+        "unknown": (
+            "Tushunmadim 🙂\n"
+            "Quyidagi tugmalardan foydalaning yoki /start bosing."
+        ),
+        "use_buttons": "Yuqoridagi tugmalardan birini tanlang 🙏",
         # Admin panel
         "btn_admin": "🛠 Admin Panel",
         "btn_users": "👥 Foydalanuvchilar",
@@ -87,6 +88,7 @@ BOT = {
         "stats_title": "📊 <b>Statistika</b>",
         "stats_empty": "Hali foydalanuvchi yo'q.",
         "stats_total": "JAMI",
+        "st_blocked": "Bloklagan",
         "sec_gender": "JINS",
         "sec_lang": "TIL",
         "sec_age": "YOSH",
@@ -137,9 +139,9 @@ BOT = {
         "btn_male": "Мужской",
         "btn_female": "Женский",
         "saved": (
-            "🔔 Каждую пятницу в 14:00 вы получите календарь жизни, "
-            "каждый понедельник я спрошу о прошедшей неделе.\n\n"
-            "/hayot — посмотреть календарь"
+            "🔔 Каждую пятницу с <b>13:00 до 14:00</b> вы получите календарь жизни, "
+            "каждый понедельник утром спрошу о прошедшей неделе.\n\n"
+            "⚙️ Настройки — имя, пол и язык."
         ),
         "weekly_q": "Как прошла ваша неделя?",
         "btn_good": "🟢 Продуктивно",
@@ -149,14 +151,14 @@ BOT = {
         "text_only": "Пожалуйста, напишите текстом 🙏",
         "help": (
             "<b>Mundabit</b> — бот, помогающий ценить время.\n\n"
-            "/start — регистрация\n"
-            "/hayot — календарь жизни\n\n"
-            "Каждую пятницу в 14:00 — календарь, каждый понедельник — опрос о неделе."
+            "/start — посмотреть календарь и открыть меню\n"
+            "⚙️ Настройки — имя, пол и язык\n\n"
+            "Каждую пятницу с 13:00 до 14:00 — календарь жизни.\n"
+            "Каждый понедельник утром — опрос о прошедшей неделе."
         ),
         "webapp_btn": "Открыть приложение",
         "btn_settings": "⚙️ Настройки",
         "btn_name": "✏️ Изменить имя",
-        "btn_birth": "🎂 Изменить дату рождения",
         "btn_gender": "⚧ Изменить пол",
         "btn_lang": "🌐 Изменить язык",
         "ask_lang": "Выберите язык:",
@@ -173,11 +175,12 @@ BOT = {
             "Что изменим?"
         ),
         "ask_new_name": "Напишите новое имя:",
-        "ask_new_birth": (
-            "Введите новую дату рождения.\n"
-            "Формат: <code>ДД.ММ.ГГГГ</code> — например: <code>15.06.2000</code>"
-        ),
         "updated": "✅ Сохранено",
+        "unknown": (
+            "Не понял 🙂\n"
+            "Воспользуйтесь кнопками ниже или нажмите /start."
+        ),
+        "use_buttons": "Выберите один из вариантов выше 🙏",
         # Админ-панель
         "btn_admin": "🛠 Админ-панель",
         "btn_users": "👥 Пользователи",
@@ -186,6 +189,7 @@ BOT = {
         "stats_title": "📊 <b>Статистика</b>",
         "stats_empty": "Пользователей пока нет.",
         "stats_total": "ВСЕГО",
+        "st_blocked": "Заблокир.",
         "sec_gender": "ПОЛ",
         "sec_lang": "ЯЗЫК",
         "sec_age": "ВОЗРАСТ",

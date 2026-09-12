@@ -1,7 +1,7 @@
 """SQLite baza: foydalanuvchilar va haftalik baholar."""
 import sqlite3
 from contextlib import contextmanager
-from datetime import date
+from datetime import date, timedelta
 
 from config import DB_PATH
 
@@ -47,6 +47,9 @@ def init_db() -> None:
             c.execute("ALTER TABLE users ADD COLUMN lang TEXT NOT NULL DEFAULT 'uz'")
         if "gender" not in cols:
             c.execute("ALTER TABLE users ADD COLUMN gender TEXT")  # 'm' | 'f' | NULL
+        if "blocked" not in cols:
+            # Botni bloklagan foydalanuvchi: tarqatishga qo'shilmaydi
+            c.execute("ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0")
         # Olib tashlangan challenge bo'limining jadvallarini tozalash
         for table in ("challenge_checkins", "challenge_members", "challenges",
                       "space_members", "spaces"):
@@ -71,7 +74,7 @@ def save_user(user_id: int, name: str, birth_date: date, lang: str, gender: str)
 
 def update_user(user_id: int, **fields) -> None:
     """Faqat berilgan ustunlarni yangilaydi (sozlamalar uchun)."""
-    allowed = ("name", "birth_date", "lang", "gender")
+    allowed = ("name", "lang", "gender", "blocked")   # birth_date → change_birth_date()
     cols = {k: v for k, v in fields.items() if k in allowed}
     if not cols:
         return
@@ -90,10 +93,62 @@ def get_user(user_id: int) -> dict | None:
 
 
 def get_all_users() -> list[dict]:
-    """Ro'yxatdan o'tish tartibida (eng birinchi user — 1-o'rinda)."""
+    """Hammasi, ro'yxatdan o'tish tartibida (eng birinchi user — 1-o'rinda)."""
     with _conn() as c:
         rows = c.execute("SELECT * FROM users ORDER BY created_at, user_id").fetchall()
         return [dict(r) for r in rows]
+
+
+def get_active_users() -> list[dict]:
+    """Tarqatish uchun: botni bloklaganlar chiqarib tashlanadi."""
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT * FROM users WHERE blocked = 0 ORDER BY created_at, user_id"
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def set_blocked(user_id: int, blocked: bool) -> None:
+    with _conn() as c:
+        c.execute("UPDATE users SET blocked = ? WHERE user_id = ?",
+                  (1 if blocked else 0, user_id))
+
+
+def change_birth_date(user_id: int, new_birth: date) -> int:
+    """Tug'ilgan sanani o'zgartiradi va baholarni ko'chiradi.
+
+    Baho hayotdagi hafta raqamiga bog'langan, raqam esa tug'ilgan sanadan
+    hisoblanadi. Sana o'zgarsa raqamlar siljib, baholar boshqa haftaga tushib
+    qolardi. Shuning uchun har bahoning haqiqiy kalendar sanasi topilib, yangi
+    sanaga nisbatan qayta raqamlanadi — foydalanuvchi baholagan real haftalar
+    o'z joyida qoladi. Yangi tug'ilgan sanadan oldinga tushib qolgan baholar
+    o'chiriladi. Nechta baho saqlanib qolgani qaytariladi.
+    """
+    with _conn() as c:
+        row = c.execute("SELECT birth_date FROM users WHERE user_id = ?",
+                        (user_id,)).fetchone()
+        if row is None:
+            return 0
+        old_birth = date.fromisoformat(row["birth_date"])
+        ratings = c.execute(
+            "SELECT week_index, rating FROM week_ratings WHERE user_id = ?", (user_id,)
+        ).fetchall()
+
+        moved: dict[int, str] = {}
+        for r in ratings:
+            week_start = old_birth + timedelta(days=r["week_index"] * 7)
+            new_index = (week_start - new_birth).days // 7
+            if new_index >= 0:
+                moved[new_index] = r["rating"]
+
+        c.execute("DELETE FROM week_ratings WHERE user_id = ?", (user_id,))
+        c.executemany(
+            "INSERT INTO week_ratings (user_id, week_index, rating) VALUES (?, ?, ?)",
+            [(user_id, i, rt) for i, rt in moved.items()],
+        )
+        c.execute("UPDATE users SET birth_date = ? WHERE user_id = ?",
+                  (new_birth.isoformat(), user_id))
+        return len(moved)
 
 
 def set_week_rating(user_id: int, week_index: int, rating: str) -> None:

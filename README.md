@@ -1,30 +1,56 @@
 # Mundabit — intizom va vaqtni anglash boti
 
-Telegram bot: umringizni haftalarga bo'lib ("Hayot Kalendari"), qancha yashaganingiz
-va O'zbekiston o'rtacha umr yoshigacha (erkak 72 / ayol 76) qancha qolganini
-ko'rsatadi. Ikki til: o'zbek/rus.
+Telegram bot: umringizni haftalarga bo'lib ("Hayot Kalendari"), qancha
+yashaganingiz va O'zbekiston o'rtacha umr yoshigacha (erkak 72 / ayol 76 /
+belgilanmagan 74) qancha qolganini ko'rsatadi. Ikki til: o'zbek va rus.
 
-Oqim: /start → til → ism → tug'ilgan sana → jins → kalendar.
+Oqim: `/start` → til → ism → tug'ilgan sana → jins → kalendar.
 
-- **Dushanba 08:00** — "O'tgan hafta qanday o'tdi?" so'rovi (🟢 Samarali / 🔴 Behuda);
-  javob kalendardagi katakni yashil/qizil qiladi. Baholanmagan o'tmish — kulrang + x.
-- **Juma 13:30** — barcha foydalanuvchilarga yangilangan kalendar yuboriladi.
-- **/admin** (faqat `ADMIN_ID`) — userlar soni/ro'yxati, jins va til kesimi,
-  o'rtacha yosh, baholar statistikasi.
+- **Dushanba 08:00–09:00** — "O'tgan hafta qanday o'tdi?" so'rovi
+  (🟢 Samarali / 🔴 Behuda); javob kalendardagi katakni yashil yoki qizil
+  qiladi. Baholanmagan o'tmish — kulrang katak va ustida ✕.
+- **Juma 13:00–14:00** — barcha foydalanuvchilarga yangilangan kalendar.
+
+Ikkala tarqatish ham bir zumda emas, **shu oyna bo'ylab yoyib** yuboriladi
+(`BROADCAST_WINDOW_MINUTES`). Sur'at o'zini to'g'irlaydi: foydalanuvchi kam
+bo'lsa bir necha soniyada tugaydi, ko'p bo'lsa oynaga tekis taqsimlanadi.
+Shuning uchun protsessor tiqilib qolmaydi va bot tarqatish paytida ham
+odatdagidek javob beradi.
+
+## Foydalanuvchi interfeysi
+
+Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
+
+- **⚙️ Sozlamalar** — ism, jins va tilni o'zgartirish. Joriy ma'lumot ham shu
+  yerda ko'rinadi. Jins yoki til o'zgarsa kalendar darhol qayta yuboriladi.
+- **🛠 Admin Panel** — faqat `ADMIN_IDS` ichidagilarga:
+  - **👥 Foydalanuvchilar** — sahifalanadigan jadval (№ · ism · yosh · jins · til)
+  - **📊 Statistika** — jami / jins / til / yosh / hafta baholari / ro'yxatdan
+    o'tish kesimida, foizlar va diagramma bilan
+
+Tug'ilgan sanani foydalanuvchi o'zi o'zgartira olmaydi — bu keyinchalik faqat
+admin orqali qilinadi. Sana o'zgarganda `db.change_birth_date()` eski baholarni
+**haqiqiy kalendar haftalariga qarab qayta raqamlaydi**, ya'ni baholangan real
+haftalar o'z joyida qoladi.
+
+Botni bloklagan foydalanuvchi avtomatik belgilanadi va tarqatishga
+qo'shilmaydi; qaytib yozsa, o'zi tiklanadi.
+
+## Buyruqlar
+
+| Buyruq | Vazifasi |
+|---|---|
+| `/start` | Ro'yxatdan o'tish; keyinchalik — kalendar va menyu |
+| `/help` | Yordam |
+| `/hayot` | Kalendarni qayta ko'rish (ro'yxatda ko'rsatilmaydi) |
+| `/sozlamalar` | Sozlamalar menyusi (ro'yxatda ko'rsatilmaydi) |
+| `/admin` | Admin panel (faqat `ADMIN_IDS`) |
 
 ## Ishga tushirish
 
-1. Telegram'da [@BotFather](https://t.me/BotFather) ga kiring → `/newbot` → bot nomi
-   va username bering → **token** oling.
-
-2. `.env` fayl yarating:
-
-   ```bash
-   cp .env.example .env
-   # .env ichiga tokeningizni yozing
-   ```
-
-3. Bog'liqliklarni o'rnating va ishga tushiring:
+1. [@BotFather](https://t.me/BotFather) dan token oling.
+2. `.env` faylini yarating: `cp .env.example .env`, ichiga tokenni yozing.
+3. Bog'liqliklar va ishga tushirish:
 
    ```bash
    python3 -m venv .venv
@@ -32,22 +58,13 @@ Oqim: /start → til → ism → tug'ilgan sana → jins → kalendar.
    .venv/bin/python bot.py
    ```
 
-## Buyruqlar
-
-| Buyruq | Vazifasi |
-|---|---|
-| `/start` | Ro'yxatdan o'tish: ism va tug'ilgan sana |
-| `/hayot` | Hayot xaritasini qayta ko'rish |
-| `/eslatma` | Haftalik eslatmani yoqish/o'chirish |
-| `/help` | Yordam |
-
 ## Mini App
 
-`webapp/index.html` — Telegram Web App: hayot haftalari animatsiyalangan canvas'da,
-foizlar va progress. Telegram temasiga (light/dark) avtomatik moslashadi.
+`webapp/index.html` — Telegram Web App: hayot haftalari canvas'da, foizlar va
+progress; Telegram temasiga (light/dark) va foydalanuvchi tiliga moslashadi.
 
 Bot ishga tushganda `WEBAPP_PORT` (8080) da server ochiladi. Telegram ichida
-ko'rinishi uchun HTTPS manzil kerak — lokal test uchun tunnel oching:
+ko'rinishi uchun HTTPS manzil kerak:
 
 ```bash
 cloudflared tunnel --url http://localhost:8080
@@ -57,12 +74,11 @@ cloudflared tunnel --url http://localhost:8080
 `WEBAPP_URL` to'ldirilgach, har bir poster ostida "Ilovada ko'rish" tugmasi va
 chatda menyu tugmasi paydo bo'ladi. Bo'sh qolsa, bot Mini App'siz ishlayveradi.
 
-Brauzerda tez ko'rish (Telegram'siz, namunaviy ma'lumot bilan):
-`http://localhost:8080/` yoki qorong'i tema uchun `http://localhost:8080/?theme=dark`
+Brauzerda tez ko'rish (namunaviy ma'lumot bilan): `http://localhost:8080/`
 
-## Serverda (Oracle Test, Oracle Cloud)
+## Serverda (Oracle, Oracle Cloud)
 
-Bot `/opt/mundabit` da systemd xizmati sifatida ishlaydi (`ssh oracle-test`):
+Bot `/opt/mundabit` da systemd xizmati sifatida ishlaydi:
 
 ```bash
 sudo systemctl status mundabit       # holat
@@ -70,36 +86,55 @@ sudo journalctl -u mundabit -f       # jonli loglar
 sudo systemctl restart mundabit      # qayta ishga tushirish
 ```
 
-`deploy/start.sh` avval `cloudflared` quick tunnel ochib, chiqqan HTTPS manzilni
-`WEBAPP_URL` sifatida botga beradi (Mini App uchun), keyin botni ishga tushiradi.
-Har restartda tunnel manzili yangilanadi — eski xabarlardagi tugmalar ishlamay
-qoladi, `/hayot` bosib yangi tugma olinadi. Doimiy domen ulangach, tunnel o'rniga
-nginx/Caddy + Let's Encrypt qo'yiladi.
+`start.sh` avval `cloudflared` quick tunnel ochib, chiqqan HTTPS manzilni
+`WEBAPP_URL` sifatida botga beradi, keyin botni ishga tushiradi. Har restartda
+tunnel manzili yangilanadi — eski xabarlardagi Mini App tugmalari ishlamay
+qoladi. Doimiy domen ulangach, tunnel o'rniga nginx/Caddy + Let's Encrypt.
 
-Yangi kodni yuklash (Mac'dan):
+## Kod yuklash — git orqali
+
+Markaziy (bare) repo shu serverning o'zida: `/home/opc/git/mundabit.git`.
+Server va Mac shunga ulanadi, GitHub ishlatilmaydi.
 
 ```bash
-rsync -az --delete -e ssh --exclude .venv --exclude __pycache__ --exclude 'namuna_*.png' \
-  --exclude tunnel.log ./ oracle-test:/opt/mundabit/
-ssh oracle-test "sudo systemctl restart mundabit"
+# Mac'ni birinchi marta ulash
+git remote add origin oracle-test:git/mundabit.git
+git fetch origin && git checkout -b main --track origin/main
 ```
 
-Diqqat: `--delete` bilan rsync serverdagi `.env` va `mundabit.db` ni ham lokal
-nusxa bilan almashtiradi — baza serverda o'zgargan bo'lsa, avval uni yuklab oling
-(`rsync oracle-test:/opt/mundabit/mundabit.db ./`) yoki `--exclude mundabit.db --exclude .env` qo'shing.
+Ish tartibi (ikkala tomonda ham):
+
+```bash
+git pull                                   # tahrirdan OLDIN
+# ... tahrir ...
+git add -A && git commit -m "..." && git push
+sudo systemctl restart mundabit            # serverda, bot kodi o'zgargan bo'lsa
+```
+
+> **`rsync` ishlatilmaydi.** Eski `rsync --delete` buyrug'ining exclude
+> ro'yxatida `.git` yo'q edi — u serverdagi repo'ni o'chirib yuboradi.
 
 ## Tuzilma
 
-- `bot.py` — asosiy bot: /start oqimi (FSM), buyruqlar, haftalik scheduler
+- `bot.py` — handlerlar, FSM, sozlamalar, admin panel, tarqatish
 - `visual.py` — statistika hisoblash va "Life in Weeks" PNG poster (Pillow)
-- `webserver.py` — Mini App server: statik sahifa + initData imzosi tekshiriladigan API
+- `texts.py` — barcha matnlar, o'zbek va rus tillarida
+- `db.py` — SQLite baza (foydalanuvchilar va hafta baholari)
+- `webserver.py` — Mini App server: statik sahifa + initData imzosi tekshiruvi
 - `webapp/index.html` — Mini App frontend
-- `db.py` — SQLite baza (foydalanuvchilar)
-- `config.py` — sozlamalar (.env orqali)
+- `config.py` — sozlamalar (`.env` orqali)
+- `deploy/` — systemd unit va ishga tushirish skripti
 
 ## Sozlamalar (.env)
 
-- `LIFE_EXPECTANCY_YEARS` — o'rtacha umr yoshi (standart: 70)
-- `TIMEZONE` — vaqt mintaqasi (standart: Asia/Tashkent)
-- `NOTIFY_DAY_OF_WEEK`, `NOTIFY_HOUR`, `NOTIFY_MINUTE` — eslatma vaqti
-  (standart: dushanba 08:00)
+| O'zgaruvchi | Standart | Izoh |
+|---|---|---|
+| `BOT_TOKEN` | — | @BotFather dan |
+| `LIFE_EXPECTANCY_MALE` / `_FEMALE` / `_DEFAULT` | 72 / 76 / 74 | o'rtacha umr yoshi |
+| `TIMEZONE` | `Asia/Tashkent` | |
+| `NOTIFY_DAY_OF_WEEK` / `_HOUR` / `_MINUTE` | mon / 8 / 0 | hafta yakuni so'rovi |
+| `CALENDAR_DAY_OF_WEEK` / `_HOUR` / `_MINUTE` | fri / 13 / 0 | kalendar oynasi boshlanishi |
+| `BROADCAST_WINDOW_MINUTES` | 60 | tarqatish shu oyna bo'ylab yoyiladi |
+| `ADMIN_IDS` | — | vergul bilan; birinchisiga yangi user xabari boradi |
+| `WEBAPP_URL` / `WEBAPP_PORT` | — / 8080 | Mini App |
+| `DB_PATH` | `mundabit.db` | |

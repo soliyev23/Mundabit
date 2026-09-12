@@ -27,10 +27,14 @@ NOTIFY_DAY_OF_WEEK = os.getenv("NOTIFY_DAY_OF_WEEK", "mon")
 NOTIFY_HOUR = int(os.getenv("NOTIFY_HOUR", "8"))
 NOTIFY_MINUTE = int(os.getenv("NOTIFY_MINUTE", "0"))
 
-# Juma: hayot kalendarini yuborish
+# Juma: hayot kalendarini yuborish (oyna boshlanishi)
 CALENDAR_DAY_OF_WEEK = os.getenv("CALENDAR_DAY_OF_WEEK", "fri")
-CALENDAR_HOUR = int(os.getenv("CALENDAR_HOUR", "14"))
+CALENDAR_HOUR = int(os.getenv("CALENDAR_HOUR", "13"))
 CALENDAR_MINUTE = int(os.getenv("CALENDAR_MINUTE", "0"))
+
+# Tarqatish bir zumda emas, shu oyna bo'ylab yoyiladi (daqiqa).
+# Juma 13:00 → 14:00, dushanba 08:00 → 09:00. Bot shu vaqtda ham javob beradi.
+BROADCAST_WINDOW_MINUTES = int(os.getenv("BROADCAST_WINDOW_MINUTES", "60"))
 
 # Adminlar (vergul bilan). Birinchisi — asosiy: yangi user haqida xabar unga boradi.
 ADMIN_IDS = [
