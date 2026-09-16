@@ -57,6 +57,9 @@ from webserver import start_webserver
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("mundabit")
+# Eslatma vazifasi har daqiqada ishlaydi — APScheduler har safar ikki satr
+# yozadi (kuniga ~2 900 ta). Jurnal cheklangani uchun faqat ogohlantirishlar.
+logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
 
 router = Router()
 
