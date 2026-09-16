@@ -461,10 +461,16 @@ async def process_rating(callback: CallbackQuery) -> None:
     lang = user_lang(user, callback.from_user)
     db.set_week_rating(callback.from_user.id, week_index, rating)
     await callback.answer(t(lang, "rating_saved"))
+    # Savol xabari butunlay o'chiriladi (chat toza qolsin). Telegram bot xabarini
+    # 48 soatgacha o'chirishga ruxsat beradi; kechroq javob berilsa o'chirish
+    # rad etiladi — u holda hech bo'lmasa tugmalar olib tashlanadi.
     try:
-        await callback.message.edit_reply_markup(reply_markup=None)
+        await callback.message.delete()
     except Exception:
-        pass
+        try:
+            await callback.message.edit_reply_markup(reply_markup=None)
+        except Exception:
+            pass
 
 
 # ── Sozlamalar ───────────────────────────────────────────────────────────────

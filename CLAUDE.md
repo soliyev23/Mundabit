@@ -110,6 +110,9 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Ro'yxatdan o'tishda ism va tug'ilgan sana Telegram profilidan taklif qilinadi
   (`get_chat().birthdate`, faqat maxfiylik «Everybody» va yil bor bo'lsa).
   `/start` matnida bot shiori yo'q, faqat salom va tasdiq savoli.
+- Dushanba so'roviga javob berilgach savol xabari butunlay o'chiriladi (faqat
+  tugmalar emas). 48 soatdan kech javobda o'chirish rad etiladi — u holda
+  tugmalar olib tashlanadi.
 
 ## Ochiq ishlar
 
