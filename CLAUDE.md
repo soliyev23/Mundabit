@@ -103,6 +103,13 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Tarqatish: juma 13:00–14:00, dushanba 08:00–09:00, oyna bo'ylab yoyib.
 - Tug'ilgan sanani foydalanuvchi o'zi o'zgartira olmaydi — keyinchalik faqat
   admin orqali (UI hali yozilmagan).
+- Admin panel faqat egasiga (`000000000`, `config.py` dagi standart). Boshqa
+  admin kerak bo'lsa faqat `.env` dagi `ADMIN_IDS` orqali — kodga qattiq
+  yozilmaydi (bir marta boshqa foydalanuvchi ID'si standartda qolib, unga
+  admin panel ko'ringan).
+- Ro'yxatdan o'tishda ism va tug'ilgan sana Telegram profilidan taklif qilinadi
+  (`get_chat().birthdate`, faqat maxfiylik «Everybody» va yil bor bo'lsa).
+  `/start` matnida bot shiori yo'q, faqat salom va tasdiq savoli.
 
 ## Ochiq ishlar
 
@@ -113,5 +120,7 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   (502 qaytardi).
 - Mini App hozir `cloudflared` quick tunnel'da — har restartda manzil
   o'zgaradi. Doimiy domen olingach nginx/Caddy + Let's Encrypt.
-- Server 1 OCPU / 6 GB (Oracle A1). Always Free kvotasi 4 OCPU gacha.
+- Server 2 OCPU / 12 GB (Oracle A1, 2026-09-15 da kattalashtirilgan). Always
+  Free kvotasi 4 OCPU / 24 GB gacha. `journald` vaqtinchalik: loglar reboot'da
+  o'chadi (`/var/log/journal` yo'q).
 - `users.notify` ustuni o'lik, ishlatilmaydi.

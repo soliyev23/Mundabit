@@ -4,7 +4,10 @@ Telegram bot: umringizni haftalarga bo'lib ("Hayot Kalendari"), qancha
 yashaganingiz va O'zbekiston o'rtacha umr yoshigacha (erkak 72 / ayol 76 /
 belgilanmagan 74) qancha qolganini ko'rsatadi. Ikki til: o'zbek va rus.
 
-Oqim: `/start` → til → ism → tug'ilgan sana → jins → kalendar.
+Oqim: `/start` → til → ism → tug'ilgan sana → jins → kalendar. Ism va tug'ilgan
+sana Telegram profilidan olinib, tasdiqlash uchun taklif qilinadi (sana — faqat
+foydalanuvchi uni hammaga ochiq qilgan va yilni ko'rsatgan bo'lsa); rad etilsa
+qo'lda kiritiladi.
 
 - **Dushanba 08:00–09:00** — "O'tgan hafta qanday o'tdi?" so'rovi
   (🟢 Samarali / 🔴 Behuda); javob kalendardagi katakni yashil yoki qizil
@@ -135,6 +138,6 @@ sudo systemctl restart mundabit            # serverda, bot kodi o'zgargan bo'lsa
 | `NOTIFY_DAY_OF_WEEK` / `_HOUR` / `_MINUTE` | mon / 8 / 0 | hafta yakuni so'rovi |
 | `CALENDAR_DAY_OF_WEEK` / `_HOUR` / `_MINUTE` | fri / 13 / 0 | kalendar oynasi boshlanishi |
 | `BROADCAST_WINDOW_MINUTES` | 60 | tarqatish shu oyna bo'ylab yoyiladi |
-| `ADMIN_IDS` | — | vergul bilan; birinchisiga yangi user xabari boradi |
+| `ADMIN_IDS` | egasi | vergul bilan; birinchisiga yangi user xabari boradi. Standart — faqat egasi |
 | `WEBAPP_URL` / `WEBAPP_PORT` | — / 8080 | Mini App |
 | `DB_PATH` | `mundabit.db` | |

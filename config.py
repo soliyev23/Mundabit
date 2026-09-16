@@ -36,9 +36,11 @@ CALENDAR_MINUTE = int(os.getenv("CALENDAR_MINUTE", "0"))
 # Juma 13:00 → 14:00, dushanba 08:00 → 09:00. Bot shu vaqtda ham javob beradi.
 BROADCAST_WINDOW_MINUTES = int(os.getenv("BROADCAST_WINDOW_MINUTES", "60"))
 
-# Adminlar (vergul bilan). Birinchisi — asosiy: yangi user haqida xabar unga boradi.
+# Adminlar (vergul bilan). Standart — faqat egasi; boshqa admin kerak bo'lsa
+# .env dagi ADMIN_IDS orqali, kodga qattiq yozilmaydi.
+# Birinchisi — asosiy: yangi user haqida xabar unga boradi.
 ADMIN_IDS = [
-    int(x) for x in os.getenv("ADMIN_IDS", "000000000,000000000").split(",") if x.strip()
+    int(x) for x in os.getenv("ADMIN_IDS", "000000000").split(",") if x.strip()
 ]
 ADMIN_ID = ADMIN_IDS[0]
 

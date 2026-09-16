@@ -1,7 +1,9 @@
 """Mundabit — intizom va vaqtni anglash boti.
 
 /start → til (uz/ru) → ism → tug'ilgan sana → jins → "Hayot Kalendari".
-Dushanba: o'tgan hafta haqida so'rov (yashil/qizil). Juma 13:30: kalendar.
+Ism va tug'ilgan sana Telegram profilidan olinib, tasdiqlash uchun taklif
+qilinadi (sana — foydalanuvchi uni ochiq qilgan va yil ko'rsatilgan bo'lsa).
+Dushanba: o'tgan hafta haqida so'rov (yashil/qizil). Juma 13:00: kalendar.
 """
 import asyncio
 import html
@@ -71,7 +73,9 @@ async def clear_blocked_flag(handler, event, data):
 
 class Onboarding(StatesGroup):
     lang = State()
+    confirm_name = State()     # profildagi ism taklif qilingan, tasdiq kutilmoqda
     name = State()
+    confirm_birth = State()    # profildagi sana taklif qilingan, tasdiq kutilmoqda
     birth_date = State()
     gender = State()
 
@@ -91,16 +95,17 @@ class Settings(StatesGroup):
 LANG_NAMES = {"uz": "O'zbekcha", "ru": "Русский"}
 
 
+def valid_birth(d: date) -> bool:
+    return d < date.today() and d.year >= 1900
+
+
 def parse_birth_date(text: str) -> date | None:
     text = text.strip().replace("/", ".").replace("-", ".")
     try:
         d = datetime.strptime(text, "%d.%m.%Y").date()
     except ValueError:
         return None
-    today = date.today()
-    if d >= today or d.year < 1900:
-        return None
-    return d
+    return d if valid_birth(d) else None
 
 
 def webapp_keyboard(lang: str) -> InlineKeyboardMarkup | None:
@@ -108,6 +113,14 @@ def webapp_keyboard(lang: str) -> InlineKeyboardMarkup | None:
         return None
     return InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text=t(lang, "webapp_btn"), web_app=WebAppInfo(url=WEBAPP_URL))
+    ]])
+
+
+def confirm_keyboard(lang: str, prefix: str, other_key: str) -> InlineKeyboardMarkup:
+    """«✅ Ha» / «✏️ Boshqa …» — callback: '<prefix>:ok' | '<prefix>:edit'."""
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=t(lang, "btn_yes"), callback_data=f"{prefix}:ok"),
+        InlineKeyboardButton(text=t(lang, other_key), callback_data=f"{prefix}:edit"),
     ]])
 
 
@@ -220,6 +233,53 @@ async def send_calendar(bot: Bot, user: dict, prefix: str = "") -> None:
     )
 
 
+async def profile_birth_date(bot: Bot, user_id: int) -> date | None:
+    """Telegram profilidagi tug'ilgan sana. Faqat foydalanuvchi uni hammaga
+    ochiq qilgan (maxfiylik: «Everybody») va yilni ko'rsatgan bo'lsa keladi;
+    aks holda None — sana qo'lda so'raladi."""
+    try:
+        chat = await bot.get_chat(user_id)
+    except Exception as e:
+        log.warning("get_chat user_id=%s: %s", user_id, e)
+        return None
+    bd = chat.birthdate
+    if not bd or not bd.year:
+        return None
+    try:
+        d = date(bd.year, bd.month, bd.day)
+    except ValueError:
+        return None
+    return d if valid_birth(d) else None
+
+
+async def ask_birth(message: Message, state: FSMContext, lang: str, user_id: int) -> None:
+    """Tug'ilgan sana: profilda bo'lsa tasdiqlash taklif qilinadi, bo'lmasa
+    qo'lda so'raladi. `message` bot xabari ham bo'lishi mumkin (callback),
+    shuning uchun user_id alohida beriladi."""
+    birth = await profile_birth_date(message.bot, user_id)
+    if birth:
+        await state.update_data(birth=birth.isoformat())
+        await message.answer(
+            t(lang, "confirm_birth").format(birth=fmt_date(birth, lang)),
+            reply_markup=confirm_keyboard(lang, "birth", "btn_other_birth"),
+        )
+        await state.set_state(Onboarding.confirm_birth)
+        return
+    await message.answer(t(lang, "ask_birth"))
+    await state.set_state(Onboarding.birth_date)
+
+
+async def ask_gender(message: Message, state: FSMContext, lang: str) -> None:
+    await message.answer(
+        t(lang, "ask_gender"),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text=t(lang, "btn_male"), callback_data="setgender:m"),
+            InlineKeyboardButton(text=t(lang, "btn_female"), callback_data="setgender:f"),
+        ]]),
+    )
+    await state.set_state(Onboarding.gender)
+
+
 # ── Ro'yxatdan o'tish ────────────────────────────────────────────────────────
 
 @router.message(CommandStart())
@@ -256,11 +316,54 @@ async def process_lang(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.message.delete()  # "Tilni tanlang" xabari o'chadi
     except Exception:
         pass
+    name = callback.from_user.full_name.strip()[:64]
+    if name:
+        await state.update_data(name=name)
+        await callback.message.answer(
+            f"{t(lang, 'greeting')}\n\n"
+            f"{t(lang, 'confirm_name').format(name=html.escape(name))}",
+            reply_markup=confirm_keyboard(lang, "name", "btn_other_name"),
+        )
+        await state.set_state(Onboarding.confirm_name)
+        return
+    await callback.message.answer(f"{t(lang, 'greeting')}\n\n{t(lang, 'ask_name')}")
+    await state.set_state(Onboarding.name)
+
+
+@router.callback_query(Onboarding.confirm_name, F.data.startswith("name:"))
+async def process_name_confirm(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data.get("lang", "uz")
+    await callback.answer()
+    try:
+        await callback.message.delete()  # "Ismingiz … mi?" xabari o'chadi
+    except Exception:
+        pass
+    if callback.data == "name:ok":
+        await ask_birth(callback.message, state, lang, callback.from_user.id)
+        return
     await callback.message.answer(t(lang, "ask_name"))
     await state.set_state(Onboarding.name)
 
 
+@router.callback_query(Onboarding.confirm_birth, F.data.startswith("birth:"))
+async def process_birth_confirm(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data.get("lang", "uz")
+    await callback.answer()
+    try:
+        await callback.message.delete()  # "Tug'ilgan sanangiz … mi?" xabari o'chadi
+    except Exception:
+        pass
+    if callback.data == "birth:ok":
+        await ask_gender(callback.message, state, lang)   # sana state'da allaqachon bor
+        return
+    await callback.message.answer(t(lang, "ask_birth"))
+    await state.set_state(Onboarding.birth_date)
+
+
 @router.message(Onboarding.name, F.text)
+@router.message(Onboarding.confirm_name, F.text)
 async def process_name(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     lang = data.get("lang", "uz")
@@ -269,11 +372,11 @@ async def process_name(message: Message, state: FSMContext) -> None:
         await message.answer(t(lang, "name_too_long"))
         return
     await state.update_data(name=name)
-    await message.answer(t(lang, "ask_birth"))
-    await state.set_state(Onboarding.birth_date)
+    await ask_birth(message, state, lang, message.from_user.id)
 
 
 @router.message(Onboarding.birth_date, F.text)
+@router.message(Onboarding.confirm_birth, F.text)
 async def process_birth_date(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     lang = data.get("lang", "uz")
@@ -282,14 +385,7 @@ async def process_birth_date(message: Message, state: FSMContext) -> None:
         await message.answer(t(lang, "bad_birth"))
         return
     await state.update_data(birth=birth.isoformat())
-    await message.answer(
-        t(lang, "ask_gender"),
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-            InlineKeyboardButton(text=t(lang, "btn_male"), callback_data="setgender:m"),
-            InlineKeyboardButton(text=t(lang, "btn_female"), callback_data="setgender:f"),
-        ]]),
-    )
-    await state.set_state(Onboarding.gender)
+    await ask_gender(message, state, lang)
 
 
 @router.callback_query(Onboarding.gender, F.data.startswith("setgender:"))
@@ -325,7 +421,9 @@ async def process_gender(callback: CallbackQuery, state: FSMContext) -> None:
         await notify_admin_new_user(callback.bot, user, callback.from_user.username)
 
 
+@router.message(Onboarding.confirm_name)
 @router.message(Onboarding.name)
+@router.message(Onboarding.confirm_birth)
 @router.message(Onboarding.birth_date)
 async def onboarding_non_text(message: Message, state: FSMContext) -> None:
     data = await state.get_data()

@@ -20,14 +20,16 @@ def age_label(year: int, age: int, lang: str) -> str:
 
 BOT = {
     "uz": {
-        "ask_name": (
-            "Assalomu alaykum! 🌙\n\n"
-            "<b>Mundabit</b> — vaqt qadrini anglatadigan bot.\n\n"
-            "Ismingizni yozing:"
-        ),
+        "greeting": "Assalomu alaykum! 🌙",
+        "confirm_name": "Ismingiz <b>{name}</b> mi?",
+        "btn_yes": "✅ Ha",
+        "btn_other_name": "✏️ Boshqa ism",
+        "ask_name": "Ismingizni yozing:",
         "name_too_long": "Iltimos, ismingizni qisqaroq yozing (64 belgigacha).",
+        "confirm_birth": "Tug'ilgan sanangiz <b>{birth}</b> mi?",
+        "btn_other_birth": "✏️ Boshqa sana",
         "ask_birth": (
-            "Rahmat! Endi <b>tug'ilgan sanangizni</b> kiriting.\n"
+            "<b>Tug'ilgan sanangizni</b> kiriting.\n"
             "Format: <code>KK.OO.YYYY</code> — masalan: <code>15.06.2000</code>"
         ),
         "bad_birth": (
@@ -121,14 +123,16 @@ BOT = {
         "caption": "Yashaldi: <b>{lived} hafta</b> — {p}%\nQoldi: <b>{left} hafta</b> — {q}%",
     },
     "ru": {
-        "ask_name": (
-            "Ассалому алайкум! 🌙\n\n"
-            "<b>Mundabit</b> — бот, помогающий ценить время.\n\n"
-            "Напишите ваше имя:"
-        ),
+        "greeting": "Ассалому алайкум! 🌙",
+        "confirm_name": "Вас зовут <b>{name}</b>?",
+        "btn_yes": "✅ Да",
+        "btn_other_name": "✏️ Другое имя",
+        "ask_name": "Напишите ваше имя:",
         "name_too_long": "Пожалуйста, напишите имя короче (до 64 символов).",
+        "confirm_birth": "Ваша дата рождения — <b>{birth}</b>?",
+        "btn_other_birth": "✏️ Другая дата",
         "ask_birth": (
-            "Спасибо! Теперь введите <b>дату рождения</b>.\n"
+            "Введите <b>дату рождения</b>.\n"
             "Формат: <code>ДД.ММ.ГГГГ</code> — например: <code>15.06.2000</code>"
         ),
         "bad_birth": (
