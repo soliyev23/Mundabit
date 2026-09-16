@@ -41,6 +41,18 @@ def init_db() -> None:
             )
             """
         )
+        c.execute(
+            """
+            CREATE TABLE IF NOT EXISTS reminders (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id    INTEGER NOT NULL,
+                text       TEXT NOT NULL,
+                time       TEXT NOT NULL,             -- 'HH:MM', TIMEZONE (Toshkent)
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+            """
+        )
+        c.execute("CREATE INDEX IF NOT EXISTS idx_reminders_time ON reminders(time)")
         # Migratsiya: eski jadvalga til va jins ustunlarini qo'shish
         cols = {row[1] for row in c.execute("PRAGMA table_info(users)")}
         if "lang" not in cols:
@@ -114,6 +126,16 @@ def set_blocked(user_id: int, blocked: bool) -> None:
                   (1 if blocked else 0, user_id))
 
 
+def delete_user(user_id: int) -> bool:
+    """Foydalanuvchini barcha ma'lumotlari bilan o'chiradi (baholar, eslatmalar).
+    Qayta /start bossa, yangidan ro'yxatdan o'tadi."""
+    with _conn() as c:
+        c.execute("DELETE FROM week_ratings WHERE user_id = ?", (user_id,))
+        c.execute("DELETE FROM reminders WHERE user_id = ?", (user_id,))
+        cur = c.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
+        return cur.rowcount > 0
+
+
 def change_birth_date(user_id: int, new_birth: date) -> int:
     """Tug'ilgan sanani o'zgartiradi va baholarni ko'chiradi.
 
@@ -185,3 +207,46 @@ def get_rating_summary() -> dict[str, int]:
             """
         ).fetchone()
         return {"good": row["good"], "bad": row["bad"], "raters": row["raters"]}
+
+
+# ── Eslatmalar ───────────────────────────────────────────────────────────────
+
+def get_reminders(user_id: int) -> list[dict]:
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT id, text, time FROM reminders WHERE user_id = ? ORDER BY time, id",
+            (user_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def add_reminder(user_id: int, text: str, time: str) -> int:
+    with _conn() as c:
+        cur = c.execute(
+            "INSERT INTO reminders (user_id, text, time) VALUES (?, ?, ?)",
+            (user_id, text, time),
+        )
+        return cur.lastrowid
+
+
+def delete_reminder(reminder_id: int, user_id: int) -> bool:
+    """Faqat o'zining eslatmasini o'chira oladi."""
+    with _conn() as c:
+        cur = c.execute("DELETE FROM reminders WHERE id = ? AND user_id = ?",
+                        (reminder_id, user_id))
+        return cur.rowcount > 0
+
+
+def reminders_due(hhmm: str) -> list[dict]:
+    """Shu daqiqaga belgilangan eslatmalar, botni bloklamaganlar uchun."""
+    with _conn() as c:
+        rows = c.execute(
+            """
+            SELECT r.id, r.user_id, r.text, r.time, u.lang
+            FROM reminders r JOIN users u ON u.user_id = r.user_id
+            WHERE r.time = ? AND u.blocked = 0
+            ORDER BY r.user_id, r.id
+            """,
+            (hhmm,),
+        ).fetchall()
+        return [dict(r) for r in rows]

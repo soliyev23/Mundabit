@@ -24,12 +24,25 @@ odatdagidek javob beradi.
 
 Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
 
+- **⏰ Eslatma** — har kuni belgilangan soatda keladigan shaxsiy eslatma.
+  Matn (100 belgigacha) va soat (`SS:DD`, Toshkent vaqti) so'raladi, bir
+  foydalanuvchida ko'pi bilan 5 ta. Ro'yxatdagi har biri bitta tugma bilan
+  o'chiriladi.
+- **💡 Taklif** — foydalanuvchi g'oyasini yozadi, u ismi va username'i bilan
+  adminga boradi. Admin xabardagi **✍️ Javob yozish** tugmasi orqali o'sha
+  odamga javob qaytaradi; javob unga "📩 Admin javobi" ko'rinishida yetadi.
 - **⚙️ Sozlamalar** — ism, jins va tilni o'zgartirish. Joriy ma'lumot ham shu
   yerda ko'rinadi. Jins yoki til o'zgarsa kalendar darhol qayta yuboriladi.
 - **🛠 Admin Panel** — faqat `ADMIN_IDS` ichidagilarga:
   - **👥 Foydalanuvchilar** — sahifalanadigan jadval (№ · ism · yosh · jins · til)
   - **📊 Statistika** — jami / jins / til / yosh / hafta baholari / ro'yxatdan
     o'tish kesimida, foizlar va diagramma bilan
+  - **📣 Xabar yuborish** — barcha faol foydalanuvchilarga. Admin xabarni
+    yozadi (rasm, formatlash ham bo'ladi — xabar `copy_message` bilan
+    ko'chiriladi), tasdiqlagach yuboriladi va oxirida hisobot qaytadi.
+  - **🗑 Foydalanuvchini o'chirish** — ro'yxatdan tanlanadi, tasdiqlangach
+    foydalanuvchi, uning baholari va eslatmalari bazadan o'chadi. Qayta
+    `/start` bossa, yangidan ro'yxatdan o'tadi. Adminning o'zi o'chmaydi.
 
 Tug'ilgan sanani foydalanuvchi o'zi o'zgartira olmaydi — bu keyinchalik faqat
 admin orqali qilinadi. Sana o'zgarganda `db.change_birth_date()` eski baholarni
@@ -122,7 +135,7 @@ sudo systemctl restart mundabit            # serverda, bot kodi o'zgargan bo'lsa
 - `bot.py` — handlerlar, FSM, sozlamalar, admin panel, tarqatish
 - `visual.py` — statistika hisoblash va "Life in Weeks" PNG poster (Pillow)
 - `texts.py` — barcha matnlar, o'zbek va rus tillarida
-- `db.py` — SQLite baza (foydalanuvchilar va hafta baholari)
+- `db.py` — SQLite baza (foydalanuvchilar, hafta baholari, eslatmalar)
 - `webserver.py` — Mini App server: statik sahifa + initData imzosi tekshiruvi
 - `webapp/index.html` — Mini App frontend
 - `config.py` — sozlamalar (`.env` orqali)

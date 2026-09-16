@@ -45,7 +45,7 @@ klon qilish kerak.)
 | `bot.py` | handlerlar, FSM, sozlamalar menyusi, admin panel, tarqatish |
 | `visual.py` | statistika hisoblash va PNG poster (Pillow) |
 | `texts.py` | **barcha** foydalanuvchi matnlari, uz va ru |
-| `db.py` | SQLite: `users`, `week_ratings` |
+| `db.py` | SQLite: `users`, `week_ratings`, `reminders` |
 | `webserver.py` | Mini App uchun aiohttp server, initData imzosi tekshiriladi |
 | `webapp/index.html` | Mini App frontend (canvas) |
 | `config.py` | `.env` dan sozlamalar |
@@ -76,7 +76,13 @@ qiling.
 **Tarqatish `spread_send()` orqali.** Xabarlar `BROADCAST_WINDOW_MINUTES` (60)
 oynasi bo'ylab yoyiladi, sur'at o'zini to'g'irlaydi. Botni bloklaganlar
 avtomatik belgilanadi va chiqariladi. Yangi ommaviy yuborish qo'shsangiz,
-to'g'ridan-to'g'ri sikl yozmang — shu funksiyadan foydalaning.
+to'g'ridan-to'g'ri sikl yozmang — shu funksiyadan foydalaning. Vaqtida yetishi
+kerak bo'lgan yuborishlar (admin xabari, eslatmalar) `window_minutes=0` bilan
+chaqiriladi — oyna bo'ylab yoyilmaydi, minimal oraliqda ketadi.
+
+**HTML qochirish `esc()` orqali, `html.escape()` emas.** `html.escape` apostrofni
+`&#x27;` ga aylantiradi, o'zbekcha matnda esa apostrof ko'p. `esc()` faqat
+`<`, `>` va `&` ni qochiradi; matn HTML atributiga emas, xabar ichiga tushadi.
 
 **Tug'ilgan sana faqat `db.change_birth_date()` orqali.** U eski baholarni
 haqiqiy kalendar haftalariga qarab qayta raqamlaydi. `db.update_user()` sanani
@@ -103,6 +109,15 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Tarqatish: juma 13:00–14:00, dushanba 08:00–09:00, oyna bo'ylab yoyib.
 - Tug'ilgan sanani foydalanuvchi o'zi o'zgartira olmaydi — keyinchalik faqat
   admin orqali (UI hali yozilmagan).
+- Eslatma — kundalik takrorlanadi (bir martalik emas): matn + `SS:DD`, ko'pi
+  bilan 5 ta. `reminder_tick` har daqiqada ishlaydi va shu daqiqaga
+  belgilanganlarni yuboradi; kechikkan bo'lsa oxirgi 5 daqiqani ham tekshiradi,
+  bot qayta ishga tushganda esa o'tib ketganlar takrorlanmaydi.
+- Admin tarqatishi `copy_message` bilan — admin yozgan formatlash va rasm o'z
+  holicha boradi, HTML'ni qochirish kerak emas. Bir vaqtda bitta tarqatish
+  (`broadcasting` bayrog'i), fon vazifasida ishlaydi.
+- Taklif uchun alohida jadval yo'q: kimga javob berilayotgani callback
+  ma'lumotida (`sg:reply:<user_id>`) saqlanadi.
 - Admin panel faqat egasiga (`000000000`, `config.py` dagi standart). Boshqa
   admin kerak bo'lsa faqat `.env` dagi `ADMIN_IDS` orqali — kodga qattiq
   yozilmaydi (bir marta boshqa foydalanuvchi ID'si standartda qolib, unga

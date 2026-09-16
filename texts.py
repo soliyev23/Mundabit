@@ -53,6 +53,8 @@ BOT = {
         "help": (
             "<b>Mundabit</b> — vaqt qadrini anglash boti.\n\n"
             "/start — kalendarni ko'rish va menyuni ochish\n"
+            "⏰ Eslatma — har kuni belgilangan vaqtda eslatma\n"
+            "💡 Taklif — botga g'oya yuborish\n"
             "⚙️ Sozlamalar — ism, jins va til\n\n"
             "Har juma 13:00–14:00 — hayot kalendari.\n"
             "Har dushanba ertalab — o'tgan hafta qanday o'tdi degan so'rov."
@@ -120,6 +122,57 @@ BOT = {
             "Jami: {total} ta"
         ),
         "no_username": "username yo'q",
+        # Eslatma
+        "btn_reminder": "⏰ Eslatma",
+        "btn_add": "➕ Qo'shish",
+        "reminders_empty": "⏰ Eslatmalar yo'q.\n\nHar kuni belgilangan vaqtda yuboriladi.",
+        "reminders_list": "⏰ <b>Eslatmalar</b> — har kuni\n\n{items}",
+        "reminder_item": "{time} — {text}",
+        "btn_rm_del": "🗑 {time}",
+        "reminders_max": "Ko'pi bilan {n} ta eslatma. Avval birini o'chiring.",
+        "ask_rm_text": "Nimani eslatay? Qisqa yozing, masalan: <i>Kitob o'qish</i>",
+        "rm_text_too_long": "Qisqaroq yozing (100 belgigacha).",
+        "ask_rm_time": (
+            "Soat nechada? Format: <code>SS:DD</code> — masalan: <code>21:00</code> "
+            "(Toshkent vaqti)"
+        ),
+        "bad_time": (
+            "❗ Vaqt noto'g'ri. <code>SS:DD</code> formatida yozing, "
+            "masalan: <code>21:00</code>"
+        ),
+        "rm_added": "✅ Har kuni <b>{time}</b> da eslataman: {text}",
+        "rm_deleted": "🗑 O'chirildi",
+        "reminder_msg": "⏰ {text}",
+        # Taklif
+        "btn_suggest": "💡 Taklif",
+        "ask_suggestion": "Botga qanday g'oya qo'shmoqchisiz? Yozing:",
+        "suggestion_sent": "Rahmat! Taklifingiz adminga yetkazildi ✅",
+        "admin_suggestion": "💡 <b>Taklif</b>\n\n{name} · {handle}\n\n{text}",
+        "btn_reply": "✍️ Javob yozish",
+        "ask_reply": "<b>{name}</b> uchun javobingizni yozing:",
+        "reply_sent": "Javob yuborildi ✅",
+        "reply_failed": "Yuborilmadi: foydalanuvchi botni bloklagan.",
+        "admin_reply": "📩 <b>Admin javobi</b>\n\n{text}",
+        # Admin: barchaga xabar, foydalanuvchini o'chirish
+        "btn_broadcast": "📣 Xabar yuborish",
+        "ask_broadcast": "Barcha foydalanuvchilarga yuboriladigan xabarni yozing:",
+        "broadcast_preview": "Shu xabar <b>{n}</b> foydalanuvchiga yuboriladi.",
+        "btn_send": "✅ Yuborish",
+        "btn_cancel": "❌ Bekor qilish",
+        "broadcast_started": "📣 Yuborish boshlandi: {n} foydalanuvchi",
+        "broadcast_done": "📣 Yakunlandi: {sent} yuborildi, {blocked} bloklagan, {failed} xato",
+        "broadcast_busy": "Oldingi tarqatish hali tugamagan, biroz kuting.",
+        "cancelled": "Bekor qilindi",
+        "btn_delete_user": "🗑 Foydalanuvchini o'chirish",
+        "del_pick": "🗑 Kimni o'chiramiz?",
+        "del_confirm": (
+            "❗ <b>{name}</b> ({age} yosh) o'chirilsinmi?\n"
+            "Barcha ma'lumotlari va baholari bazadan o'chadi."
+        ),
+        "btn_del_yes": "🗑 Ha, o'chirish",
+        "del_done": "🗑 <b>{name}</b> o'chirildi. Qayta /start bossa, yangidan ro'yxatdan o'tadi.",
+        "del_self": "O'zingizni o'chira olmaysiz.",
+        "del_missing": "Bu foydalanuvchi allaqachon yo'q.",
         "caption": "Yashaldi: <b>{lived} hafta</b> — {p}%\nQoldi: <b>{left} hafta</b> — {q}%",
     },
     "ru": {
@@ -156,6 +209,8 @@ BOT = {
         "help": (
             "<b>Mundabit</b> — бот, помогающий ценить время.\n\n"
             "/start — посмотреть календарь и открыть меню\n"
+            "⏰ Напоминание — каждый день в выбранное время\n"
+            "💡 Предложение — идея для бота\n"
             "⚙️ Настройки — имя, пол и язык\n\n"
             "Каждую пятницу с 13:00 до 14:00 — календарь жизни.\n"
             "Каждый понедельник утром — опрос о прошедшей неделе."
@@ -223,6 +278,57 @@ BOT = {
             "Всего: {total}"
         ),
         "no_username": "без username",
+        # Напоминание
+        "btn_reminder": "⏰ Напоминание",
+        "btn_add": "➕ Добавить",
+        "reminders_empty": "⏰ Напоминаний нет.\n\nОни приходят каждый день в указанное время.",
+        "reminders_list": "⏰ <b>Напоминания</b> — каждый день\n\n{items}",
+        "reminder_item": "{time} — {text}",
+        "btn_rm_del": "🗑 {time}",
+        "reminders_max": "Не больше {n} напоминаний. Сначала удалите одно.",
+        "ask_rm_text": "О чём напомнить? Коротко, например: <i>Читать книгу</i>",
+        "rm_text_too_long": "Напишите короче (до 100 символов).",
+        "ask_rm_time": (
+            "Во сколько? Формат: <code>ЧЧ:ММ</code> — например: <code>21:00</code> "
+            "(время Ташкента)"
+        ),
+        "bad_time": (
+            "❗ Неверное время. Введите в формате <code>ЧЧ:ММ</code>, "
+            "например: <code>21:00</code>"
+        ),
+        "rm_added": "✅ Буду напоминать каждый день в <b>{time}</b>: {text}",
+        "rm_deleted": "🗑 Удалено",
+        "reminder_msg": "⏰ {text}",
+        # Предложение
+        "btn_suggest": "💡 Предложение",
+        "ask_suggestion": "Какую идею вы хотите предложить для бота? Напишите:",
+        "suggestion_sent": "Спасибо! Ваше предложение передано администратору ✅",
+        "admin_suggestion": "💡 <b>Предложение</b>\n\n{name} · {handle}\n\n{text}",
+        "btn_reply": "✍️ Ответить",
+        "ask_reply": "Напишите ответ для <b>{name}</b>:",
+        "reply_sent": "Ответ отправлен ✅",
+        "reply_failed": "Не отправлено: пользователь заблокировал бота.",
+        "admin_reply": "📩 <b>Ответ администратора</b>\n\n{text}",
+        # Админ: рассылка, удаление пользователя
+        "btn_broadcast": "📣 Рассылка",
+        "ask_broadcast": "Напишите сообщение для всех пользователей:",
+        "broadcast_preview": "Это сообщение получат <b>{n}</b> пользователей.",
+        "btn_send": "✅ Отправить",
+        "btn_cancel": "❌ Отмена",
+        "broadcast_started": "📣 Рассылка началась: {n} пользователей",
+        "broadcast_done": "📣 Готово: {sent} отправлено, {blocked} заблокировали, {failed} ошибок",
+        "broadcast_busy": "Предыдущая рассылка ещё идёт, подождите.",
+        "cancelled": "Отменено",
+        "btn_delete_user": "🗑 Удалить пользователя",
+        "del_pick": "🗑 Кого удалить?",
+        "del_confirm": (
+            "❗ Удалить <b>{name}</b> ({age} лет)?\n"
+            "Все данные и оценки будут удалены из базы."
+        ),
+        "btn_del_yes": "🗑 Да, удалить",
+        "del_done": "🗑 <b>{name}</b> удалён. При новом /start пройдёт регистрацию заново.",
+        "del_self": "Нельзя удалить себя.",
+        "del_missing": "Этого пользователя уже нет.",
         "caption": "Прожито: <b>{lived} недель</b> — {p}%\nОсталось: <b>{left} недель</b> — {q}%",
     },
 }

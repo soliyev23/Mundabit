@@ -10,6 +10,7 @@ import html
 import logging
 import time
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
@@ -92,11 +93,46 @@ class Settings(StatesGroup):
     lang = State()
 
 
+class Suggest(StatesGroup):
+    """Foydalanuvchi taklifi — adminga yuboriladi."""
+    text = State()
+
+
+class AdminReply(StatesGroup):
+    """Admin taklifga javob yozmoqda; FSM'da kimga yozilayotgani saqlanadi."""
+    text = State()
+
+
+class Broadcast(StatesGroup):
+    """Admin barchaga xabar: avval xabar, keyin tasdiq."""
+    message = State()
+    confirm = State()
+
+
+class Reminder(StatesGroup):
+    """Kundalik eslatma qo'shish: matn → vaqt."""
+    text = State()
+    time = State()
+
+
 LANG_NAMES = {"uz": "O'zbekcha", "ru": "Русский"}
+MAX_REMINDERS = 5
+REMINDER_TEXT_MAX = 100
+SUGGESTION_MAX = 1000
 
 
 def valid_birth(d: date) -> bool:
     return d < date.today() and d.year >= 1900
+
+
+def esc(text: str) -> str:
+    """Xabar matnini HTML uchun xavfsiz qiladi: faqat <, > va & qochiriladi.
+
+    `html.escape` apostrofni ham `&#x27;` ga aylantiradi — o'zbekcha matnda
+    apostrof ko'p (o'qish, tug'ilgan), shuning uchun qo'shtirnoqlar tegilmaydi.
+    Matn faqat xabar ichida ishlatiladi, HTML atributida emas.
+    """
+    return html.escape(text, quote=False)
 
 
 def parse_birth_date(text: str) -> date | None:
@@ -138,7 +174,11 @@ def btn_variants(key: str) -> set[str]:
 
 
 def main_keyboard(lang: str, user_id: int) -> ReplyKeyboardMarkup:
-    rows = [[KeyboardButton(text=t(lang, "btn_settings"))]]
+    rows = [
+        [KeyboardButton(text=t(lang, "btn_reminder")),
+         KeyboardButton(text=t(lang, "btn_suggest"))],
+        [KeyboardButton(text=t(lang, "btn_settings"))],
+    ]
     if user_id in ADMIN_IDS:
         rows.append([KeyboardButton(text=t(lang, "btn_admin"))])
     return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
@@ -190,7 +230,7 @@ def settings_text(user: dict) -> str:
         user.get("gender") or "", "—"
     )
     return t(lang, "settings").format(
-        name=html.escape(user["name"]),
+        name=esc(user["name"]),
         birth=fmt_date(date.fromisoformat(user["birth_date"]), lang),
         gender=gender,
         lang=LANG_NAMES.get(lang, lang),
@@ -321,7 +361,7 @@ async def process_lang(callback: CallbackQuery, state: FSMContext) -> None:
         await state.update_data(name=name)
         await callback.message.answer(
             f"{t(lang, 'greeting')}\n\n"
-            f"{t(lang, 'confirm_name').format(name=html.escape(name))}",
+            f"{t(lang, 'confirm_name').format(name=esc(name))}",
             reply_markup=confirm_keyboard(lang, "name", "btn_other_name"),
         )
         await state.set_state(Onboarding.confirm_name)
@@ -597,6 +637,213 @@ async def go_back(message: Message, state: FSMContext) -> None:
                          reply_markup=main_keyboard(lang, message.from_user.id))
 
 
+# ── Taklif ───────────────────────────────────────────────────────────────────
+# Foydalanuvchi g'oyasini yozadi → adminga ismi bilan boradi → admin «Javob
+# yozish» tugmasi orqali o'sha odamga javob qaytaradi. Alohida jadval kerak
+# emas: kimga javob berilayotgani callback ma'lumotida saqlanadi.
+
+@router.message(F.text.in_(btn_variants("btn_suggest")))
+async def suggest_start(message: Message, state: FSMContext) -> None:
+    user = db.get_user(message.from_user.id)
+    if not user:
+        await message.answer(t(user_lang(None, message.from_user), "not_registered"))
+        return
+    lang = user.get("lang") or "uz"
+    await state.set_state(Suggest.text)
+    await message.answer(t(lang, "ask_suggestion"), reply_markup=back_keyboard(lang))
+
+
+@router.message(Suggest.text, F.text)
+async def suggest_save(message: Message, state: FSMContext) -> None:
+    user = db.get_user(message.from_user.id)
+    lang = user_lang(user, message.from_user)
+    text = message.text.strip()[:SUGGESTION_MAX]
+    await state.clear()
+    handle = f"@{message.from_user.username}" if message.from_user.username \
+        else t(lang, "no_username")
+    admin_lang = user_lang(db.get_user(ADMIN_ID))
+    try:
+        await message.bot.send_message(
+            ADMIN_ID,
+            t(admin_lang, "admin_suggestion").format(
+                name=esc(user["name"] if user else message.from_user.full_name),
+                handle=esc(handle),
+                text=esc(text),
+            ),
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text=t(admin_lang, "btn_reply"),
+                                     callback_data=f"sg:reply:{message.from_user.id}"),
+            ]]),
+        )
+    except Exception as e:
+        log.warning("Taklif adminga yetmadi: %s", e)
+    await message.answer(t(lang, "suggestion_sent"),
+                         reply_markup=main_keyboard(lang, message.from_user.id))
+
+
+@router.callback_query(F.data.startswith("sg:reply:"))
+async def suggest_reply_start(callback: CallbackQuery, state: FSMContext) -> None:
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer()
+        return
+    target_id = int(callback.data.split(":")[2])
+    target = db.get_user(target_id)
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    await callback.answer()
+    if not target:
+        await callback.message.answer(t(lang, "del_missing"))
+        return
+    await state.set_state(AdminReply.text)
+    await state.update_data(reply_to=target_id, reply_name=target["name"])
+    await callback.message.answer(
+        t(lang, "ask_reply").format(name=esc(target["name"])),
+        reply_markup=back_keyboard(lang),
+    )
+
+
+@router.message(AdminReply.text, F.text)
+async def suggest_reply_send(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    target_id = data.get("reply_to")
+    await state.clear()
+    target = db.get_user(target_id) if target_id else None
+    if not target:
+        await message.answer(t(lang, "del_missing"),
+                             reply_markup=admin_keyboard(lang))
+        return
+    target_lang = target.get("lang") or "uz"
+    try:
+        await message.bot.send_message(
+            target_id,
+            t(target_lang, "admin_reply").format(text=esc(message.text.strip())),
+        )
+        await message.answer(t(lang, "reply_sent"), reply_markup=admin_keyboard(lang))
+    except TelegramForbiddenError:
+        db.set_blocked(target_id, True)
+        await message.answer(t(lang, "reply_failed"), reply_markup=admin_keyboard(lang))
+    except Exception as e:
+        log.warning("Javob yuborilmadi user_id=%s: %s", target_id, e)
+        await message.answer(t(lang, "reply_failed"), reply_markup=admin_keyboard(lang))
+
+
+# ── Eslatma ──────────────────────────────────────────────────────────────────
+# Har bir eslatma — kundalik: matn + soat (Toshkent vaqti). Har daqiqada
+# ishlaydigan vazifa o'sha daqiqaga belgilanganlarini yuboradi.
+
+def parse_hhmm(text: str) -> str | None:
+    """«21:00», «21.00», «9:5», «21» → «21:00». Noto'g'ri bo'lsa None."""
+    raw = text.strip().replace(".", ":").replace(" ", "")
+    if ":" not in raw:
+        raw += ":00"
+    parts = raw.split(":")
+    if len(parts) != 2 or not all(p.isdigit() for p in parts):
+        return None
+    hh, mm = int(parts[0]), int(parts[1])
+    if not (0 <= hh <= 23 and 0 <= mm <= 59):
+        return None
+    return f"{hh:02d}:{mm:02d}"
+
+
+def reminders_view(user_id: int, lang: str) -> tuple[str, InlineKeyboardMarkup]:
+    """Eslatmalar ro'yxati va har biri uchun o'chirish tugmasi."""
+    items = db.get_reminders(user_id)
+    rows = [[InlineKeyboardButton(
+        text=t(lang, "btn_rm_del").format(time=r["time"]),
+        callback_data=f"rm:del:{r['id']}",
+    )] for r in items]
+    if len(items) < MAX_REMINDERS:
+        rows.append([InlineKeyboardButton(text=t(lang, "btn_add"),
+                                          callback_data="rm:add")])
+    if not items:
+        return t(lang, "reminders_empty"), InlineKeyboardMarkup(inline_keyboard=rows)
+    listing = "\n".join(
+        t(lang, "reminder_item").format(time=r["time"], text=esc(r["text"]))
+        for r in items
+    )
+    return (t(lang, "reminders_list").format(items=listing),
+            InlineKeyboardMarkup(inline_keyboard=rows))
+
+
+@router.message(F.text.in_(btn_variants("btn_reminder")))
+async def reminders_menu(message: Message, state: FSMContext) -> None:
+    await state.clear()
+    user = db.get_user(message.from_user.id)
+    if not user:
+        await message.answer(t(user_lang(None, message.from_user), "not_registered"))
+        return
+    lang = user.get("lang") or "uz"
+    text, kb = reminders_view(message.from_user.id, lang)
+    await message.answer(text, reply_markup=kb)
+
+
+@router.callback_query(F.data == "rm:add")
+async def reminder_add_start(callback: CallbackQuery, state: FSMContext) -> None:
+    user = db.get_user(callback.from_user.id)
+    lang = user_lang(user, callback.from_user)
+    await callback.answer()
+    if len(db.get_reminders(callback.from_user.id)) >= MAX_REMINDERS:
+        await callback.message.answer(t(lang, "reminders_max").format(n=MAX_REMINDERS))
+        return
+    await state.set_state(Reminder.text)
+    await callback.message.answer(t(lang, "ask_rm_text"),
+                                  reply_markup=back_keyboard(lang))
+
+
+@router.callback_query(F.data.startswith("rm:del:"))
+async def reminder_delete(callback: CallbackQuery) -> None:
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    db.delete_reminder(int(callback.data.split(":")[2]), callback.from_user.id)
+    await callback.answer(t(lang, "rm_deleted"))
+    text, kb = reminders_view(callback.from_user.id, lang)
+    try:
+        await callback.message.edit_text(text, reply_markup=kb)
+    except Exception:
+        pass
+
+
+@router.message(Reminder.text, F.text)
+async def reminder_save_text(message: Message, state: FSMContext) -> None:
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    text = message.text.strip()
+    if not text or len(text) > REMINDER_TEXT_MAX:
+        await message.answer(t(lang, "rm_text_too_long"))
+        return
+    await state.update_data(rm_text=text)
+    await state.set_state(Reminder.time)
+    await message.answer(t(lang, "ask_rm_time"))
+
+
+@router.message(Reminder.time, F.text)
+async def reminder_save_time(message: Message, state: FSMContext) -> None:
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    hhmm = parse_hhmm(message.text)
+    if hhmm is None:
+        await message.answer(t(lang, "bad_time"))
+        return
+    data = await state.get_data()
+    await state.clear()
+    text = data.get("rm_text", "")
+    if len(db.get_reminders(message.from_user.id)) >= MAX_REMINDERS:
+        await message.answer(t(lang, "reminders_max").format(n=MAX_REMINDERS),
+                             reply_markup=main_keyboard(lang, message.from_user.id))
+        return
+    db.add_reminder(message.from_user.id, text, hhmm)
+    await message.answer(
+        t(lang, "rm_added").format(time=hhmm, text=esc(text)),
+        reply_markup=main_keyboard(lang, message.from_user.id),
+    )
+
+
+@router.message(Suggest.text)
+@router.message(AdminReply.text)
+@router.message(Reminder.text)
+@router.message(Reminder.time)
+async def new_flows_non_text(message: Message) -> None:
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    await message.answer(t(lang, "text_only"))
+
+
 # ── Admin ────────────────────────────────────────────────────────────────────
 
 USERS_PER_PAGE = 20
@@ -607,6 +854,8 @@ def admin_keyboard(lang: str) -> ReplyKeyboardMarkup:
         keyboard=[
             [KeyboardButton(text=t(lang, "btn_users")),
              KeyboardButton(text=t(lang, "btn_stats"))],
+            [KeyboardButton(text=t(lang, "btn_broadcast"))],
+            [KeyboardButton(text=t(lang, "btn_delete_user"))],
             [KeyboardButton(text=t(lang, "btn_back"))],
         ],
         resize_keyboard=True,
@@ -704,7 +953,7 @@ def users_table(page: int, lang: str) -> tuple[str, InlineKeyboardMarkup | None]
     rows = []
     for i, u in enumerate(chunk, start=page * USERS_PER_PAGE + 1):
         # Tekislash buzilmasligi uchun avval bo'shliq qo'shiladi, keyin escape
-        name = html.escape(u["name"][:14].ljust(15))
+        name = esc(u["name"][:14].ljust(15))
         g = {"m": t(lang, "g_m"), "f": t(lang, "g_f")}.get(u.get("gender") or "", "—")
         rows.append(f"{i:<4}{name}{age_of(u):<6}{g:<6}{u.get('lang') or '—'}")
 
@@ -726,7 +975,7 @@ def users_table(page: int, lang: str) -> tuple[str, InlineKeyboardMarkup | None]
 async def notify_admin_new_user(bot: Bot, user: dict, username: str | None) -> None:
     lang = user_lang(db.get_user(ADMIN_ID))          # xabar admin tilida yoziladi
     text = t(lang, "new_user").format(
-        name=html.escape(user["name"]),
+        name=esc(user["name"]),
         age=age_of(user),
         gender={"m": t(lang, "g_m"), "f": t(lang, "g_f")}.get(user.get("gender") or "", "?"),
         lang=user.get("lang") or "?",
@@ -779,6 +1028,198 @@ async def admin_users_nav(callback: CallbackQuery) -> None:
         pass
 
 
+# ── Admin: barchaga xabar ────────────────────────────────────────────────────
+# Xabar copy_message bilan ko'chiriladi — admin yozgan formatlash, rasm yoki
+# fayl o'z holicha boradi va HTML'ni qo'lda qochirish kerak bo'lmaydi.
+
+broadcasting = False          # bir vaqtda bitta tarqatish
+
+
+@router.message(F.text.in_(btn_variants("btn_broadcast")))
+async def broadcast_start(message: Message, state: FSMContext) -> None:
+    if message.from_user.id not in ADMIN_IDS:
+        return
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    await state.set_state(Broadcast.message)
+    await message.answer(t(lang, "ask_broadcast"), reply_markup=back_keyboard(lang))
+
+
+@router.message(Broadcast.message)
+async def broadcast_preview(message: Message, state: FSMContext) -> None:
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    await state.update_data(src_chat=message.chat.id, src_msg=message.message_id)
+    await state.set_state(Broadcast.confirm)
+    await message.reply(
+        t(lang, "broadcast_preview").format(n=len(db.get_active_users())),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(text=t(lang, "btn_send"), callback_data="bc:send"),
+            InlineKeyboardButton(text=t(lang, "btn_cancel"), callback_data="bc:cancel"),
+        ]]),
+    )
+
+
+@router.callback_query(Broadcast.confirm, F.data.startswith("bc:"))
+async def broadcast_run(callback: CallbackQuery, state: FSMContext) -> None:
+    global broadcasting
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer()
+        return
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    data = await state.get_data()
+    await state.clear()
+    await callback.answer()
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+    if callback.data == "bc:cancel":
+        await callback.message.answer(t(lang, "cancelled"),
+                                      reply_markup=admin_keyboard(lang))
+        return
+    if broadcasting:
+        await callback.message.answer(t(lang, "broadcast_busy"))
+        return
+    src_chat, src_msg = data.get("src_chat"), data.get("src_msg")
+    users = db.get_active_users()
+    await callback.message.answer(t(lang, "broadcast_started").format(n=len(users)),
+                                  reply_markup=admin_keyboard(lang))
+
+    async def send_one(bot: Bot, user: dict) -> None:
+        await bot.copy_message(chat_id=user["user_id"],
+                               from_chat_id=src_chat, message_id=src_msg)
+
+    async def run() -> None:
+        global broadcasting
+        broadcasting = True
+        try:
+            res = await spread_send(callback.bot, users, send_one, "Admin xabari",
+                                    window_minutes=0)
+            await callback.bot.send_message(
+                callback.from_user.id, t(lang, "broadcast_done").format(**res))
+        finally:
+            broadcasting = False
+
+    asyncio.create_task(run())   # bot tarqatish paytida ham javob beraveradi
+
+
+# ── Admin: foydalanuvchini o'chirish ─────────────────────────────────────────
+
+DELETE_PER_PAGE = 8
+
+
+def delete_picker(page: int, lang: str) -> tuple[str, InlineKeyboardMarkup]:
+    users = db.get_all_users()
+    pages = max(1, (len(users) + DELETE_PER_PAGE - 1) // DELETE_PER_PAGE)
+    page = max(0, min(page, pages - 1))
+    chunk = users[page * DELETE_PER_PAGE:(page + 1) * DELETE_PER_PAGE]
+    rows = [[InlineKeyboardButton(
+        text=f"{i}. {u['name'][:20]} · {age_of(u)}",
+        callback_data=f"adm:delpick:{u['user_id']}",
+    )] for i, u in enumerate(chunk, start=page * DELETE_PER_PAGE + 1)]
+    nav = []
+    if page > 0:
+        nav.append(InlineKeyboardButton(text="⬅️", callback_data=f"adm:delpage:{page - 1}"))
+    if page < pages - 1:
+        nav.append(InlineKeyboardButton(text="➡️", callback_data=f"adm:delpage:{page + 1}"))
+    if nav:
+        rows.append(nav)
+    title = t(lang, "del_pick")
+    if pages > 1:
+        title += f" · {page + 1}/{pages}"
+    return title, InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+@router.message(F.text.in_(btn_variants("btn_delete_user")))
+async def delete_user_menu(message: Message) -> None:
+    if message.from_user.id not in ADMIN_IDS:
+        return
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    text, kb = delete_picker(0, lang)
+    await message.answer(text, reply_markup=kb)
+
+
+@router.callback_query(F.data.startswith("adm:delpage:"))
+async def delete_user_page(callback: CallbackQuery) -> None:
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer()
+        return
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    text, kb = delete_picker(int(callback.data.split(":")[2]), lang)
+    await callback.answer()
+    try:
+        await callback.message.edit_text(text, reply_markup=kb)
+    except Exception:
+        pass
+
+
+@router.callback_query(F.data.startswith("adm:delpick:"))
+async def delete_user_confirm(callback: CallbackQuery) -> None:
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer()
+        return
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    target_id = int(callback.data.split(":")[2])
+    await callback.answer()
+    if target_id == callback.from_user.id:
+        await callback.message.answer(t(lang, "del_self"))
+        return
+    target = db.get_user(target_id)
+    if not target:
+        await callback.message.answer(t(lang, "del_missing"))
+        return
+    try:
+        await callback.message.edit_text(
+            t(lang, "del_confirm").format(name=esc(target["name"]),
+                                          age=age_of(target)),
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text=t(lang, "btn_del_yes"),
+                                     callback_data=f"adm:delok:{target_id}"),
+                InlineKeyboardButton(text=t(lang, "btn_cancel"),
+                                     callback_data="adm:delno"),
+            ]]),
+        )
+    except Exception:
+        pass
+
+
+@router.callback_query(F.data == "adm:delno")
+async def delete_user_cancel(callback: CallbackQuery) -> None:
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer()
+        return
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    await callback.answer()
+    text, kb = delete_picker(0, lang)
+    try:
+        await callback.message.edit_text(text, reply_markup=kb)
+    except Exception:
+        pass
+
+
+@router.callback_query(F.data.startswith("adm:delok:"))
+async def delete_user_run(callback: CallbackQuery) -> None:
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer()
+        return
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    target_id = int(callback.data.split(":")[2])
+    target = db.get_user(target_id)
+    await callback.answer()
+    if target_id == callback.from_user.id:
+        await callback.message.answer(t(lang, "del_self"))
+        return
+    if not target or not db.delete_user(target_id):
+        await callback.message.answer(t(lang, "del_missing"))
+        return
+    log.info("Foydalanuvchi o'chirildi: user_id=%s (admin=%s)",
+             target_id, callback.from_user.id)
+    try:
+        await callback.message.edit_text(
+            t(lang, "del_done").format(name=esc(target["name"])))
+    except Exception:
+        pass
+
+
 # ── Tushunilmagan xabarlar ─────────────────────────────────────────────────────
 # Eng oxirida turishi shart: undan yuqoridagi handlerlarning hech biri mos
 # kelmasa, shu ishlaydi. Ilgari bunday xabarga bot umuman javob bermasdi.
@@ -808,7 +1249,8 @@ async def unknown_message(message: Message) -> None:
 BROADCAST_MIN_DELAY = 0.1     # eng tez sur'at, userlar ko'p bo'lganda
 
 
-async def spread_send(bot: Bot, users: list[dict], send_one, label: str) -> None:
+async def spread_send(bot: Bot, users: list[dict], send_one, label: str,
+                      window_minutes: int | None = None) -> dict[str, int]:
     """Xabarlarni belgilangan oyna bo'ylab tekis yoyib yuboradi.
 
     Har xabardan keyin "qolgan vaqt ÷ qolgan foydalanuvchi" qadar kutiladi —
@@ -819,8 +1261,13 @@ async def spread_send(bot: Bot, users: list[dict], send_one, label: str) -> None
 
     Botni bloklagan foydalanuvchi belgilanadi va keyingi tarqatishlarga
     qo'shilmaydi (qaytib yozsa, avtomatik tiklanadi).
+
+    `window_minutes` berilmasa BROADCAST_WINDOW_MINUTES ishlatiladi; 0 berilsa
+    imkon qadar tez (minimal oraliq bilan) yuboriladi — admin xabari va
+    eslatmalar shunday, ular vaqtida yetib borishi kerak.
     """
-    window = BROADCAST_WINDOW_MINUTES * 60
+    window = (BROADCAST_WINDOW_MINUTES if window_minutes is None
+              else window_minutes) * 60
     started = time.monotonic()
     sent = blocked = failed = 0
     for idx, user in enumerate(users):
@@ -840,6 +1287,7 @@ async def spread_send(bot: Bot, users: list[dict], send_one, label: str) -> None
         await asyncio.sleep(max(BROADCAST_MIN_DELAY, remaining / left))
     log.info("%s yakunlandi: %d yuborildi, %d bloklagan, %d xato, %.1f daqiqa",
              label, sent, blocked, failed, (time.monotonic() - started) / 60)
+    return {"sent": sent, "blocked": blocked, "failed": failed}
 
 
 async def monday_feedback(bot: Bot) -> None:
@@ -863,6 +1311,46 @@ async def friday_calendar(bot: Bot) -> None:
     users = db.get_active_users()
     log.info("Juma kalendari boshlandi: %d ta foydalanuvchi", len(users))
     await spread_send(bot, users, send_calendar, "Juma kalendari")
+
+
+_last_reminder_minute: str | None = None
+
+
+async def reminder_tick(bot: Bot) -> None:
+    """Har daqiqada: shu daqiqaga belgilangan eslatmalarni yuboradi.
+
+    Vazifa kechikib ishga tushsa oradagi daqiqalar ham tekshiriladi (ko'pi
+    bilan 5 ta) — shunda qisqa kechikishda eslatma yo'qolmaydi. Bot qayta
+    ishga tushsa, o'tib ketgan daqiqalar takrorlanmaydi.
+    """
+    global _last_reminder_minute
+    now = datetime.now(ZoneInfo(TIMEZONE))
+    minutes = [now.strftime("%H:%M")]
+    if _last_reminder_minute is not None:
+        gap, cursor = [], now
+        for _ in range(5):
+            cursor -= timedelta(minutes=1)
+            hhmm = cursor.strftime("%H:%M")
+            if hhmm == _last_reminder_minute:
+                break
+            gap.append(hhmm)
+        minutes = list(reversed(gap)) + minutes
+    _last_reminder_minute = now.strftime("%H:%M")
+
+    for hhmm in minutes:
+        due = db.reminders_due(hhmm)
+        if not due:
+            continue
+        log.info("Eslatma %s: %d ta", hhmm, len(due))
+
+        async def send_one(bot: Bot, row: dict) -> None:
+            lang = row.get("lang") or "uz"
+            await bot.send_message(
+                row["user_id"],
+                t(lang, "reminder_msg").format(text=esc(row["text"])),
+            )
+
+        await spread_send(bot, due, send_one, f"Eslatma {hhmm}", window_minutes=0)
 
 
 # ── Ishga tushirish ──────────────────────────────────────────────────────────
@@ -906,6 +1394,12 @@ async def main() -> None:
         CronTrigger(day_of_week=CALENDAR_DAY_OF_WEEK, hour=CALENDAR_HOUR,
                     minute=CALENDAR_MINUTE, timezone=TIMEZONE),
         args=[bot],
+    )
+    scheduler.add_job(
+        reminder_tick,
+        CronTrigger(minute="*", timezone=TIMEZONE),
+        args=[bot],
+        misfire_grace_time=55,
     )
     scheduler.start()
 
