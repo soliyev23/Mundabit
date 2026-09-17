@@ -118,12 +118,13 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   `db.reminders_due(moment)` hal qiladi. Eski eslatmalar migratsiyada
   `daily` bo'lib qolgan.
 - **Eslatma bo'limida inline tugma yo'q** — foydalanuvchiga yoqmagan, hamma
-  tanlov pastki (reply) klaviaturada: ro'yxat ostida «🗑 1…5», «➕ Qo'shish»,
+  tanlov pastki (reply) klaviaturada: ro'yxat ostida «O'chirish 1…5» (uchtadan, emoji
+  yo'q — foydalanuvchi so'ragan; eski «🗑 N» ham taniladi), «➕ Qo'shish»,
   «⬅️ Orqaga»; takrorlanish, hafta kunlari (to'liq nomi), 1–31 sanalar ham
   klaviaturada. Tugma matnlari ikkala tilda taniladi (`DEL_LABELS`,
   `FREQ_LABELS`, `WEEKDAY_LABELS`). Eski xabarlardagi inline tugmalar
   (`rm:`, `rmf:`, …) bosilsa — olib tashlanadi va yangi menyu chiqadi.
-- «🗑 N» ko'rsatilgan ro'yxat bo'yicha o'chiradi: `show_reminders()` raqam →
+- «O'chirish N» ko'rsatilgan ro'yxat bo'yicha o'chiradi: `show_reminders()` raqam →
   id moslamasini FSM'ga (`Reminder.menu`, `rm_ids`) yozadi. Moslama yo'q
   bo'lsa (bot qayta ishga tushgan) hech narsa o'chirilmaydi, ro'yxat qayta
   ko'rsatiladi. Qo'shish jarayonida «⬅️ Orqaga» ro'yxatga qaytaradi.

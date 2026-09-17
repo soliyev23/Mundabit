@@ -151,7 +151,7 @@ BOT = {
         "reminders_empty": "⏰ Eslatmalar yo'q.",
         "reminders_list": "⏰ <b>Eslatmalar</b>\n\n{items}",
         "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
-        "btn_rm_del": "🗑 {n}",
+        "btn_rm_del": "O'chirish {n}",
         "reminders_max": "Ko'pi bilan {n} ta eslatma. Avval birini o'chiring.",
         "ask_rm_text": "Eslatma nomini yozing.\nMasalan: <i>Kitob o'qish</i>",
         "rm_text_too_long": "Qisqaroq yozing (100 belgigacha).",
@@ -329,7 +329,7 @@ BOT = {
         "reminders_empty": "⏰ Напоминаний нет.",
         "reminders_list": "⏰ <b>Напоминания</b>\n\n{items}",
         "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
-        "btn_rm_del": "🗑 {n}",
+        "btn_rm_del": "Удалить {n}",
         "reminders_max": "Не больше {n} напоминаний. Сначала удалите одно.",
         "ask_rm_text": "Напишите название напоминания.\nНапример: <i>Читать книгу</i>",
         "rm_text_too_long": "Напишите короче (до 100 символов).",
@@ -428,6 +428,7 @@ POSTER = {
 # qolib ketgan bo'lishi mumkin — bosganda baribir tanilsin. Ko'rsatilmaydi.
 LEGACY_BUTTONS = {
     "btn_suggest": {"💡 Taklif", "💡 Предложение"},   # 2026-09-17: → Murojaat
+    "btn_rm_del": {"🗑 {n}"},                          # 2026-09-17: → O'chirish {n}
 }
 
 

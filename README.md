@@ -30,7 +30,7 @@ Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
   Takrorlanish: har kuni, ish kunlari (Du–Ju), haftada bir (kun tanlanadi),
   oyda bir (1–31 sana; qisqa oyda oxirgi kuni keladi), bir marta (`KK.OO`
   sana; yuborilgach o'chadi). Bir foydalanuvchida ko'pi bilan 5 ta.
-  Ro'yxat raqamlangan, klaviaturadagi «🗑 N» bilan o'chiriladi.
+  Ro'yxat raqamlangan, klaviaturadagi «O'chirish N» bilan o'chiriladi.
 - **✉️ Murojaat** — foydalanuvchi savol, taklif yoki fikrini yozadi, u ismi va username'i bilan
   adminga boradi. Admin xabardagi **✍️ Javob yozish** tugmasi orqali o'sha
   odamga javob qaytaradi; javob unga "📩 Admin javobi" ko'rinishida yetadi.

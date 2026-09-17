@@ -866,9 +866,8 @@ def _kb(rows: list[list[str]], lang: str) -> ReplyKeyboardMarkup:
 
 
 def reminders_keyboard(lang: str, count: int) -> ReplyKeyboardMarkup:
-    rows = []
-    if count:
-        rows.append([t(lang, "btn_rm_del").format(n=i) for i in range(1, count + 1)])
+    dels = [t(lang, "btn_rm_del").format(n=i) for i in range(1, count + 1)]
+    rows = [dels[i:i + 3] for i in range(0, len(dels), 3)]   # uchtadan
     if count < MAX_REMINDERS:
         rows.append([t(lang, "btn_add")])
     return _kb(rows, lang)
@@ -896,8 +895,10 @@ def monthday_keyboard(lang: str) -> ReplyKeyboardMarkup:
 
 
 # Tugma matni → qiymat (ikkala tilda ham taniladi)
-DEL_LABELS = {t(lg, "btn_rm_del").format(n=i): i
-              for lg in BOT for i in range(1, MAX_REMINDERS + 1)}
+DEL_LABELS = {tpl.format(n=i): i
+              for tpl in {BOT[lg]["btn_rm_del"] for lg in BOT}
+              | LEGACY_BUTTONS.get("btn_rm_del", set())
+              for i in range(1, MAX_REMINDERS + 1)}
 FREQ_LABELS = {t(lg, f"freq_{f}"): f for lg in BOT for f in FREQS}
 WEEKDAY_LABELS = {name.lower(): i for lg in WEEKDAYS_FULL
                   for i, name in enumerate(WEEKDAYS_FULL[lg])}
