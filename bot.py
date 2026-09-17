@@ -31,7 +31,7 @@ from aiogram.types import (
     User as TgUser,
     WebAppInfo,
 )
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
@@ -803,6 +803,34 @@ def reminder_when(r: dict, lang: str) -> str:
     return t(lang, "when_daily")
 
 
+def reminder_label(r: dict, lang: str) -> str:
+    """Ro'yxat va tasdiqdagi ko'rinish: «🖼 Kitob o'qish», faqat rasm — «🖼»."""
+    parts = [t(lang, "rm_photo_mark")] if r.get("photo") else []
+    if r.get("text"):
+        parts.append(esc(r["text"]))
+    return " ".join(parts)
+
+
+# Albom (bir nechta rasm bir yo'la) har bir rasm uchun alohida update bo'lib
+# keladi, polling esa ularni parallel ishlaydi. Eslatmaga faqat birinchi rasm
+# olinadi; qolganlari jimgina tashlab yuboriladi. Tekshiruv await'siz — shuning
+# uchun parallel handlerlar orasida poyga bo'lmaydi.
+_seen_albums: dict[str, float] = {}
+
+
+def first_of_album(message: Message) -> bool:
+    gid = message.media_group_id
+    if not gid:
+        return True
+    now = time.monotonic()
+    for k in [k for k, v in _seen_albums.items() if now - v > 120]:
+        del _seen_albums[k]
+    if gid in _seen_albums:
+        return False
+    _seen_albums[gid] = now
+    return True
+
+
 def reminders_view(user_id: int, lang: str) -> tuple[str, InlineKeyboardMarkup]:
     """Raqamlangan ro'yxat va raqam bo'yicha o'chirish tugmalari."""
     items = db.get_reminders(user_id)
@@ -818,7 +846,8 @@ def reminders_view(user_id: int, lang: str) -> tuple[str, InlineKeyboardMarkup]:
         return t(lang, "reminders_empty"), InlineKeyboardMarkup(inline_keyboard=rows)
     listing = "\n".join(
         t(lang, "reminder_item").format(n=i, time=r["time"],
-                                        when=reminder_when(r, lang), text=esc(r["text"]))
+                                        when=reminder_when(r, lang),
+                                        text=reminder_label(r, lang))
         for i, r in enumerate(items, start=1)
     )
     return (t(lang, "reminders_list").format(items=listing),
@@ -904,9 +933,31 @@ async def reminder_save_text(message: Message, state: FSMContext) -> None:
     if not text or len(text) > REMINDER_TEXT_MAX:
         await message.answer(t(lang, "rm_text_too_long"))
         return
-    await state.update_data(rm_text=text)
+    await state.update_data(rm_text=text, rm_photo=None)
     await state.set_state(Reminder.freq)
     await message.answer(t(lang, "ask_rm_freq"), reply_markup=freq_keyboard(lang))
+
+
+@router.message(Reminder.text, F.photo)
+async def reminder_save_photo(message: Message, state: FSMContext) -> None:
+    """Rasm: eng katta o'lchamining file_id si saqlanadi, izohi — matn."""
+    if not first_of_album(message):
+        return
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    text = (message.caption or "").strip()
+    if len(text) > REMINDER_TEXT_MAX:
+        await message.answer(t(lang, "rm_text_too_long"))
+        return
+    await state.update_data(rm_text=text, rm_photo=message.photo[-1].file_id)
+    await state.set_state(Reminder.freq)
+    await message.answer(t(lang, "ask_rm_freq"), reply_markup=freq_keyboard(lang))
+
+
+@router.message(Reminder.text)
+async def reminder_text_other(message: Message) -> None:
+    """Stiker, fayl, ovoz va h.k. — faqat matn yoki rasm qabul qilinadi."""
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    await message.answer(t(lang, "rm_text_or_photo"))
 
 
 async def ask_reminder_time(message: Message, state: FSMContext, lang: str) -> None:
@@ -995,12 +1046,14 @@ async def reminder_save_time(message: Message, state: FSMContext) -> None:
                              reply_markup=main_keyboard(lang, message.from_user.id))
         return
     row = {"freq": freq, "weekday": data.get("rm_weekday"),
-           "monthday": data.get("rm_monthday"), "date": data.get("rm_date")}
+           "monthday": data.get("rm_monthday"), "date": data.get("rm_date"),
+           "text": text, "photo": data.get("rm_photo")}
     db.add_reminder(message.from_user.id, text, hhmm, freq,
-                    weekday=row["weekday"], monthday=row["monthday"], on_date=on_date)
+                    weekday=row["weekday"], monthday=row["monthday"], on_date=on_date,
+                    photo=row["photo"])
     await message.answer(
         t(lang, "rm_added").format(when=reminder_when(row, lang), time=hhmm,
-                                   text=esc(text)),
+                                   text=reminder_label(row, lang)),
         reply_markup=main_keyboard(lang, message.from_user.id),
     )
 
@@ -1010,13 +1063,14 @@ async def reminder_save_time(message: Message, state: FSMContext) -> None:
 @router.message(Reminder.monthday)
 async def reminder_use_buttons(message: Message) -> None:
     """Takrorlanish, hafta kuni va oy sanasi tugma bilan tanlanadi."""
+    if not first_of_album(message):
+        return          # albomning qolgan rasmlari — javobsiz
     lang = user_lang(db.get_user(message.from_user.id), message.from_user)
     await message.answer(t(lang, "use_buttons"))
 
 
 @router.message(Suggest.text)
 @router.message(AdminReply.text)
-@router.message(Reminder.text)
 @router.message(Reminder.date)
 @router.message(Reminder.time)
 async def new_flows_non_text(message: Message) -> None:
@@ -1528,10 +1582,18 @@ async def reminder_tick(bot: Bot) -> None:
 
         async def send_one(bot: Bot, row: dict) -> None:
             lang = row.get("lang") or "uz"
-            await bot.send_message(
-                row["user_id"],
-                t(lang, "reminder_msg").format(text=esc(row["text"])),
-            )
+            body = t(lang, "reminder_msg").format(text=esc(row["text"])).strip()
+            if row.get("photo"):
+                try:
+                    await bot.send_photo(row["user_id"], row["photo"], caption=body)
+                    return
+                except TelegramBadRequest as e:
+                    # file_id yaroqsiz (masalan bot tokeni almashgan) — eslatma
+                    # yo'qolmasin, matn bilan yuboriladi
+                    log.warning("Eslatma rasmi yuborilmadi id=%s: %s", row["id"], e)
+                    if not row["text"]:
+                        body = f"{body} {t(lang, 'rm_photo_mark')}"
+            await bot.send_message(row["user_id"], body)
 
         await spread_send(bot, due, send_one, label, window_minutes=0)
         db.delete_reminders([r["id"] for r in due if r["freq"] == "once"])

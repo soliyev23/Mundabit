@@ -151,8 +151,13 @@ BOT = {
         "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
         "btn_rm_del": "🗑 {n}",
         "reminders_max": "Ko'pi bilan {n} ta eslatma. Avval birini o'chiring.",
-        "ask_rm_text": "Nimani eslatay? Qisqa yozing, masalan: <i>Kitob o'qish</i>",
+        "ask_rm_text": (
+            "Nimani eslatay? Matn yozing yoki rasm yuboring.\n"
+            "Masalan: <i>Kitob o'qish</i>"
+        ),
         "rm_text_too_long": "Qisqaroq yozing (100 belgigacha).",
+        "rm_text_or_photo": "Matn yoki rasm yuboring 🙏",
+        "rm_photo_mark": "🖼",
         "ask_rm_time": (
             "Soat nechada? Format: <code>SS:DD</code> — masalan: <code>21:00</code> "
             "(Toshkent vaqti)"
@@ -324,8 +329,13 @@ BOT = {
         "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
         "btn_rm_del": "🗑 {n}",
         "reminders_max": "Не больше {n} напоминаний. Сначала удалите одно.",
-        "ask_rm_text": "О чём напомнить? Коротко, например: <i>Читать книгу</i>",
+        "ask_rm_text": (
+            "О чём напомнить? Напишите текст или отправьте фото.\n"
+            "Например: <i>Читать книгу</i>"
+        ),
         "rm_text_too_long": "Напишите короче (до 100 символов).",
+        "rm_text_or_photo": "Отправьте текст или фото 🙏",
+        "rm_photo_mark": "🖼",
         "ask_rm_time": (
             "Во сколько? Формат: <code>ЧЧ:ММ</code> — например: <code>21:00</code> "
             "(время Ташкента)"

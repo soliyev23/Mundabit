@@ -70,6 +70,8 @@ def init_db() -> None:
             c.execute("ALTER TABLE reminders ADD COLUMN monthday INTEGER")  # 1 … 31
         if "date" not in rcols:
             c.execute("ALTER TABLE reminders ADD COLUMN date TEXT")         # once: YYYY-MM-DD
+        if "photo" not in rcols:
+            c.execute("ALTER TABLE reminders ADD COLUMN photo TEXT")        # Telegram file_id
         if "blocked" not in cols:
             # Botni bloklagan foydalanuvchi: tarqatishga qo'shilmaydi
             c.execute("ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0")
@@ -229,7 +231,7 @@ def get_reminders(user_id: int) -> list[dict]:
     with _conn() as c:
         rows = c.execute(
             """
-            SELECT id, text, time, freq, weekday, monthday, date
+            SELECT id, text, time, freq, weekday, monthday, date, photo
             FROM reminders WHERE user_id = ?
             ORDER BY time, id
             """,
@@ -240,20 +242,22 @@ def get_reminders(user_id: int) -> list[dict]:
 
 def add_reminder(user_id: int, text: str, time: str, freq: str = "daily",
                  weekday: int | None = None, monthday: int | None = None,
-                 on_date: date | None = None) -> int:
+                 on_date: date | None = None, photo: str | None = None) -> int:
     """freq bo'yicha kerakli maydon: weekly → weekday, monthly → monthday,
-    once → on_date. Qolganlari e'tiborga olinmaydi."""
+    once → on_date. Qolganlari e'tiborga olinmaydi. `photo` — Telegram
+    file_id (fayl serverga yuklanmaydi; file_id shu botga tegishli)."""
     assert freq in REMINDER_FREQS, freq
     with _conn() as c:
         cur = c.execute(
             """
-            INSERT INTO reminders (user_id, text, time, freq, weekday, monthday, date)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO reminders (user_id, text, time, freq, weekday, monthday, date, photo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (user_id, text, time, freq,
              weekday if freq == "weekly" else None,
              monthday if freq == "monthly" else None,
-             on_date.isoformat() if freq == "once" and on_date else None),
+             on_date.isoformat() if freq == "once" and on_date else None,
+             photo),
         )
         return cur.lastrowid
 
@@ -284,7 +288,7 @@ def reminders_due(moment: datetime) -> list[dict]:
     with _conn() as c:
         rows = c.execute(
             """
-            SELECT r.id, r.user_id, r.text, r.time, r.freq, u.lang
+            SELECT r.id, r.user_id, r.text, r.time, r.freq, r.photo, u.lang
             FROM reminders r JOIN users u ON u.user_id = r.user_id
             WHERE r.time = :hhmm AND u.blocked = 0 AND (
                    r.freq = 'daily'

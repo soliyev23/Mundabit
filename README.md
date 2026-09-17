@@ -24,7 +24,8 @@ odatdagidek javob beradi.
 
 Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
 
-- **⏰ Eslatma** — shaxsiy eslatma. Tartib: matn (100 belgigacha) →
+- **⏰ Eslatma** — shaxsiy eslatma. Tartib: matn (100 belgigacha) yoki rasm
+  (izohi eslatma matni bo'ladi) →
   takrorlanish → kerak bo'lsa kun yoki sana → soat (`SS:DD`, Toshkent vaqti).
   Takrorlanish: har kuni, ish kunlari (Du–Ju), haftada bir (kun tanlanadi),
   oyda bir (1–31 sana; qisqa oyda oxirgi kuni keladi), bir marta (`KK.OO`

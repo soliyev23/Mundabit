@@ -117,6 +117,13 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   `db.reminders_due(moment)` hal qiladi. Eski eslatmalar migratsiyada
   `daily` bo'lib qolgan. Takrorlanish, hafta kuni va oy sanasi inline tugma
   bilan tanlanadi, tanlangach savol xabari o'chiriladi.
+- Eslatmaga rasm: matn so'raladigan qadamda matn o'rniga rasm yuborilsa
+  bo'ladi, izohi matnga aylanadi (izohsiz ham mumkin). Faylning o'zi
+  saqlanmaydi — `reminders.photo` da eng katta o'lchamning Telegram `file_id`
+  si (u shu bot tokeniga bog'liq). Yuborishda `file_id` yaroqsiz chiqsa
+  eslatma matn bilan ketadi. Albomdan faqat birinchi rasm olinadi:
+  `first_of_album()` await'siz tekshiradi, chunki polling albom rasmlarini
+  parallel ishlaydi — usiz bitta albomga bir nechta savol chiqadi.
 - `reminder_tick` har daqiqada ishlaydi; kechikkan bo'lsa oxirgi 5 daqiqani
   ham tekshiradi, bir daqiqani ikki marta ishlamaydi, bot qayta ishga
   tushganda o'tib ketganlar takrorlanmaydi.
