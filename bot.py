@@ -51,7 +51,8 @@ from config import (
     WEBAPP_URL,
     expectancy_for,
 )
-from texts import BOT, LEGACY_BUTTONS, fmt_date, t
+from texts import (BOT, LEGACY_BUTTONS, WEEKDAYS_EVERY, WEEKDAYS_SHORT, fmt_date,
+                   fmt_day_month, t)
 from visual import life_stats, render_life_poster, stats_caption
 from webserver import start_webserver
 
@@ -113,8 +114,13 @@ class Broadcast(StatesGroup):
 
 
 class Reminder(StatesGroup):
-    """Kundalik eslatma qo'shish: matn → vaqt."""
+    """Eslatma qo'shish: matn → takrorlanish → (hafta kuni | oy sanasi |
+    sana) → soat."""
     text = State()
+    freq = State()
+    weekday = State()
+    monthday = State()
+    date = State()
     time = State()
 
 
@@ -732,8 +738,13 @@ async def suggest_reply_send(message: Message, state: FSMContext) -> None:
 
 
 # ── Eslatma ──────────────────────────────────────────────────────────────────
-# Har bir eslatma — kundalik: matn + soat (Toshkent vaqti). Har daqiqada
-# ishlaydigan vazifa o'sha daqiqaga belgilanganlarini yuboradi.
+# Eslatma: matn + takrorlanish + soat (Toshkent vaqti). Takrorlanish:
+# har kuni, ish kunlari (Du–Ju), haftada bir (kun tanlanadi), oyda bir (sana
+# tanlanadi), bir marta (sana yoziladi, yuborilgach o'chadi). Har daqiqada
+# ishlaydigan vazifa o'sha daqiqaga to'g'ri kelganlarini yuboradi.
+
+FREQS = ("daily", "weekdays", "weekly", "monthly", "once")
+
 
 def parse_hhmm(text: str) -> str | None:
     """«21:00», «21.00», «9:5», «21» → «21:00». Noto'g'ri bo'lsa None."""
@@ -749,24 +760,103 @@ def parse_hhmm(text: str) -> str | None:
     return f"{hh:02d}:{mm:02d}"
 
 
+def now_local() -> datetime:
+    return datetime.now(ZoneInfo(TIMEZONE))
+
+
+def parse_reminder_date(text: str, today: date) -> date | None:
+    """«25.09» yoki «25.09.2027» → sana, bugundan oldin bo'lmasa.
+    Yil yozilmasa — eng yaqin kelajakdagi sana (bu yil yoki keyingi yil)."""
+    raw = text.strip().replace("/", ".").replace("-", ".")
+    parts = raw.split(".")
+    if not all(p.isdigit() for p in parts):
+        return None
+    try:
+        if len(parts) == 3:
+            d = date(int(parts[2]), int(parts[1]), int(parts[0]))
+            return d if d >= today else None
+        if len(parts) == 2:
+            day, month = int(parts[0]), int(parts[1])
+            for year in range(today.year, today.year + 5):   # 29.02 uchun
+                try:
+                    d = date(year, month, day)
+                except ValueError:
+                    continue
+                if d >= today:
+                    return d
+    except ValueError:
+        return None
+    return None
+
+
+def reminder_when(r: dict, lang: str) -> str:
+    """Takrorlanishning qisqa tavsifi: «har kuni», «har dushanba», …"""
+    freq = r.get("freq") or "daily"
+    if freq == "weekly" and r.get("weekday") is not None:
+        return WEEKDAYS_EVERY[lang][r["weekday"]]
+    if freq == "monthly" and r.get("monthday"):
+        return t(lang, "when_monthly").format(d=r["monthday"])
+    if freq == "once" and r.get("date"):
+        return fmt_day_month(date.fromisoformat(r["date"]), lang, now_local().date())
+    if freq == "weekdays":
+        return t(lang, "when_weekdays")
+    return t(lang, "when_daily")
+
+
 def reminders_view(user_id: int, lang: str) -> tuple[str, InlineKeyboardMarkup]:
-    """Eslatmalar ro'yxati va har biri uchun o'chirish tugmasi."""
+    """Raqamlangan ro'yxat va raqam bo'yicha o'chirish tugmalari."""
     items = db.get_reminders(user_id)
-    rows = [[InlineKeyboardButton(
-        text=t(lang, "btn_rm_del").format(time=r["time"]),
+    del_buttons = [InlineKeyboardButton(
+        text=t(lang, "btn_rm_del").format(n=i),
         callback_data=f"rm:del:{r['id']}",
-    )] for r in items]
+    ) for i, r in enumerate(items, start=1)]
+    rows = [del_buttons] if del_buttons else []
     if len(items) < MAX_REMINDERS:
         rows.append([InlineKeyboardButton(text=t(lang, "btn_add"),
                                           callback_data="rm:add")])
     if not items:
         return t(lang, "reminders_empty"), InlineKeyboardMarkup(inline_keyboard=rows)
     listing = "\n".join(
-        t(lang, "reminder_item").format(time=r["time"], text=esc(r["text"]))
-        for r in items
+        t(lang, "reminder_item").format(n=i, time=r["time"],
+                                        when=reminder_when(r, lang), text=esc(r["text"]))
+        for i, r in enumerate(items, start=1)
     )
     return (t(lang, "reminders_list").format(items=listing),
             InlineKeyboardMarkup(inline_keyboard=rows))
+
+
+def freq_keyboard(lang: str) -> InlineKeyboardMarkup:
+    b = lambda f: InlineKeyboardButton(text=t(lang, f"freq_{f}"), callback_data=f"rmf:{f}")
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [b("daily"), b("weekdays")],
+        [b("weekly"), b("monthly")],
+        [b("once")],
+    ])
+
+
+def weekday_keyboard(lang: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=name, callback_data=f"rmw:{i}")
+        for i, name in enumerate(WEEKDAYS_SHORT[lang])
+    ]])
+
+
+def monthday_keyboard() -> InlineKeyboardMarkup:
+    days = [InlineKeyboardButton(text=str(d), callback_data=f"rmd:{d}")
+            for d in range(1, 32)]
+    return InlineKeyboardMarkup(inline_keyboard=[days[i:i + 7]
+                                                 for i in range(0, 31, 7)])
+
+
+async def drop_question(callback: CallbackQuery) -> None:
+    """Tanlov qilingach savol xabari o'chiriladi — chat toza qoladi."""
+    try:
+        await callback.message.delete()
+    except Exception:
+        try:
+            await callback.message.edit_reply_markup(reply_markup=None)
+        except Exception:
+            pass
 
 
 @router.message(F.text.in_(btn_variants("btn_reminder")))
@@ -789,6 +879,7 @@ async def reminder_add_start(callback: CallbackQuery, state: FSMContext) -> None
     if len(db.get_reminders(callback.from_user.id)) >= MAX_REMINDERS:
         await callback.message.answer(t(lang, "reminders_max").format(n=MAX_REMINDERS))
         return
+    await state.clear()
     await state.set_state(Reminder.text)
     await callback.message.answer(t(lang, "ask_rm_text"),
                                   reply_markup=back_keyboard(lang))
@@ -814,8 +905,72 @@ async def reminder_save_text(message: Message, state: FSMContext) -> None:
         await message.answer(t(lang, "rm_text_too_long"))
         return
     await state.update_data(rm_text=text)
+    await state.set_state(Reminder.freq)
+    await message.answer(t(lang, "ask_rm_freq"), reply_markup=freq_keyboard(lang))
+
+
+async def ask_reminder_time(message: Message, state: FSMContext, lang: str) -> None:
     await state.set_state(Reminder.time)
     await message.answer(t(lang, "ask_rm_time"))
+
+
+@router.callback_query(Reminder.freq, F.data.startswith("rmf:"))
+async def reminder_pick_freq(callback: CallbackQuery, state: FSMContext) -> None:
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    freq = callback.data.split(":")[1]
+    await callback.answer()
+    if freq not in FREQS:
+        return
+    await state.update_data(rm_freq=freq)
+    await drop_question(callback)
+    if freq == "weekly":
+        await state.set_state(Reminder.weekday)
+        await callback.message.answer(t(lang, "ask_rm_weekday"),
+                                      reply_markup=weekday_keyboard(lang))
+    elif freq == "monthly":
+        await state.set_state(Reminder.monthday)
+        await callback.message.answer(t(lang, "ask_rm_monthday"),
+                                      reply_markup=monthday_keyboard())
+    elif freq == "once":
+        await state.set_state(Reminder.date)
+        await callback.message.answer(t(lang, "ask_rm_date"))
+    else:
+        await ask_reminder_time(callback.message, state, lang)
+
+
+@router.callback_query(Reminder.weekday, F.data.startswith("rmw:"))
+async def reminder_pick_weekday(callback: CallbackQuery, state: FSMContext) -> None:
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    wd = int(callback.data.split(":")[1])
+    await callback.answer()
+    if not 0 <= wd <= 6:
+        return
+    await state.update_data(rm_weekday=wd)
+    await drop_question(callback)
+    await ask_reminder_time(callback.message, state, lang)
+
+
+@router.callback_query(Reminder.monthday, F.data.startswith("rmd:"))
+async def reminder_pick_monthday(callback: CallbackQuery, state: FSMContext) -> None:
+    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
+    md = int(callback.data.split(":")[1])
+    await callback.answer()
+    if not 1 <= md <= 31:
+        return
+    await state.update_data(rm_monthday=md)
+    await drop_question(callback)
+    await ask_reminder_time(callback.message, state, lang)
+
+
+@router.message(Reminder.date, F.text)
+async def reminder_save_date(message: Message, state: FSMContext) -> None:
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    d = parse_reminder_date(message.text, now_local().date())
+    if d is None:
+        await message.answer(t(lang, "bad_rm_date"))
+        return
+    await state.update_data(rm_date=d.isoformat())
+    await ask_reminder_time(message, state, lang)
 
 
 @router.message(Reminder.time, F.text)
@@ -826,22 +981,43 @@ async def reminder_save_time(message: Message, state: FSMContext) -> None:
         await message.answer(t(lang, "bad_time"))
         return
     data = await state.get_data()
+    freq = data.get("rm_freq", "daily")
+    on_date = date.fromisoformat(data["rm_date"]) if data.get("rm_date") else None
+    if freq == "once" and on_date:
+        now = now_local()
+        if (on_date.isoformat(), hhmm) <= (now.date().isoformat(), now.strftime("%H:%M")):
+            await message.answer(t(lang, "rm_past"))
+            return
     await state.clear()
     text = data.get("rm_text", "")
     if len(db.get_reminders(message.from_user.id)) >= MAX_REMINDERS:
         await message.answer(t(lang, "reminders_max").format(n=MAX_REMINDERS),
                              reply_markup=main_keyboard(lang, message.from_user.id))
         return
-    db.add_reminder(message.from_user.id, text, hhmm)
+    row = {"freq": freq, "weekday": data.get("rm_weekday"),
+           "monthday": data.get("rm_monthday"), "date": data.get("rm_date")}
+    db.add_reminder(message.from_user.id, text, hhmm, freq,
+                    weekday=row["weekday"], monthday=row["monthday"], on_date=on_date)
     await message.answer(
-        t(lang, "rm_added").format(time=hhmm, text=esc(text)),
+        t(lang, "rm_added").format(when=reminder_when(row, lang), time=hhmm,
+                                   text=esc(text)),
         reply_markup=main_keyboard(lang, message.from_user.id),
     )
+
+
+@router.message(Reminder.freq)
+@router.message(Reminder.weekday)
+@router.message(Reminder.monthday)
+async def reminder_use_buttons(message: Message) -> None:
+    """Takrorlanish, hafta kuni va oy sanasi tugma bilan tanlanadi."""
+    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    await message.answer(t(lang, "use_buttons"))
 
 
 @router.message(Suggest.text)
 @router.message(AdminReply.text)
 @router.message(Reminder.text)
+@router.message(Reminder.date)
 @router.message(Reminder.time)
 async def new_flows_non_text(message: Message) -> None:
     lang = user_lang(db.get_user(message.from_user.id), message.from_user)
@@ -1317,35 +1493,38 @@ async def friday_calendar(bot: Bot) -> None:
     await spread_send(bot, users, send_calendar, "Juma kalendari")
 
 
-_last_reminder_minute: str | None = None
+_last_reminder_minute: datetime | None = None
+REMINDER_CATCHUP_MINUTES = 5
 
 
 async def reminder_tick(bot: Bot) -> None:
-    """Har daqiqada: shu daqiqaga belgilangan eslatmalarni yuboradi.
+    """Har daqiqada: shu daqiqaga to'g'ri keladigan eslatmalarni yuboradi.
 
     Vazifa kechikib ishga tushsa oradagi daqiqalar ham tekshiriladi (ko'pi
-    bilan 5 ta) — shunda qisqa kechikishda eslatma yo'qolmaydi. Bot qayta
-    ishga tushsa, o'tib ketgan daqiqalar takrorlanmaydi.
+    bilan 5 ta) — qisqa kechikishda eslatma yo'qolmaydi. Bir daqiqa ikki
+    marta ishlov berilmaydi. Bot qayta ishga tushsa, o'tib ketgan daqiqalar
+    takrorlanmaydi. Bir martalik eslatma yuborilgach o'chiriladi.
     """
     global _last_reminder_minute
-    now = datetime.now(ZoneInfo(TIMEZONE))
-    minutes = [now.strftime("%H:%M")]
-    if _last_reminder_minute is not None:
-        gap, cursor = [], now
-        for _ in range(5):
-            cursor -= timedelta(minutes=1)
-            hhmm = cursor.strftime("%H:%M")
-            if hhmm == _last_reminder_minute:
-                break
-            gap.append(hhmm)
-        minutes = list(reversed(gap)) + minutes
-    _last_reminder_minute = now.strftime("%H:%M")
+    now = now_local().replace(second=0, microsecond=0)
+    last = _last_reminder_minute
+    minutes, cursor = [], now
+    for _ in range(REMINDER_CATCHUP_MINUTES + 1):
+        if last is not None and cursor <= last:
+            break
+        minutes.append(cursor)
+        if last is None:
+            break
+        cursor -= timedelta(minutes=1)
+    minutes.reverse()
+    _last_reminder_minute = now if last is None else max(last, now)
 
-    for hhmm in minutes:
-        due = db.reminders_due(hhmm)
+    for moment in minutes:
+        due = db.reminders_due(moment)
         if not due:
             continue
-        log.info("Eslatma %s: %d ta", hhmm, len(due))
+        label = f"Eslatma {moment:%H:%M}"
+        log.info("%s: %d ta", label, len(due))
 
         async def send_one(bot: Bot, row: dict) -> None:
             lang = row.get("lang") or "uz"
@@ -1354,7 +1533,11 @@ async def reminder_tick(bot: Bot) -> None:
                 t(lang, "reminder_msg").format(text=esc(row["text"])),
             )
 
-        await spread_send(bot, due, send_one, f"Eslatma {hhmm}", window_minutes=0)
+        await spread_send(bot, due, send_one, label, window_minutes=0)
+        db.delete_reminders([r["id"] for r in due if r["freq"] == "once"])
+
+    # Bot o'chiq turgan paytga tushib, yuborilmay qolgan bir martaliklar
+    db.purge_expired_once(now - timedelta(minutes=REMINDER_CATCHUP_MINUTES + 1))
 
 
 # ── Ishga tushirish ──────────────────────────────────────────────────────────

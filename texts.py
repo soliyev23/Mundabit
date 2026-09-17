@@ -13,6 +13,27 @@ def fmt_date(d: date, lang: str) -> str:
     return f"{d.day} {MONTHS[lang][d.month - 1]} {d.year}"
 
 
+# Eslatma: hafta kunlari (0 = dushanba, datetime.weekday() bilan bir xil)
+WEEKDAYS_SHORT = {
+    "uz": ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"],
+    "ru": ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+}
+WEEKDAYS_EVERY = {
+    "uz": ["har dushanba", "har seshanba", "har chorshanba", "har payshanba",
+           "har juma", "har shanba", "har yakshanba"],
+    # Ruscha «каждый/каждую/каждое» jins bo'yicha o'zgaradi — «по …» shakli bir xil
+    "ru": ["по понедельникам", "по вторникам", "по средам", "по четвергам",
+           "по пятницам", "по субботам", "по воскресеньям"],
+}
+
+
+def fmt_day_month(d: date, lang: str, today: date | None = None) -> str:
+    """«25 sentyabr»; joriy yildan boshqa bo'lsa yil ham qo'shiladi."""
+    today = today or date.today()
+    s = f"{d.day} {MONTHS[lang][d.month - 1]}"
+    return s if d.year == today.year else f"{s} {d.year}"
+
+
 def age_label(year: int, age: int, lang: str) -> str:
     # Rus tilida ham bitta shakl ishlatiladi ("лет") — aralash bo'lmasin
     return f"{year} · {age} yosh" if lang == "uz" else f"{year} · {age} лет"
@@ -53,7 +74,7 @@ BOT = {
         "help": (
             "<b>Mundabit</b> — vaqt qadrini anglash boti.\n\n"
             "/start — kalendarni ko'rish va menyuni ochish\n"
-            "⏰ Eslatma — har kuni belgilangan vaqtda eslatma\n"
+            "⏰ Eslatma — kerakli vaqtda eslatib turish\n"
             "✉️ Murojaat — savol, taklif yoki fikr yuborish\n"
             "⚙️ Sozlamalar — ism, jins va til\n\n"
             "Har juma 13:00–14:00 — hayot kalendari.\n"
@@ -125,10 +146,10 @@ BOT = {
         # Eslatma
         "btn_reminder": "⏰ Eslatma",
         "btn_add": "➕ Qo'shish",
-        "reminders_empty": "⏰ Eslatmalar yo'q.\n\nHar kuni belgilangan vaqtda yuboriladi.",
-        "reminders_list": "⏰ <b>Eslatmalar</b> — har kuni\n\n{items}",
-        "reminder_item": "{time} — {text}",
-        "btn_rm_del": "🗑 {time}",
+        "reminders_empty": "⏰ Eslatmalar yo'q.",
+        "reminders_list": "⏰ <b>Eslatmalar</b>\n\n{items}",
+        "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
+        "btn_rm_del": "🗑 {n}",
         "reminders_max": "Ko'pi bilan {n} ta eslatma. Avval birini o'chiring.",
         "ask_rm_text": "Nimani eslatay? Qisqa yozing, masalan: <i>Kitob o'qish</i>",
         "rm_text_too_long": "Qisqaroq yozing (100 belgigacha).",
@@ -140,7 +161,24 @@ BOT = {
             "❗ Vaqt noto'g'ri. <code>SS:DD</code> formatida yozing, "
             "masalan: <code>21:00</code>"
         ),
-        "rm_added": "✅ Har kuni <b>{time}</b> da eslataman: {text}",
+        "ask_rm_freq": "Qanchada bir takrorlansin?",
+        "freq_daily": "Har kuni",
+        "freq_weekdays": "Ish kunlari",
+        "freq_weekly": "Haftada bir",
+        "freq_monthly": "Oyda bir",
+        "freq_once": "Bir marta",
+        "when_daily": "har kuni",
+        "when_weekdays": "ish kunlari",
+        "when_monthly": "har oy {d}-sanada",
+        "ask_rm_weekday": "Haftaning qaysi kuni?",
+        "ask_rm_monthday": "Oyning nechanchi sanasida?",
+        "ask_rm_date": "Qaysi sana? Format: <code>KK.OO</code> — masalan: <code>25.09</code>",
+        "bad_rm_date": (
+            "❗ Sana noto'g'ri yoki o'tib ketgan. <code>KK.OO</code> formatida "
+            "yozing, masalan: <code>25.09</code>"
+        ),
+        "rm_past": "❗ Bu vaqt o'tib ketgan. Keyinroq vaqtni yozing.",
+        "rm_added": "✅ Eslatma saqlandi: {when}, <b>{time}</b>\n{text}",
         "rm_deleted": "🗑 O'chirildi",
         "reminder_msg": "⏰ {text}",
         # Murojaat
@@ -209,7 +247,7 @@ BOT = {
         "help": (
             "<b>Mundabit</b> — бот, помогающий ценить время.\n\n"
             "/start — посмотреть календарь и открыть меню\n"
-            "⏰ Напоминание — каждый день в выбранное время\n"
+            "⏰ Напоминание — напомнит в нужное время\n"
             "✉️ Обращение — вопрос, предложение или отзыв\n"
             "⚙️ Настройки — имя, пол и язык\n\n"
             "Каждую пятницу с 13:00 до 14:00 — календарь жизни.\n"
@@ -281,10 +319,10 @@ BOT = {
         # Напоминание
         "btn_reminder": "⏰ Напоминание",
         "btn_add": "➕ Добавить",
-        "reminders_empty": "⏰ Напоминаний нет.\n\nОни приходят каждый день в указанное время.",
-        "reminders_list": "⏰ <b>Напоминания</b> — каждый день\n\n{items}",
-        "reminder_item": "{time} — {text}",
-        "btn_rm_del": "🗑 {time}",
+        "reminders_empty": "⏰ Напоминаний нет.",
+        "reminders_list": "⏰ <b>Напоминания</b>\n\n{items}",
+        "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
+        "btn_rm_del": "🗑 {n}",
         "reminders_max": "Не больше {n} напоминаний. Сначала удалите одно.",
         "ask_rm_text": "О чём напомнить? Коротко, например: <i>Читать книгу</i>",
         "rm_text_too_long": "Напишите короче (до 100 символов).",
@@ -296,7 +334,24 @@ BOT = {
             "❗ Неверное время. Введите в формате <code>ЧЧ:ММ</code>, "
             "например: <code>21:00</code>"
         ),
-        "rm_added": "✅ Буду напоминать каждый день в <b>{time}</b>: {text}",
+        "ask_rm_freq": "Как часто повторять?",
+        "freq_daily": "Каждый день",
+        "freq_weekdays": "По будням",
+        "freq_weekly": "Раз в неделю",
+        "freq_monthly": "Раз в месяц",
+        "freq_once": "Один раз",
+        "when_daily": "каждый день",
+        "when_weekdays": "по будням",
+        "when_monthly": "каждый месяц {d}-го числа",
+        "ask_rm_weekday": "В какой день недели?",
+        "ask_rm_monthday": "Какого числа?",
+        "ask_rm_date": "Какая дата? Формат: <code>ДД.ММ</code> — например: <code>25.09</code>",
+        "bad_rm_date": (
+            "❗ Неверная или прошедшая дата. Введите в формате <code>ДД.ММ</code>, "
+            "например: <code>25.09</code>"
+        ),
+        "rm_past": "❗ Это время уже прошло. Укажите более позднее.",
+        "rm_added": "✅ Напоминание сохранено: {when}, <b>{time}</b>\n{text}",
         "rm_deleted": "🗑 Удалено",
         "reminder_msg": "⏰ {text}",
         # Обращение

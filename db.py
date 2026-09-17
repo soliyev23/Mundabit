@@ -1,7 +1,8 @@
 """SQLite baza: foydalanuvchilar va haftalik baholar."""
+import calendar
 import sqlite3
 from contextlib import contextmanager
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from config import DB_PATH
 
@@ -59,6 +60,16 @@ def init_db() -> None:
             c.execute("ALTER TABLE users ADD COLUMN lang TEXT NOT NULL DEFAULT 'uz'")
         if "gender" not in cols:
             c.execute("ALTER TABLE users ADD COLUMN gender TEXT")  # 'm' | 'f' | NULL
+        # Eslatmalarning takrorlanishi: daily | weekdays | weekly | monthly | once
+        rcols = {row[1] for row in c.execute("PRAGMA table_info(reminders)")}
+        if "freq" not in rcols:
+            c.execute("ALTER TABLE reminders ADD COLUMN freq TEXT NOT NULL DEFAULT 'daily'")
+        if "weekday" not in rcols:
+            c.execute("ALTER TABLE reminders ADD COLUMN weekday INTEGER")   # 0=Du … 6=Ya
+        if "monthday" not in rcols:
+            c.execute("ALTER TABLE reminders ADD COLUMN monthday INTEGER")  # 1 … 31
+        if "date" not in rcols:
+            c.execute("ALTER TABLE reminders ADD COLUMN date TEXT")         # once: YYYY-MM-DD
         if "blocked" not in cols:
             # Botni bloklagan foydalanuvchi: tarqatishga qo'shilmaydi
             c.execute("ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0")
@@ -211,20 +222,38 @@ def get_rating_summary() -> dict[str, int]:
 
 # ── Eslatmalar ───────────────────────────────────────────────────────────────
 
+REMINDER_FREQS = ("daily", "weekdays", "weekly", "monthly", "once")
+
+
 def get_reminders(user_id: int) -> list[dict]:
     with _conn() as c:
         rows = c.execute(
-            "SELECT id, text, time FROM reminders WHERE user_id = ? ORDER BY time, id",
+            """
+            SELECT id, text, time, freq, weekday, monthday, date
+            FROM reminders WHERE user_id = ?
+            ORDER BY time, id
+            """,
             (user_id,),
         ).fetchall()
         return [dict(r) for r in rows]
 
 
-def add_reminder(user_id: int, text: str, time: str) -> int:
+def add_reminder(user_id: int, text: str, time: str, freq: str = "daily",
+                 weekday: int | None = None, monthday: int | None = None,
+                 on_date: date | None = None) -> int:
+    """freq bo'yicha kerakli maydon: weekly → weekday, monthly → monthday,
+    once → on_date. Qolganlari e'tiborga olinmaydi."""
+    assert freq in REMINDER_FREQS, freq
     with _conn() as c:
         cur = c.execute(
-            "INSERT INTO reminders (user_id, text, time) VALUES (?, ?, ?)",
-            (user_id, text, time),
+            """
+            INSERT INTO reminders (user_id, text, time, freq, weekday, monthday, date)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (user_id, text, time, freq,
+             weekday if freq == "weekly" else None,
+             monthday if freq == "monthly" else None,
+             on_date.isoformat() if freq == "once" and on_date else None),
         )
         return cur.lastrowid
 
@@ -237,16 +266,55 @@ def delete_reminder(reminder_id: int, user_id: int) -> bool:
         return cur.rowcount > 0
 
 
-def reminders_due(hhmm: str) -> list[dict]:
-    """Shu daqiqaga belgilangan eslatmalar, botni bloklamaganlar uchun."""
+def reminders_due(moment: datetime) -> list[dict]:
+    """`moment` daqiqasiga (TIMEZONE bo'yicha) to'g'ri keladigan eslatmalar,
+    botni bloklamaganlar uchun.
+
+    Oylik eslatma 29–31 ga qo'yilgan bo'lsa, bunday kun yo'q oyda oxirgi
+    kunida keladi (masalan 31 → 30 aprel, 28/29 fevral).
+    """
+    last_day = calendar.monthrange(moment.year, moment.month)[1]
+    params = {
+        "hhmm": moment.strftime("%H:%M"),
+        "wd": moment.weekday(),
+        "day": moment.day,
+        "is_last": 1 if moment.day == last_day else 0,
+        "date": moment.date().isoformat(),
+    }
     with _conn() as c:
         rows = c.execute(
             """
-            SELECT r.id, r.user_id, r.text, r.time, u.lang
+            SELECT r.id, r.user_id, r.text, r.time, r.freq, u.lang
             FROM reminders r JOIN users u ON u.user_id = r.user_id
-            WHERE r.time = ? AND u.blocked = 0
+            WHERE r.time = :hhmm AND u.blocked = 0 AND (
+                   r.freq = 'daily'
+                OR (r.freq = 'weekdays' AND :wd < 5)
+                OR (r.freq = 'weekly'   AND r.weekday = :wd)
+                OR (r.freq = 'monthly'  AND (r.monthday = :day
+                                             OR (:is_last AND r.monthday > :day)))
+                OR (r.freq = 'once'     AND r.date = :date)
+            )
             ORDER BY r.user_id, r.id
             """,
-            (hhmm,),
+            params,
         ).fetchall()
         return [dict(r) for r in rows]
+
+
+def delete_reminders(ids: list[int]) -> None:
+    """Yuborilgan bir martalik eslatmalarni o'chirish."""
+    if not ids:
+        return
+    with _conn() as c:
+        c.executemany("DELETE FROM reminders WHERE id = ?", [(i,) for i in ids])
+
+
+def purge_expired_once(before: datetime) -> int:
+    """Vaqti `before` dan oldin bo'lgan bir martalik eslatmalar (bot o'chiq
+    turgan paytga to'g'ri kelgan va yuborilmay qolganlar) tozalanadi."""
+    with _conn() as c:
+        cur = c.execute(
+            "DELETE FROM reminders WHERE freq = 'once' AND (date || ' ' || time) < ?",
+            (before.strftime("%Y-%m-%d %H:%M"),),
+        )
+        return cur.rowcount

@@ -109,10 +109,17 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Tarqatish: juma 13:00–14:00, dushanba 08:00–09:00, oyna bo'ylab yoyib.
 - Tug'ilgan sanani foydalanuvchi o'zi o'zgartira olmaydi — keyinchalik faqat
   admin orqali (UI hali yozilmagan).
-- Eslatma — kundalik takrorlanadi (bir martalik emas): matn + `SS:DD`, ko'pi
-  bilan 5 ta. `reminder_tick` har daqiqada ishlaydi va shu daqiqaga
-  belgilanganlarni yuboradi; kechikkan bo'lsa oxirgi 5 daqiqani ham tekshiradi,
-  bot qayta ishga tushganda esa o'tib ketganlar takrorlanmaydi.
+- Eslatma: matn → takrorlanish → (hafta kuni | oy sanasi | sana) → `SS:DD`,
+  ko'pi bilan 5 ta. `reminders.freq`: `daily`, `weekdays` (Du–Ju), `weekly`
+  (`weekday` 0=Du), `monthly` (`monthday` 1–31; oyda bunday kun bo'lmasa
+  oxirgi kunida), `once` (`date`; yuborilgach o'chadi, bot o'chiq paytda
+  o'tib ketganlari tozalanadi). Qaysi eslatma qachon kelishini faqat
+  `db.reminders_due(moment)` hal qiladi. Eski eslatmalar migratsiyada
+  `daily` bo'lib qolgan. Takrorlanish, hafta kuni va oy sanasi inline tugma
+  bilan tanlanadi, tanlangach savol xabari o'chiriladi.
+- `reminder_tick` har daqiqada ishlaydi; kechikkan bo'lsa oxirgi 5 daqiqani
+  ham tekshiradi, bir daqiqani ikki marta ishlamaydi, bot qayta ishga
+  tushganda o'tib ketganlar takrorlanmaydi.
 - Admin tarqatishi `copy_message` bilan — admin yozgan formatlash va rasm o'z
   holicha boradi, HTML'ni qochirish kerak emas. Bir vaqtda bitta tarqatish
   (`broadcasting` bayrog'i), fon vazifasida ishlaydi.
