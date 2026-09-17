@@ -36,6 +36,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 import db
+import english
 from config import (
     ADMIN_ID,
     ADMIN_IDS,
@@ -44,6 +45,8 @@ from config import (
     CALENDAR_DAY_OF_WEEK,
     CALENDAR_HOUR,
     CALENDAR_MINUTE,
+    EN_HOUR,
+    EN_MINUTE,
     NOTIFY_DAY_OF_WEEK,
     NOTIFY_HOUR,
     NOTIFY_MINUTE,
@@ -51,8 +54,8 @@ from config import (
     WEBAPP_URL,
     expectancy_for,
 )
-from texts import (BOT, LEGACY_BUTTONS, WEEKDAYS_EVERY, WEEKDAYS_FULL, fmt_date,
-                   fmt_day_month, t)
+from texts import (BOT, LEGACY_BUTTONS, POS_NAMES, WEEKDAYS_EVERY, WEEKDAYS_FULL,
+                   fmt_date, fmt_day_month, t)
 from visual import life_stats, render_life_poster, stats_caption
 from webserver import start_webserver
 
@@ -127,6 +130,17 @@ class Reminder(StatesGroup):
     time = State()
 
 
+class EnglishTest(StatesGroup):
+    """Daraja testi: tanishtiruv → savollar. FSM'da test holati (english.new_test)."""
+    intro = State()
+    question = State()
+
+
+class EnglishReview(StatesGroup):
+    """Takrorlash savollari; FSM'da navbat va joriy savol."""
+    question = State()
+
+
 LANG_NAMES = {"uz": "O'zbekcha", "ru": "Русский"}
 MAX_REMINDERS = 5
 REMINDER_TEXT_MAX = 100
@@ -187,22 +201,27 @@ def btn_variants(key: str) -> set[str]:
 
 
 def main_keyboard(lang: str, user_id: int) -> ReplyKeyboardMarkup:
+    user = db.get_user(user_id)
+    second = [KeyboardButton(text=t(lang, "btn_settings"))]
+    if user and user.get("english"):
+        second.insert(0, KeyboardButton(text=t(lang, "btn_english")))
     rows = [
         [KeyboardButton(text=t(lang, "btn_reminder")),
          KeyboardButton(text=t(lang, "btn_suggest"))],
-        [KeyboardButton(text=t(lang, "btn_settings"))],
+        second,
     ]
     if user_id in ADMIN_IDS:
         rows.append([KeyboardButton(text=t(lang, "btn_admin"))])
     return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
 
 
-def settings_keyboard(lang: str) -> ReplyKeyboardMarkup:
+def settings_keyboard(lang: str, english_on: bool = False) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=t(lang, "btn_name"))],
             [KeyboardButton(text=t(lang, "btn_gender"))],
             [KeyboardButton(text=t(lang, "btn_lang"))],
+            [KeyboardButton(text=t(lang, "btn_en_off" if english_on else "btn_en_on"))],
             [KeyboardButton(text=t(lang, "btn_back"))],
         ],
         resize_keyboard=True,
@@ -247,6 +266,7 @@ def settings_text(user: dict) -> str:
         birth=fmt_date(date.fromisoformat(user["birth_date"]), lang),
         gender=gender,
         lang=LANG_NAMES.get(lang, lang),
+        english=t(lang, "en_state_on" if user.get("english") else "en_state_off"),
     )
 
 
@@ -539,7 +559,7 @@ async def show_settings(message: Message, state: FSMContext, prefix: str = "") -
     text = settings_text(user)
     if prefix:
         text = f"{prefix}\n\n{text}"
-    await message.answer(text, reply_markup=settings_keyboard(lang))
+    await message.answer(text, reply_markup=settings_keyboard(lang, bool(user.get("english"))))
 
 
 async def ask_settings_field(message: Message, state: FSMContext, field: State,
@@ -1205,6 +1225,215 @@ async def new_flows_non_text(message: Message) -> None:
     await message.answer(t(_lang(message), "text_only"))
 
 
+# ── English ──────────────────────────────────────────────────────────────────
+# Sozlamalardan yoqiladi (standart — o'chiq). Birinchi kirishda lug'at haqida
+# ma'lumot va daraja testi; keyin har kuni 3 ta so'z (ertalab avtomatik ham
+# keladi) va vaqti kelgan so'zlarni takrorlash. Hamma tanlov pastki
+# klaviaturada. Mantiq english.py da.
+
+def english_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return _kb([[t(lang, "btn_en_retest")]], lang)
+
+
+def question_keyboard(lang: str, options: list[str]) -> ReplyKeyboardMarkup:
+    return _kb([[o] for o in options] + [[t(lang, "btn_dont_know")]], lang)
+
+
+def english_intro_text(lang: str) -> str:
+    counts = english.level_counts()
+    levels = "\n".join(t(lang, "en_level_line").format(level=lv, n=_fmt_num(n))
+                       for lv, n in counts.items())
+    return t(lang, "en_intro").format(
+        time=f"{EN_HOUR:02d}:{EN_MINUTE:02d}",
+        total=_fmt_num(sum(counts.values())),
+        levels=levels,
+    )
+
+
+def _fmt_num(n: int) -> str:
+    return f"{n:,}".replace(",", " ")
+
+
+def english_today_text(user: dict, lang: str, today: date) -> str:
+    """Bugungi so'zlar (kerak bo'lsa shu yerda tanlanadi)."""
+    ids = english.today_words(user["user_id"], user["en_level"], today)
+    parts = [t(lang, "en_today_title").format(level=user["en_level"])]
+    for wid in ids:
+        w = english.words()[wid]
+        parts.append(
+            f"<b>{esc(w['word'])}</b> · {POS_NAMES[lang][w['pos']]}\n"
+            f"{esc(english.translation(wid, lang))}\n"
+            f"<i>{esc(w['ex'])}</i>"
+        )
+    if not ids:
+        parts.append(t(lang, "en_all_done"))
+    return "\n\n".join(parts)
+
+
+async def english_session(message: Message, state: FSMContext, user: dict,
+                          lang: str, prefix: str = "") -> None:
+    """Avval vaqti kelgan takrorlashlar, keyin bugungi so'zlar."""
+    today = now_local().date()
+    english.today_words(user["user_id"], user["en_level"], today)
+    queue = english.due_reviews(user["user_id"], today)
+    if queue:
+        await state.clear()
+        await state.set_state(EnglishReview.question)
+        await state.update_data(queue=queue, i=0)
+        await ask_review(message, state, lang, prefix)
+        return
+    await state.clear()
+    text = english_today_text(user, lang, today)
+    if prefix:
+        text = f"{prefix}\n\n{text}"
+    await message.answer(text, reply_markup=english_keyboard(lang))
+
+
+async def ask_review(message: Message, state: FSMContext, lang: str,
+                     prefix: str = "") -> None:
+    data = await state.get_data()
+    queue, i = data["queue"], data["i"]
+    q = english.make_question(queue[i], lang)
+    await state.update_data(options=q.options, answer=q.answer)
+    text = t(lang, "en_review_q").format(i=i + 1, n=len(queue), word=esc(q.word))
+    if prefix:
+        text = f"{prefix}\n\n{text}"
+    await message.answer(text, reply_markup=question_keyboard(lang, q.options))
+
+
+async def ask_test_question(message: Message, state: FSMContext, lang: str,
+                            prefix: str = "") -> None:
+    data = await state.get_data()
+    st = data["test"]
+    wid = english.test_pick_word(st)
+    q = english.make_question(wid, lang)
+    await state.update_data(test=st, word_id=wid, options=q.options, answer=q.answer)
+    text = t(lang, "en_test_q").format(n=st["n"], word=esc(q.word))
+    if prefix:
+        text = f"{prefix}\n\n{text}"
+    await message.answer(text, reply_markup=question_keyboard(lang, q.options))
+
+
+async def start_english_test(message: Message, state: FSMContext, lang: str) -> None:
+    await state.clear()
+    await state.set_state(EnglishTest.question)
+    await state.update_data(test=english.new_test())
+    await ask_test_question(message, state, lang)
+
+
+def _english_user(message: Message) -> tuple[dict | None, str]:
+    user = db.get_user(message.from_user.id)
+    return user, user_lang(user, message.from_user)
+
+
+@router.message(F.text.in_(btn_variants("btn_english")))
+async def english_open(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user:
+        await message.answer(t(lang, "not_registered"))
+        return
+    if not user.get("english"):
+        await state.clear()
+        await message.answer(t(lang, "en_is_off"),
+                             reply_markup=main_keyboard(lang, message.from_user.id))
+        return
+    if not user.get("en_level"):
+        await state.clear()
+        await state.set_state(EnglishTest.intro)
+        await message.answer(english_intro_text(lang),
+                             reply_markup=_kb([[t(lang, "btn_en_start")]], lang))
+        return
+    await english_session(message, state, user, lang)
+
+
+@router.message(F.text.in_(btn_variants("btn_en_retest")))
+@router.message(EnglishTest.intro, F.text.in_(btn_variants("btn_en_start")))
+async def english_test_start(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user:
+        await message.answer(t(lang, "not_registered"))
+        return
+    if not user.get("english"):
+        await message.answer(t(lang, "en_is_off"),
+                             reply_markup=main_keyboard(lang, message.from_user.id))
+        return
+    await start_english_test(message, state, lang)
+
+
+@router.message(F.text.in_(btn_variants("btn_en_on")))
+@router.message(F.text.in_(btn_variants("btn_en_off")))
+async def english_toggle(message: Message, state: FSMContext) -> None:
+    """Tugma matni qaysi amalni bildirsa, o'sha bajariladi (eski klaviatura
+    qolgan bo'lsa ham holat teskarisiga aylanib ketmaydi)."""
+    user, lang = _english_user(message)
+    if not user:
+        await message.answer(t(lang, "not_registered"))
+        return
+    on = message.text in btn_variants("btn_en_on")
+    db.update_user(message.from_user.id, english=1 if on else 0)
+    await show_settings(message, state, prefix=t(lang, "en_enabled" if on else "en_disabled"))
+
+
+@router.message(EnglishTest.question, F.text)
+async def english_test_answer(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    data = await state.get_data()
+    options = data.get("options") or []
+    if message.text not in options and message.text not in btn_variants("btn_dont_know"):
+        await message.answer(t(lang, "use_keyboard"),
+                             reply_markup=question_keyboard(lang, options))
+        return
+    correct = message.text == data.get("answer")
+    st = data["test"]
+    wid = data["word_id"]
+    feedback = t(lang, "en_right") if correct else t(lang, "en_wrong").format(
+        word=esc(english.words()[wid]["word"]), tr=esc(data["answer"]))
+    level = english.test_answer(st, wid, correct)
+    if level is None:
+        await state.update_data(test=st)
+        await ask_test_question(message, state, lang, prefix=feedback)
+        return
+    db.update_user(message.from_user.id, en_level=level)
+    db.en_mark_known(message.from_user.id, st["known"])
+    user = db.get_user(message.from_user.id)
+    result = t(lang, "en_level_result").format(level=level)
+    await english_session(message, state, user, lang, prefix=f"{feedback}\n\n{result}")
+
+
+@router.message(EnglishReview.question, F.text)
+async def english_review_answer(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    data = await state.get_data()
+    options = data.get("options") or []
+    if message.text not in options and message.text not in btn_variants("btn_dont_know"):
+        await message.answer(t(lang, "use_keyboard"),
+                             reply_markup=question_keyboard(lang, options))
+        return
+    queue, i = data["queue"], data["i"]
+    wid = queue[i]
+    correct = message.text == data.get("answer")
+    today = now_local().date()
+    english.apply_review(message.from_user.id, wid, correct, today)
+    feedback = t(lang, "en_right") if correct else t(lang, "en_wrong").format(
+        word=esc(english.words()[wid]["word"]), tr=esc(data["answer"]))
+    if i + 1 < len(queue):
+        await state.update_data(i=i + 1)
+        await ask_review(message, state, lang, prefix=feedback)
+        return
+    await state.clear()
+    text = english_today_text(user, lang, today)
+    await message.answer(f"{feedback}\n\n{text}", reply_markup=english_keyboard(lang))
+
+
+@router.message(EnglishTest.intro)
+@router.message(EnglishTest.question)
+@router.message(EnglishReview.question)
+async def english_use_keyboard(message: Message) -> None:
+    if await album_items(message) is None:
+        return
+    await message.answer(t(_lang(message), "use_keyboard"))
+
+
 # ── Admin ────────────────────────────────────────────────────────────────────
 
 USERS_PER_PAGE = 20
@@ -1674,6 +1903,24 @@ async def friday_calendar(bot: Bot) -> None:
     await spread_send(bot, users, send_calendar, "Juma kalendari")
 
 
+async def english_morning(bot: Bot) -> None:
+    """Har kuni EN_HOUR:EN_MINUTE da: bugungi so'zlar (English yoqilgan va
+    darajasi aniq bo'lganlarga). Takrorlash kerak bo'lsa — eslatma qatori."""
+    users = db.en_push_users()
+    log.info("English so'zlari boshlandi: %d ta foydalanuvchi", len(users))
+    today = now_local().date()
+
+    async def send_one(bot: Bot, user: dict) -> None:
+        lang = user.get("lang") or "uz"
+        text = english_today_text(user, lang, today)
+        due = len(english.due_reviews(user["user_id"], today))
+        if due:
+            text += "\n\n" + t(lang, "en_reviews_hint").format(n=due)
+        await bot.send_message(user["user_id"], text)
+
+    await spread_send(bot, users, send_one, "English so'zlari", window_minutes=0)
+
+
 _last_reminder_minute: datetime | None = None
 REMINDER_CATCHUP_MINUTES = 5
 
@@ -1737,6 +1984,7 @@ async def main() -> None:
             "BOT_TOKEN topilmadi. @BotFather dan token oling va .env faylga yozing."
         )
     db.init_db()
+    log.info("English lug'ati: %d ta so'z", len(english.words()))
 
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
@@ -1770,6 +2018,12 @@ async def main() -> None:
         CronTrigger(day_of_week=CALENDAR_DAY_OF_WEEK, hour=CALENDAR_HOUR,
                     minute=CALENDAR_MINUTE, timezone=TIMEZONE),
         args=[bot],
+    )
+    scheduler.add_job(
+        english_morning,
+        CronTrigger(hour=EN_HOUR, minute=EN_MINUTE, timezone=TIMEZONE),
+        args=[bot],
+        misfire_grace_time=600,
     )
     scheduler.add_job(
         reminder_tick,

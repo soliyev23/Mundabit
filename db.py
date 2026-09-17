@@ -72,6 +72,25 @@ def init_db() -> None:
             c.execute("ALTER TABLE reminders ADD COLUMN date TEXT")         # once: YYYY-MM-DD
         if "photo" not in rcols:
             c.execute("ALTER TABLE reminders ADD COLUMN photo TEXT")        # Telegram file_id
+        # English: yoqilganmi (standart — o'chiq, har kim o'zi yoqadi) va daraja
+        if "english" not in cols:
+            c.execute("ALTER TABLE users ADD COLUMN english INTEGER NOT NULL DEFAULT 0")
+        if "en_level" not in cols:
+            c.execute("ALTER TABLE users ADD COLUMN en_level TEXT")   # A1…C1 | NULL
+        c.execute(
+            """
+            CREATE TABLE IF NOT EXISTS en_words (
+                user_id INTEGER NOT NULL,
+                word_id INTEGER NOT NULL,        -- english/words.json dagi id
+                box     INTEGER NOT NULL DEFAULT 0,   -- nechta ketma-ket to'g'ri takror
+                due     TEXT,                    -- keyingi takror sanasi; NULL — yodlangan
+                added   TEXT,                    -- kunlik so'z sifatida berilgan sana
+                known   INTEGER NOT NULL DEFAULT 0,   -- testda topdi — o'rgatilmaydi
+                PRIMARY KEY (user_id, word_id)
+            )
+            """
+        )
+        c.execute("CREATE INDEX IF NOT EXISTS idx_en_words_added ON en_words(user_id, added)")
         if "blocked" not in cols:
             # Botni bloklagan foydalanuvchi: tarqatishga qo'shilmaydi
             c.execute("ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0")
@@ -99,7 +118,8 @@ def save_user(user_id: int, name: str, birth_date: date, lang: str, gender: str)
 
 def update_user(user_id: int, **fields) -> None:
     """Faqat berilgan ustunlarni yangilaydi (sozlamalar uchun)."""
-    allowed = ("name", "lang", "gender", "blocked")   # birth_date → change_birth_date()
+    allowed = ("name", "lang", "gender", "blocked",    # birth_date → change_birth_date()
+               "english", "en_level")
     cols = {k: v for k, v in fields.items() if k in allowed}
     if not cols:
         return
@@ -140,11 +160,12 @@ def set_blocked(user_id: int, blocked: bool) -> None:
 
 
 def delete_user(user_id: int) -> bool:
-    """Foydalanuvchini barcha ma'lumotlari bilan o'chiradi (baholar, eslatmalar).
-    Qayta /start bossa, yangidan ro'yxatdan o'tadi."""
+    """Foydalanuvchini barcha ma'lumotlari bilan o'chiradi (baholar, eslatmalar,
+    English progressi). Qayta /start bossa, yangidan ro'yxatdan o'tadi."""
     with _conn() as c:
         c.execute("DELETE FROM week_ratings WHERE user_id = ?", (user_id,))
         c.execute("DELETE FROM reminders WHERE user_id = ?", (user_id,))
+        c.execute("DELETE FROM en_words WHERE user_id = ?", (user_id,))
         cur = c.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
         return cur.rowcount > 0
 
@@ -322,3 +343,90 @@ def purge_expired_once(before: datetime) -> int:
             (before.strftime("%Y-%m-%d %H:%M"),),
         )
         return cur.rowcount
+
+
+# ── English ──────────────────────────────────────────────────────────────────
+
+def en_word_ids(user_id: int) -> set[int]:
+    """Foydalanuvchiga tegishli barcha so'zlar (berilgan yoki testda topilgan)."""
+    with _conn() as c:
+        rows = c.execute("SELECT word_id FROM en_words WHERE user_id = ?", (user_id,))
+        return {r["word_id"] for r in rows}
+
+
+def en_today(user_id: int, day: date) -> list[int]:
+    """Shu kuni berilgan so'zlar, berilgan tartibda."""
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT word_id FROM en_words WHERE user_id = ? AND added = ? ORDER BY rowid",
+            (user_id, day.isoformat()),
+        )
+        return [r["word_id"] for r in rows]
+
+
+def en_add_new(user_id: int, word_ids: list[int], day: date, due: date) -> None:
+    """Kunlik so'zlarni yozadi. Bir vaqtda ikki joydan (05:00 va tugma)
+    chaqirilsa ham takrorlanmaydi — kalit (user_id, word_id)."""
+    with _conn() as c:
+        c.executemany(
+            """
+            INSERT OR IGNORE INTO en_words (user_id, word_id, box, due, added)
+            VALUES (?, ?, 0, ?, ?)
+            """,
+            [(user_id, w, due.isoformat(), day.isoformat()) for w in word_ids],
+        )
+
+
+def en_mark_known(user_id: int, word_ids: list[int]) -> None:
+    with _conn() as c:
+        c.executemany(
+            """
+            INSERT INTO en_words (user_id, word_id, known) VALUES (?, ?, 1)
+            ON CONFLICT(user_id, word_id) DO UPDATE SET known = 1
+            """,
+            [(user_id, w) for w in word_ids],
+        )
+
+
+def en_due(user_id: int, day: date, max_box: int, limit: int) -> list[int]:
+    """Takrorlash vaqti kelgan so'zlar (bugun berilganlari hali emas)."""
+    with _conn() as c:
+        rows = c.execute(
+            """
+            SELECT word_id FROM en_words
+            WHERE user_id = ? AND known = 0 AND box < ? AND due IS NOT NULL
+              AND due <= ? AND added < ?
+            ORDER BY due, added, rowid
+            LIMIT ?
+            """,
+            (user_id, max_box, day.isoformat(), day.isoformat(), limit),
+        )
+        return [r["word_id"] for r in rows]
+
+
+def en_box(user_id: int, word_id: int) -> int:
+    with _conn() as c:
+        row = c.execute("SELECT box FROM en_words WHERE user_id = ? AND word_id = ?",
+                        (user_id, word_id)).fetchone()
+        return row["box"] if row else 0
+
+
+def en_set_box(user_id: int, word_id: int, box: int, due: date | None) -> None:
+    with _conn() as c:
+        c.execute(
+            "UPDATE en_words SET box = ?, due = ? WHERE user_id = ? AND word_id = ?",
+            (box, due.isoformat() if due else None, user_id, word_id),
+        )
+
+
+def en_push_users() -> list[dict]:
+    """05:00 da so'z oladiganlar: English yoqilgan, darajasi aniq, bloklamagan."""
+    with _conn() as c:
+        rows = c.execute(
+            """
+            SELECT * FROM users
+            WHERE english = 1 AND en_level IS NOT NULL AND blocked = 0
+            ORDER BY created_at, user_id
+            """
+        ).fetchall()
+        return [dict(r) for r in rows]

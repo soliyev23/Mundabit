@@ -97,7 +97,8 @@ BOT = {
             "Ism: <b>{name}</b>\n"
             "Tug'ilgan sana: <b>{birth}</b>\n"
             "Jins: <b>{gender}</b>\n"
-            "Til: <b>{lang}</b>\n\n"
+            "Til: <b>{lang}</b>\n"
+            "English: <b>{english}</b>\n\n"
             "Nimani o'zgartiramiz?"
         ),
         "ask_new_name": "Yangi ismingizni yozing:",
@@ -219,6 +220,40 @@ BOT = {
         "del_done": "🗑 <b>{name}</b> o'chirildi. Qayta /start bossa, yangidan ro'yxatdan o'tadi.",
         "del_self": "O'zingizni o'chira olmaysiz.",
         "del_missing": "Bu foydalanuvchi allaqachon yo'q.",
+        # English
+        "btn_english": "🇬🇧 English",
+        "btn_en_on": "🇬🇧 English'ni yoqish",
+        "btn_en_off": "🇬🇧 English'ni o'chirish",
+        "en_state_on": "yoqilgan",
+        "en_state_off": "o'chirilgan",
+        "en_enabled": "✅ English yoqildi. Asosiy menyuda «🇬🇧 English» tugmasi paydo bo'ldi.",
+        "en_disabled": "English o'chirildi.",
+        "en_is_off": "🇬🇧 English o'chirilgan. Uni ⚙️ Sozlamalardan yoqish mumkin.",
+        "en_intro": (
+            "🇬🇧 <b>English</b>\n\n"
+            "Har kuni 3 ta yangi so'z: ertalab {time} da keladi va shu tugmada turadi. "
+            "O'rganilgan so'zlar vaqti-vaqti bilan takrorlanadi.\n\n"
+            "Lug'atda {total} ta so'z:\n{levels}\n\n"
+            "Maqsad: <b>B2</b> darajasi — IELTS 6.0 uchun yetarli so'z boyligi.\n\n"
+            "Avval darajangizni aniqlaymiz: 12 tagacha savol."
+        ),
+        "en_level_line": "{level} — {n} ta",
+        "btn_en_start": "▶️ Testni boshlash",
+        "btn_en_retest": "🎯 Darajani aniqlash",
+        "btn_dont_know": "🤷 Bilmayman",
+        "en_test_q": "🎯 Savol {n}\n\nMa'nosini tanlang: <b>{word}</b>",
+        "en_level_result": "Darajangiz: <b>{level}</b>",
+        "en_today_title": "🇬🇧 <b>Bugungi so'zlar</b> · {level}",
+        "en_all_done": "🎉 Lug'atdagi barcha so'zlarni o'rgandingiz.",
+        "en_review_q": "🔁 Takrorlash {i}/{n}\n\nMa'nosini tanlang: <b>{word}</b>",
+        "en_right": "✅ To'g'ri",
+        "en_wrong": "❌ <b>{word}</b> — {tr}",
+        "en_reviews_hint": "🔁 Takrorlash uchun {n} ta so'z bor — «🇬🇧 English» tugmasini bosing.",
+        "en_announce": (
+            "🇬🇧 <b>Yangi: English</b>\n\n"
+            "Har kuni ertalab 3 ta inglizcha so'z — darajangizga mos, takrorlash bilan.\n\n"
+            "Yoqish: ⚙️ Sozlamalar → 🇬🇧 English'ni yoqish"
+        ),
         "caption": "Yashaldi: <b>{lived} hafta</b> — {p}%\nQoldi: <b>{left} hafta</b> — {q}%",
     },
     "ru": {
@@ -276,7 +311,8 @@ BOT = {
             "Имя: <b>{name}</b>\n"
             "Дата рождения: <b>{birth}</b>\n"
             "Пол: <b>{gender}</b>\n"
-            "Язык: <b>{lang}</b>\n\n"
+            "Язык: <b>{lang}</b>\n"
+            "English: <b>{english}</b>\n\n"
             "Что изменим?"
         ),
         "ask_new_name": "Напишите новое имя:",
@@ -398,6 +434,40 @@ BOT = {
         "del_done": "🗑 <b>{name}</b> удалён. При новом /start пройдёт регистрацию заново.",
         "del_self": "Нельзя удалить себя.",
         "del_missing": "Этого пользователя уже нет.",
+        # English
+        "btn_english": "🇬🇧 English",
+        "btn_en_on": "🇬🇧 Включить English",
+        "btn_en_off": "🇬🇧 Выключить English",
+        "en_state_on": "включён",
+        "en_state_off": "выключен",
+        "en_enabled": "✅ English включён. В главном меню появилась кнопка «🇬🇧 English».",
+        "en_disabled": "English выключен.",
+        "en_is_off": "🇬🇧 English выключен. Его можно включить в ⚙️ Настройках.",
+        "en_intro": (
+            "🇬🇧 <b>English</b>\n\n"
+            "Каждый день 3 новых слова: приходят утром в {time} и доступны по этой кнопке. "
+            "Изученные слова время от времени повторяются.\n\n"
+            "В словаре {total} слов:\n{levels}\n\n"
+            "Цель: уровень <b>B2</b> — словарный запас, достаточный для IELTS 6.0.\n\n"
+            "Сначала определим ваш уровень: до 12 вопросов."
+        ),
+        "en_level_line": "{level} — {n}",
+        "btn_en_start": "▶️ Начать тест",
+        "btn_en_retest": "🎯 Определить уровень",
+        "btn_dont_know": "🤷 Не знаю",
+        "en_test_q": "🎯 Вопрос {n}\n\nВыберите перевод: <b>{word}</b>",
+        "en_level_result": "Ваш уровень: <b>{level}</b>",
+        "en_today_title": "🇬🇧 <b>Слова на сегодня</b> · {level}",
+        "en_all_done": "🎉 Вы изучили все слова словаря.",
+        "en_review_q": "🔁 Повторение {i}/{n}\n\nВыберите перевод: <b>{word}</b>",
+        "en_right": "✅ Верно",
+        "en_wrong": "❌ <b>{word}</b> — {tr}",
+        "en_reviews_hint": "🔁 На повторение {n} слов — нажмите «🇬🇧 English».",
+        "en_announce": (
+            "🇬🇧 <b>Новое: English</b>\n\n"
+            "Каждое утро 3 английских слова — по вашему уровню, с повторением.\n\n"
+            "Включить: ⚙️ Настройки → 🇬🇧 Включить English"
+        ),
         "caption": "Прожито: <b>{lived} недель</b> — {p}%\nОсталось: <b>{left} недель</b> — {q}%",
     },
 }
@@ -434,6 +504,15 @@ LEGACY_BUTTONS = {
     # raqamli tugmalar raqam bo'yicha o'chirmaydi, faqat tanlov ro'yxatini ochadi.
     "btn_rm_del": {f"{p} {n}" for p in ("🗑", "O'chirish", "Удалить")
                    for n in range(1, 6)} | {"O'chirish", "Удалить"},
+}
+
+
+# English: so'z turkumlari
+POS_NAMES = {
+    "uz": {"n": "ot", "v": "fe'l", "adj": "sifat", "adv": "ravish",
+           "pv": "frazali fe'l", "phr": "ibora"},
+    "ru": {"n": "сущ.", "v": "глагол", "adj": "прил.", "adv": "нареч.",
+           "pv": "фразовый глагол", "phr": "выражение"},
 }
 
 

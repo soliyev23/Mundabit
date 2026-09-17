@@ -35,7 +35,12 @@ Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
 - **✉️ Murojaat** — foydalanuvchi savol, taklif yoki fikrini yozadi, u ismi va username'i bilan
   adminga boradi. Admin xabardagi **✍️ Javob yozish** tugmasi orqali o'sha
   odamga javob qaytaradi; javob unga "📩 Admin javobi" ko'rinishida yetadi.
-- **⚙️ Sozlamalar** — ism, jins va tilni o'zgartirish. Joriy ma'lumot ham shu
+- **🇬🇧 English** — sozlamalardan yoqiladi (standart — o'chiq). Birinchi
+  kirishda lug'at haqida ma'lumot va qisqa daraja testi (12 tagacha savol).
+  Keyin har kuni 3 ta yangi so'z (tarjima va misol bilan) ertalab 05:00 da
+  keladi va shu tugmada turadi; o'tgan so'zlar 1, 3, 7, 21 kundan keyin
+  savol bilan takrorlanadi. Hamma tanlov pastki klaviaturada.
+- **⚙️ Sozlamalar** — ism, jins, til va English'ni yoqish/o'chirish. Joriy ma'lumot ham shu
   yerda ko'rinadi. Jins yoki til o'zgarsa kalendar darhol qayta yuboriladi.
 - **🛠 Admin Panel** — faqat `ADMIN_IDS` ichidagilarga:
   - **👥 Foydalanuvchilar** — sahifalanadigan jadval (№ · ism · yosh · jins · til)
@@ -139,7 +144,9 @@ sudo systemctl restart mundabit            # serverda, bot kodi o'zgargan bo'lsa
 - `bot.py` — handlerlar, FSM, sozlamalar, admin panel, tarqatish
 - `visual.py` — statistika hisoblash va "Life in Weeks" PNG poster (Pillow)
 - `texts.py` — barcha matnlar, o'zbek va rus tillarida
-- `db.py` — SQLite baza (foydalanuvchilar, hafta baholari, eslatmalar)
+- `db.py` — SQLite baza (foydalanuvchilar, hafta baholari, eslatmalar, English progressi)
+- `english.py` — English: lug'at, daraja testi, kunlik so'zlar, takrorlash
+- `english/words.json` — English lug'ati (uz/ru tarjima, misol gap)
 - `webserver.py` — Mini App server: statik sahifa + initData imzosi tekshiruvi
 - `webapp/index.html` — Mini App frontend
 - `config.py` — sozlamalar (`.env` orqali)
@@ -155,6 +162,7 @@ sudo systemctl restart mundabit            # serverda, bot kodi o'zgargan bo'lsa
 | `NOTIFY_DAY_OF_WEEK` / `_HOUR` / `_MINUTE` | mon / 8 / 0 | hafta yakuni so'rovi |
 | `CALENDAR_DAY_OF_WEEK` / `_HOUR` / `_MINUTE` | fri / 13 / 0 | kalendar oynasi boshlanishi |
 | `BROADCAST_WINDOW_MINUTES` | 60 | tarqatish shu oyna bo'ylab yoyiladi |
+| `EN_HOUR` / `EN_MINUTE` | 5 / 0 | English kunlik so'zlari |
 | `ADMIN_IDS` | egasi | vergul bilan; birinchisiga yangi user xabari boradi. Standart — faqat egasi |
 | `WEBAPP_URL` / `WEBAPP_PORT` | — / 8080 | Mini App |
 | `DB_PATH` | `mundabit.db` | |

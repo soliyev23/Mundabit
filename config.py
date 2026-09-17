@@ -32,6 +32,10 @@ CALENDAR_DAY_OF_WEEK = os.getenv("CALENDAR_DAY_OF_WEEK", "fri")
 CALENDAR_HOUR = int(os.getenv("CALENDAR_HOUR", "13"))
 CALENDAR_MINUTE = int(os.getenv("CALENDAR_MINUTE", "0"))
 
+# English: kunlik so'zlar shu vaqtda yuboriladi (oynasiz, darhol)
+EN_HOUR = int(os.getenv("EN_HOUR", "5"))
+EN_MINUTE = int(os.getenv("EN_MINUTE", "0"))
+
 # Tarqatish bir zumda emas, shu oyna bo'ylab yoyiladi (daqiqa).
 # Juma 13:00 → 14:00, dushanba 08:00 → 09:00. Bot shu vaqtda ham javob beradi.
 BROADCAST_WINDOW_MINUTES = int(os.getenv("BROADCAST_WINDOW_MINUTES", "60"))

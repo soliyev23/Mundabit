@@ -45,7 +45,9 @@ klon qilish kerak.)
 | `bot.py` | handlerlar, FSM, sozlamalar menyusi, admin panel, tarqatish |
 | `visual.py` | statistika hisoblash va PNG poster (Pillow) |
 | `texts.py` | **barcha** foydalanuvchi matnlari, uz va ru |
-| `db.py` | SQLite: `users`, `week_ratings`, `reminders` |
+| `db.py` | SQLite: `users`, `week_ratings`, `reminders`, `en_words` |
+| `english.py` | English: lug'at, daraja testi, kunlik so'z, takrorlash (sof mantiq) |
+| `english/words.json` | English lug'ati: so'z, turkum, daraja, uz/ru tarjima, misol |
 | `webserver.py` | Mini App uchun aiohttp server, initData imzosi tekshiriladi |
 | `webapp/index.html` | Mini App frontend (canvas) |
 | `config.py` | `.env` dan sozlamalar |
@@ -159,6 +161,30 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Dushanba so'roviga javob berilgach savol xabari butunlay o'chiriladi (faqat
   tugmalar emas). 48 soatdan kech javobda o'chirish rad etiladi — u holda
   tugmalar olib tashlanadi.
+
+## English
+
+- Sozlamalarda yoqiladi, **standart — o'chiq** (foydalanuvchi qarori). Yoqilsa
+  asosiy menyuda «🇬🇧 English» chiqadi. Birinchi kirishda lug'atdagi so'zlar
+  soni darajalar bo'yicha va maqsad (B2) ko'rsatiladi, keyin daraja testi.
+- Daraja testi: B1 dan, har darajada 4 tagacha savol (3 to'g'ri — o'tdi,
+  2 xato — o'tmadi), o'tsa yuqoriga, o'tmasa pastga; ko'pi bilan 12 savol.
+  Natija faqat **«Darajangiz: B1»** — IELTS balli yozilmaydi (foydalanuvchi
+  so'ragan). Testda topilgan so'zlar `known` — o'rgatilmaydi.
+- Har kuni 3 ta yangi so'z: `EN_HOUR:EN_MINUTE` (05:00) da avtomatik, tugmada
+  ham. Bir kunda o'sha 3 ta (`en_words.added`), tanlov deterministik — push va
+  tugma bir vaqtda kelsa ham takrorlanmaydi. So'zlar daraja ichida har
+  foydalanuvchiga o'z tartibida (faylda A2+ alifbo bo'yicha turibdi).
+- Takrorlash — Leitner: 1, 3, 7, 21 kun; 4 ta ketma-ket to'g'ri — yodlandi
+  (`due = NULL`), xato — boshidan. Bir o'tirishda 10 tagacha.
+- Savol variantlari orasida **umumiy ma'no bo'lmasligi shart** (sinonimlar:
+  very/really → «juda»), aks holda ikkita to'g'ri javob chiqadi —
+  `english.make_question` buni tekshiradi.
+- `words.json` dagi `id` barqaror — progress unga bog'langan. Mavjud id'ni
+  o'zgartirmang/qayta ishlatmang; yangi so'z — yangi id (qo'shimchalar
+  10001 dan). Yordamchi so'zlar (the, a, he…) o'rgatilmaydi, faylda yo'q.
+  Tarjimalar model tomonidan yozilgan; xato topilsa shu faylda tuzatiladi.
+- Uzbek tarjimada apostrof faqat ASCII `'` (o', g', tutuq belgisi).
 
 ## Ochiq ishlar
 
