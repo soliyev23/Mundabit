@@ -25,12 +25,15 @@ REVIEW_INTERVALS = (1, 3, 7, 21)
 LEARNED_BOX = len(REVIEW_INTERVALS)
 REVIEW_LIMIT = 10          # bir o'tirishda ko'pi bilan
 
-# Daraja testi: B1 dan boshlanadi; har darajada 4 tagacha savol, 3 ta to'g'ri —
-# o'tdi, 2 ta xato — o'tmadi. O'tsa yuqoriga, o'tmasa pastga. Ko'pi bilan
-# 3 daraja × 4 savol = 12.
+# Daraja testi: B1 dan boshlanadi. Har darajada har doim 6 ta savol (erta
+# to'xtash yo'q — ikki javob bilan daraja hal qilinmasin), kamida 5 tasi
+# to'g'ri bo'lsa — o'tdi. O'tsa yuqoriga, o'tmasa pastga. Ikki yoki uch
+# daraja tekshiriladi: 12 yoki 18 savol. Taxmin bilan o'tish ehtimoli ~0.5%.
 TEST_START = "B1"
-TEST_PER_LEVEL = 4
-TEST_PASS = 3
+TEST_PER_LEVEL = 6
+TEST_PASS = 5
+TEST_MIN_QUESTIONS = 2 * TEST_PER_LEVEL
+TEST_MAX_QUESTIONS = 3 * TEST_PER_LEVEL
 OPTIONS = 4
 
 
@@ -142,9 +145,10 @@ def make_question(word_id: int, lang: str, rng: random.Random | None = None) -> 
 # ── daraja testi ─────────────────────────────────────────────────────────────
 
 def new_test() -> dict:
-    """FSM'da saqlanadigan test holati (oddiy dict — JSON'ga ham sig'adi)."""
-    return {"level": TEST_START, "ok": 0, "bad": 0, "dir": None,
-            "n": 0, "asked": [], "known": []}
+    """FSM'da saqlanadigan test holati (oddiy dict — JSON'ga ham sig'adi).
+    scores: {daraja: [to'g'ri, jami]} — so'ralgan tartibda."""
+    return {"level": TEST_START, "dir": None, "n": 0, "asked": [],
+            "known": [], "mistakes": [], "scores": {}}
 
 
 def test_pick_word(st: dict, rng: random.Random | None = None) -> int:
@@ -158,16 +162,19 @@ def test_pick_word(st: dict, rng: random.Random | None = None) -> int:
 
 
 def test_answer(st: dict, word_id: int, correct: bool) -> str | None:
-    """Javobni hisobga oladi. Test tugasa — aniqlangan daraja, aks holda None."""
+    """Javobni hisobga oladi. Test tugasa — aniqlangan daraja, aks holda None.
+    Daraja bo'yicha qaror faqat shu darajaning barcha savollaridan keyin."""
+    score = st["scores"].setdefault(st["level"], [0, 0])
+    score[1] += 1
     if correct:
-        st["ok"] += 1
+        score[0] += 1
         st["known"].append(word_id)
     else:
-        st["bad"] += 1
-    passed = st["ok"] >= TEST_PASS
-    failed = st["bad"] > TEST_PER_LEVEL - TEST_PASS
-    if not (passed or failed):
+        st["mistakes"].append(word_id)
+    if score[1] < TEST_PER_LEVEL:
         return None
+    passed = score[0] >= TEST_PASS
+    failed = not passed
     i = LEVELS.index(st["level"])
     st["dir"] = st["dir"] or ("up" if passed else "down")
     if st["dir"] == "up":
@@ -180,7 +187,7 @@ def test_answer(st: dict, word_id: int, correct: bool) -> str | None:
         if i == 0:
             return st["level"]
         nxt = LEVELS[i - 1]
-    st.update(level=nxt, ok=0, bad=0)
+    st["level"] = nxt
     return None
 
 

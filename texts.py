@@ -235,14 +235,17 @@ BOT = {
             "O'rganilgan so'zlar vaqti-vaqti bilan takrorlanadi.\n\n"
             "Lug'atda {total} ta so'z:\n{levels}\n\n"
             "Maqsad: <b>B2</b> darajasi — IELTS 6.0 uchun yetarli so'z boyligi.\n\n"
-            "Avval darajangizni aniqlaymiz: 12 tagacha savol."
+            "Avval darajangizni aniqlaymiz: {questions} ta savol. Javoblar oxirida ko'rsatiladi."
         ),
         "en_level_line": "{level} — {n} ta",
         "btn_en_start": "▶️ Testni boshlash",
         "btn_en_retest": "🎯 Darajani aniqlash",
         "btn_dont_know": "🤷 Bilmayman",
         "en_test_q": "🎯 Savol {n}\n\nMa'nosini tanlang: <b>{word}</b>",
+        "en_test_done": "🎯 Test yakunlandi",
         "en_level_result": "Darajangiz: <b>{level}</b>",
+        "en_test_score": "{level} — {total} tadan {ok} ta to'g'ri",
+        "en_test_mistakes": "Xato javoblar:",
         "en_today_title": "🇬🇧 <b>Bugungi so'zlar</b> · {level}",
         "en_all_done": "🎉 Lug'atdagi barcha so'zlarni o'rgandingiz.",
         "en_review_q": "🔁 Takrorlash {i}/{n}\n\nMa'nosini tanlang: <b>{word}</b>",
@@ -449,14 +452,17 @@ BOT = {
             "Изученные слова время от времени повторяются.\n\n"
             "В словаре {total} слов:\n{levels}\n\n"
             "Цель: уровень <b>B2</b> — словарный запас, достаточный для IELTS 6.0.\n\n"
-            "Сначала определим ваш уровень: до 12 вопросов."
+            "Сначала определим ваш уровень: {questions} вопросов. Ответы покажем в конце."
         ),
         "en_level_line": "{level} — {n}",
         "btn_en_start": "▶️ Начать тест",
         "btn_en_retest": "🎯 Определить уровень",
         "btn_dont_know": "🤷 Не знаю",
         "en_test_q": "🎯 Вопрос {n}\n\nВыберите перевод: <b>{word}</b>",
+        "en_test_done": "🎯 Тест завершён",
         "en_level_result": "Ваш уровень: <b>{level}</b>",
+        "en_test_score": "{level} — верно {ok} из {total}",
+        "en_test_mistakes": "Ошибки:",
         "en_today_title": "🇬🇧 <b>Слова на сегодня</b> · {level}",
         "en_all_done": "🎉 Вы изучили все слова словаря.",
         "en_review_q": "🔁 Повторение {i}/{n}\n\nВыберите перевод: <b>{word}</b>",

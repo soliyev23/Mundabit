@@ -36,7 +36,8 @@ Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
   adminga boradi. Admin xabardagi **✍️ Javob yozish** tugmasi orqali o'sha
   odamga javob qaytaradi; javob unga "📩 Admin javobi" ko'rinishida yetadi.
 - **🇬🇧 English** — sozlamalardan yoqiladi (standart — o'chiq). Birinchi
-  kirishda lug'at haqida ma'lumot va qisqa daraja testi (12 tagacha savol).
+  kirishda lug'at haqida ma'lumot va daraja testi (12 yoki 18 savol, javoblar
+  oxirida ko'rsatiladi).
   Keyin har kuni 3 ta yangi so'z (tarjima va misol bilan) ertalab 05:00 da
   keladi va shu tugmada turadi; o'tgan so'zlar 1, 3, 7, 21 kundan keyin
   savol bilan takrorlanadi. Hamma tanlov pastki klaviaturada.

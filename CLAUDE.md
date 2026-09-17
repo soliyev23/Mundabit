@@ -167,10 +167,14 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Sozlamalarda yoqiladi, **standart — o'chiq** (foydalanuvchi qarori). Yoqilsa
   asosiy menyuda «🇬🇧 English» chiqadi. Birinchi kirishda lug'atdagi so'zlar
   soni darajalar bo'yicha va maqsad (B2) ko'rsatiladi, keyin daraja testi.
-- Daraja testi: B1 dan, har darajada 4 tagacha savol (3 to'g'ri — o'tdi,
-  2 xato — o'tmadi), o'tsa yuqoriga, o'tmasa pastga; ko'pi bilan 12 savol.
-  Natija faqat **«Darajangiz: B1»** — IELTS balli yozilmaydi (foydalanuvchi
-  so'ragan). Testda topilgan so'zlar `known` — o'rgatilmaydi.
+- Daraja testi: B1 dan, har darajada **har doim 6 ta savol** (erta to'xtash
+  yo'q — avval 2 xato bilan daraja hal qilinardi, foydalanuvchi "6 savol
+  darajani aniqlay olmaydi" degan), 5/6 — o'tdi. O'tsa yuqoriga, o'tmasa
+  pastga; jami 12 yoki 18 savol. **Test davomida to'g'ri/xato ko'rsatilmaydi**
+  — oxirida bitta natija: «Darajangiz: B1» (IELTS balli yo'q), har daraja
+  bo'yicha hisob va xato javoblar ro'yxati. Kunlik takrorlashda esa har
+  javobdan keyin ✅/❌ chiqadi (o'rganish uchun). Testda topilgan so'zlar
+  `known` — o'rgatilmaydi.
 - Har kuni 3 ta yangi so'z: `EN_HOUR:EN_MINUTE` (05:00) da avtomatik, tugmada
   ham. Bir kunda o'sha 3 ta (`en_words.added`), tanlov deterministik — push va
   tugma bir vaqtda kelsa ham takrorlanmaydi. So'zlar daraja ichida har

@@ -1247,7 +1247,24 @@ def english_intro_text(lang: str) -> str:
         time=f"{EN_HOUR:02d}:{EN_MINUTE:02d}",
         total=_fmt_num(sum(counts.values())),
         levels=levels,
+        questions=f"{english.TEST_MIN_QUESTIONS}–{english.TEST_MAX_QUESTIONS}",
     )
+
+
+def english_test_result(st: dict, level: str, lang: str) -> str:
+    """Yakuniy natija: daraja, har daraja bo'yicha hisob va xatolar."""
+    parts = [t(lang, "en_test_done"), t(lang, "en_level_result").format(level=level)]
+    parts.append("\n".join(
+        t(lang, "en_test_score").format(level=lv, ok=ok, total=total)
+        for lv, (ok, total) in st["scores"].items()
+    ))
+    if st["mistakes"]:
+        lines = [t(lang, "en_test_mistakes")]
+        lines += [t(lang, "en_wrong").format(word=esc(english.words()[w]["word"]),
+                                             tr=esc(english.translation(w, lang)))
+                  for w in st["mistakes"]]
+        parts.append("\n".join(lines))
+    return "\n\n".join(parts)
 
 
 def _fmt_num(n: int) -> str:
@@ -1385,19 +1402,19 @@ async def english_test_answer(message: Message, state: FSMContext) -> None:
         return
     correct = message.text == data.get("answer")
     st = data["test"]
-    wid = data["word_id"]
-    feedback = t(lang, "en_right") if correct else t(lang, "en_wrong").format(
-        word=esc(english.words()[wid]["word"]), tr=esc(data["answer"]))
-    level = english.test_answer(st, wid, correct)
+    level = english.test_answer(st, data["word_id"], correct)
     if level is None:
+        # Test davomida to'g'ri/xato ko'rsatilmaydi — hammasi oxirida
         await state.update_data(test=st)
-        await ask_test_question(message, state, lang, prefix=feedback)
+        await ask_test_question(message, state, lang)
         return
     db.update_user(message.from_user.id, en_level=level)
     db.en_mark_known(message.from_user.id, st["known"])
     user = db.get_user(message.from_user.id)
-    result = t(lang, "en_level_result").format(level=level)
-    await english_session(message, state, user, lang, prefix=f"{feedback}\n\n{result}")
+    await state.clear()
+    await message.answer(english_test_result(st, level, lang),
+                         reply_markup=english_keyboard(lang))
+    await english_session(message, state, user, lang)
 
 
 @router.message(EnglishReview.question, F.text)
