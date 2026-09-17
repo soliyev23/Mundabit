@@ -119,15 +119,16 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   `daily` bo'lib qolgan.
 - **Eslatma bo'limida inline tugma yo'q** — foydalanuvchiga yoqmagan, hamma
   tanlov pastki (reply) klaviaturada: ro'yxat ostida «➕ Qo'shish»,
-  «O'chirish» (bitta, emojisiz), «⬅️ Orqaga»; takrorlanish, hafta kunlari (to'liq nomi), 1–31 sanalar ham
+  «➖ O'chirish» (bitta), «⬅️ Orqaga»; takrorlanish, hafta kunlari (to'liq nomi), 1–31 sanalar ham
   klaviaturada. Tugma matnlari ikkala tilda taniladi (`DEL_LABELS`,
   `FREQ_LABELS`, `WEEKDAY_LABELS`). Eski xabarlardagi inline tugmalar
   (`rm:`, `rmf:`, …) bosilsa — olib tashlanadi va yangi menyu chiqadi.
-- O'chirish: «O'chirish» → klaviaturada eslatmalar **nomlari** (har biri
+- O'chirish: «➖ O'chirish» → klaviaturada eslatmalar **nomlari** (har biri
   alohida qatorda) → tanlangani o'chadi, yangilangan ro'yxat chiqadi. Nom
   takrorlansa yoniga soati qo'shiladi (`delete_choices`). Tugma matni → id
   moslamasi FSM'da (`Reminder.delete`, `rm_del`). Eski raqamli tugmalar
-  («🗑 N», «O'chirish N») faqat nomlar ro'yxatini ochadi, o'chirmaydi.
+  («🗑 N», «O'chirish N») va emojisiz «O'chirish» faqat nomlar ro'yxatini
+  ochadi, o'chirmaydi.
   O'chirish va qo'shish jarayonida «⬅️ Orqaga» eslatmalar ro'yxatiga qaytaradi.
 - Eslatmaga rasm: faylning o'zi saqlanmaydi — `reminders.photo` da eng katta
   o'lchamning Telegram `file_id` si (u shu bot tokeniga bog'liq). Yuborishda
