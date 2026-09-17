@@ -151,7 +151,8 @@ BOT = {
         "reminders_empty": "⏰ Eslatmalar yo'q.",
         "reminders_list": "⏰ <b>Eslatmalar</b>\n\n{items}",
         "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
-        "btn_rm_del": "O'chirish {n}",
+        "btn_rm_del": "O'chirish",
+        "ask_rm_delete": "Qaysi eslatmani o'chiramiz?",
         "reminders_max": "Ko'pi bilan {n} ta eslatma. Avval birini o'chiring.",
         "ask_rm_text": "Eslatma nomini yozing.\nMasalan: <i>Kitob o'qish</i>",
         "rm_text_too_long": "Qisqaroq yozing (100 belgigacha).",
@@ -329,7 +330,8 @@ BOT = {
         "reminders_empty": "⏰ Напоминаний нет.",
         "reminders_list": "⏰ <b>Напоминания</b>\n\n{items}",
         "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
-        "btn_rm_del": "Удалить {n}",
+        "btn_rm_del": "Удалить",
+        "ask_rm_delete": "Какое напоминание удалить?",
         "reminders_max": "Не больше {n} напоминаний. Сначала удалите одно.",
         "ask_rm_text": "Напишите название напоминания.\nНапример: <i>Читать книгу</i>",
         "rm_text_too_long": "Напишите короче (до 100 символов).",
@@ -428,7 +430,10 @@ POSTER = {
 # qolib ketgan bo'lishi mumkin — bosganda baribir tanilsin. Ko'rsatilmaydi.
 LEGACY_BUTTONS = {
     "btn_suggest": {"💡 Taklif", "💡 Предложение"},   # 2026-09-17: → Murojaat
-    "btn_rm_del": {"🗑 {n}"},                          # 2026-09-17: → O'chirish {n}
+    # 2026-09-17: «🗑 N» → «O'chirish N» → bitta «O'chirish». Eski raqamli
+    # tugmalar endi raqam bo'yicha o'chirmaydi, faqat tanlov ro'yxatini ochadi.
+    "btn_rm_del": {f"{p} {n}" for p in ("🗑", "O'chirish", "Удалить")
+                   for n in range(1, 6)},
 }
 
 

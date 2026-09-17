@@ -114,9 +114,10 @@ class Broadcast(StatesGroup):
 
 
 class Reminder(StatesGroup):
-    """Eslatmalar menyusi va qo'shish: nom → rasm (ixtiyoriy) → takrorlanish
-    → (hafta kuni | oy sanasi | sana) → soat."""
-    menu = State()     # ro'yxat ko'rsatilgan; FSM'da raqam → id moslamasi
+    """Eslatmalar menyusi, o'chirish va qo'shish: nom → rasm (ixtiyoriy) →
+    takrorlanish → (hafta kuni | oy sanasi | sana) → soat."""
+    menu = State()     # ro'yxat ko'rsatilgan
+    delete = State()   # nomlar klaviaturada; FSM'da tugma matni → id
     text = State()
     photo = State()
     freq = State()
@@ -866,11 +867,33 @@ def _kb(rows: list[list[str]], lang: str) -> ReplyKeyboardMarkup:
 
 
 def reminders_keyboard(lang: str, count: int) -> ReplyKeyboardMarkup:
-    dels = [t(lang, "btn_rm_del").format(n=i) for i in range(1, count + 1)]
-    rows = [dels[i:i + 3] for i in range(0, len(dels), 3)]   # uchtadan
+    row = []
     if count < MAX_REMINDERS:
-        rows.append([t(lang, "btn_add")])
-    return _kb(rows, lang)
+        row.append(t(lang, "btn_add"))
+    if count:
+        row.append(t(lang, "btn_rm_del"))
+    return _kb([row] if row else [], lang)
+
+
+def delete_choices(items: list[dict], lang: str) -> dict[str, int]:
+    """O'chirish uchun tugma matni → eslatma id. Matn — eslatma nomi; nomi
+    takrorlansa soati qo'shiladi, baribir bir xil bo'lsa raqam. Nomsiz
+    (faqat rasmli, eski) eslatma — «🖼 · 21:00»."""
+    bases = [r["text"] or t(lang, "rm_photo_mark") for r in items]
+    choices: dict[str, int] = {}
+    for r, base in zip(items, bases):
+        label = base
+        if not r["text"] or bases.count(base) > 1:
+            label = f"{base} · {r['time']}"
+        key, k = label, 2
+        while key in choices:
+            key, k = f"{label} ({k})", k + 1
+        choices[key] = r["id"]
+    return choices
+
+
+def delete_keyboard(lang: str, choices: dict[str, int]) -> ReplyKeyboardMarkup:
+    return _kb([[label] for label in choices], lang)
 
 
 def photo_keyboard(lang: str) -> ReplyKeyboardMarkup:
@@ -895,10 +918,6 @@ def monthday_keyboard(lang: str) -> ReplyKeyboardMarkup:
 
 
 # Tugma matni → qiymat (ikkala tilda ham taniladi)
-DEL_LABELS = {tpl.format(n=i): i
-              for tpl in {BOT[lg]["btn_rm_del"] for lg in BOT}
-              | LEGACY_BUTTONS.get("btn_rm_del", set())
-              for i in range(1, MAX_REMINDERS + 1)}
 FREQ_LABELS = {t(lg, f"freq_{f}"): f for lg in BOT for f in FREQS}
 WEEKDAY_LABELS = {name.lower(): i for lg in WEEKDAYS_FULL
                   for i, name in enumerate(WEEKDAYS_FULL[lg])}
@@ -920,13 +939,10 @@ def reminders_text(items: list[dict], lang: str) -> str:
 
 async def show_reminders(message: Message, state: FSMContext, lang: str,
                          prefix: str = "") -> None:
-    """Ro'yxat + klaviatura. «🗑 N» qaysi eslatmaga tegishli ekani FSM'da
-    saqlanadi — ro'yxat ko'rsatilgandan keyin o'zgarsa (masalan bir martalik
-    eslatma yuborilib o'chsa) boshqa eslatma o'chib ketmasin."""
+    """Ro'yxat + klaviatura («➕ Qo'shish», «O'chirish», «⬅️ Orqaga»)."""
     items = db.get_reminders(message.chat.id)
     await state.clear()
     await state.set_state(Reminder.menu)
-    await state.update_data(rm_ids=[r["id"] for r in items])
     text = reminders_text(items, lang)
     if prefix:
         text = f"{prefix}\n\n{text}"
@@ -962,21 +978,37 @@ async def reminder_add_start(message: Message, state: FSMContext) -> None:
     await message.answer(t(lang, "ask_rm_text"), reply_markup=back_keyboard(lang))
 
 
-@router.message(F.text.in_(set(DEL_LABELS)))
-async def reminder_delete(message: Message, state: FSMContext) -> None:
+@router.message(F.text.in_(btn_variants("btn_rm_del")))
+async def reminder_delete_start(message: Message, state: FSMContext) -> None:
+    """«O'chirish» → klaviaturada eslatmalar nomlari. Tugma matni → id
+    moslamasi FSM'da — ro'yxat oradan o'zgarsa ham boshqasi o'chmaydi."""
     user = db.get_user(message.from_user.id)
     if not user:
         await message.answer(t(user_lang(None, message.from_user), "not_registered"))
         return
     lang = user.get("lang") or "uz"
-    n = DEL_LABELS[message.text]
-    ids = (await state.get_data()).get("rm_ids") or []
-    if await state.get_state() != Reminder.menu.state or n > len(ids):
-        # Moslama yo'q (bot qayta ishga tushgan yoki eski klaviatura) —
-        # taxmin bilan o'chirmaymiz, ro'yxatni yangidan ko'rsatamiz
+    items = db.get_reminders(message.from_user.id)
+    if not items:
         await show_reminders(message, state, lang)
         return
-    db.delete_reminder(ids[n - 1], message.from_user.id)
+    choices = delete_choices(items, lang)
+    await state.clear()
+    await state.set_state(Reminder.delete)
+    await state.update_data(rm_del=choices)
+    await message.answer(t(lang, "ask_rm_delete"),
+                         reply_markup=delete_keyboard(lang, choices))
+
+
+@router.message(Reminder.delete, F.text)
+async def reminder_delete_pick(message: Message, state: FSMContext) -> None:
+    lang = _lang(message)
+    choices = (await state.get_data()).get("rm_del") or {}
+    rid = choices.get(message.text)
+    if rid is None:
+        await message.answer(t(lang, "use_keyboard"),
+                             reply_markup=delete_keyboard(lang, choices))
+        return
+    db.delete_reminder(rid, message.from_user.id)
     await show_reminders(message, state, lang, prefix=t(lang, "rm_deleted"))
 
 
@@ -1148,16 +1180,18 @@ async def reminder_menu_other(message: Message, state: FSMContext) -> None:
     if await album_items(message) is None:
         return
     lang = _lang(message)
-    ids = (await state.get_data()).get("rm_ids") or []
+    count = len(db.get_reminders(message.from_user.id))
     await message.answer(t(lang, "use_keyboard"),
-                         reply_markup=reminders_keyboard(lang, len(ids)))
+                         reply_markup=reminders_keyboard(lang, count))
 
 
+@router.message(Reminder.delete)
 @router.message(Reminder.freq)
 @router.message(Reminder.weekday)
 @router.message(Reminder.monthday)
 async def reminder_use_keyboard(message: Message) -> None:
-    """Takrorlanish, hafta kuni va oy sanasi klaviaturadan tanlanadi."""
+    """O'chiriladigan eslatma, takrorlanish, hafta kuni va oy sanasi
+    klaviaturadan tanlanadi."""
     if await album_items(message) is None:
         return          # albomning qolgan elementlari — javobsiz
     await message.answer(t(_lang(message), "use_keyboard"))
