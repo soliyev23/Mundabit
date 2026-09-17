@@ -109,21 +109,32 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Tarqatish: juma 13:00–14:00, dushanba 08:00–09:00, oyna bo'ylab yoyib.
 - Tug'ilgan sanani foydalanuvchi o'zi o'zgartira olmaydi — keyinchalik faqat
   admin orqali (UI hali yozilmagan).
-- Eslatma: matn → takrorlanish → (hafta kuni | oy sanasi | sana) → `SS:DD`,
-  ko'pi bilan 5 ta. `reminders.freq`: `daily`, `weekdays` (Du–Ju), `weekly`
+- Eslatma: nom → rasm (ixtiyoriy, «⏭ O'tkazib yuborish») → takrorlanish →
+  (hafta kuni | oy sanasi | sana) → `SS:DD`, ko'pi bilan 5 ta. Nom majburiy,
+  rasm faqat nom bilan birga (foydalanuvchi "rasm yoki nom emas" degan). `reminders.freq`: `daily`, `weekdays` (Du–Ju), `weekly`
   (`weekday` 0=Du), `monthly` (`monthday` 1–31; oyda bunday kun bo'lmasa
   oxirgi kunida), `once` (`date`; yuborilgach o'chadi, bot o'chiq paytda
   o'tib ketganlari tozalanadi). Qaysi eslatma qachon kelishini faqat
   `db.reminders_due(moment)` hal qiladi. Eski eslatmalar migratsiyada
-  `daily` bo'lib qolgan. Takrorlanish, hafta kuni va oy sanasi inline tugma
-  bilan tanlanadi, tanlangach savol xabari o'chiriladi.
-- Eslatmaga rasm: matn so'raladigan qadamda matn o'rniga rasm yuborilsa
-  bo'ladi, izohi matnga aylanadi (izohsiz ham mumkin). Faylning o'zi
-  saqlanmaydi — `reminders.photo` da eng katta o'lchamning Telegram `file_id`
-  si (u shu bot tokeniga bog'liq). Yuborishda `file_id` yaroqsiz chiqsa
-  eslatma matn bilan ketadi. Albomdan faqat birinchi rasm olinadi:
-  `first_of_album()` await'siz tekshiradi, chunki polling albom rasmlarini
-  parallel ishlaydi — usiz bitta albomga bir nechta savol chiqadi.
+  `daily` bo'lib qolgan.
+- **Eslatma bo'limida inline tugma yo'q** — foydalanuvchiga yoqmagan, hamma
+  tanlov pastki (reply) klaviaturada: ro'yxat ostida «🗑 1…5», «➕ Qo'shish»,
+  «⬅️ Orqaga»; takrorlanish, hafta kunlari (to'liq nomi), 1–31 sanalar ham
+  klaviaturada. Tugma matnlari ikkala tilda taniladi (`DEL_LABELS`,
+  `FREQ_LABELS`, `WEEKDAY_LABELS`). Eski xabarlardagi inline tugmalar
+  (`rm:`, `rmf:`, …) bosilsa — olib tashlanadi va yangi menyu chiqadi.
+- «🗑 N» ko'rsatilgan ro'yxat bo'yicha o'chiradi: `show_reminders()` raqam →
+  id moslamasini FSM'ga (`Reminder.menu`, `rm_ids`) yozadi. Moslama yo'q
+  bo'lsa (bot qayta ishga tushgan) hech narsa o'chirilmaydi, ro'yxat qayta
+  ko'rsatiladi. Qo'shish jarayonida «⬅️ Orqaga» ro'yxatga qaytaradi.
+- Eslatmaga rasm: faylning o'zi saqlanmaydi — `reminders.photo` da eng katta
+  o'lchamning Telegram `file_id` si (u shu bot tokeniga bog'liq). Yuborishda
+  `file_id` yaroqsiz chiqsa eslatma matn bilan ketadi. Nom so'ralganda izohli
+  rasm kelsa izoh nom bo'ladi va rasm qadami o'tkaziladi.
+- Albom: polling elementlarini parallel va **tartibsiz** ishlaydi, izoh
+  istalgan elementda bo'lishi mumkin. `album_items()` albomni `ALBUM_WAIT`
+  (0.7 s) yig'ib, butunicha bitta handlerga beradi; qolganlari va kechikkanlar
+  javobsiz. Birinchi element tanlanadi (`message_id` bo'yicha).
 - `reminder_tick` har daqiqada ishlaydi; kechikkan bo'lsa oxirgi 5 daqiqani
   ham tekshiradi, bir daqiqani ikki marta ishlamaydi, bot qayta ishga
   tushganda o'tib ketganlar takrorlanmaydi.

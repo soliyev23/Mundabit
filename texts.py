@@ -14,9 +14,11 @@ def fmt_date(d: date, lang: str) -> str:
 
 
 # Eslatma: hafta kunlari (0 = dushanba, datetime.weekday() bilan bir xil)
-WEEKDAYS_SHORT = {
-    "uz": ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"],
-    "ru": ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+WEEKDAYS_FULL = {
+    "uz": ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba",
+           "Yakshanba"],
+    "ru": ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота",
+           "Воскресенье"],
 }
 WEEKDAYS_EVERY = {
     "uz": ["har dushanba", "har seshanba", "har chorshanba", "har payshanba",
@@ -151,12 +153,13 @@ BOT = {
         "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
         "btn_rm_del": "🗑 {n}",
         "reminders_max": "Ko'pi bilan {n} ta eslatma. Avval birini o'chiring.",
-        "ask_rm_text": (
-            "Nimani eslatay? Matn yozing yoki rasm yuboring.\n"
-            "Masalan: <i>Kitob o'qish</i>"
-        ),
+        "ask_rm_text": "Eslatma nomini yozing.\nMasalan: <i>Kitob o'qish</i>",
         "rm_text_too_long": "Qisqaroq yozing (100 belgigacha).",
-        "rm_text_or_photo": "Matn yoki rasm yuboring 🙏",
+        "rm_name_first": "Avval eslatma nomini yozing 🙏",
+        "ask_rm_photo": "Rasm yuboring yoki o'tkazib yuboring:",
+        "btn_skip": "⏭ O'tkazib yuborish",
+        "rm_photo_or_skip": "Rasm yuboring yoki «⏭ O'tkazib yuborish» ni bosing 👇",
+        "use_keyboard": "Quyidagi tugmalardan birini tanlang 👇",
         "rm_photo_mark": "🖼",
         "ask_rm_time": (
             "Soat nechada? Format: <code>SS:DD</code> — masalan: <code>21:00</code> "
@@ -183,7 +186,6 @@ BOT = {
             "yozing, masalan: <code>25.09</code>"
         ),
         "rm_past": "❗ Bu vaqt o'tib ketgan. Keyinroq vaqtni yozing.",
-        "rm_added": "✅ Eslatma saqlandi: {when}, <b>{time}</b>\n{text}",
         "rm_deleted": "🗑 O'chirildi",
         "reminder_msg": "⏰ {text}",
         # Murojaat
@@ -329,12 +331,13 @@ BOT = {
         "reminder_item": "{n}. <b>{time}</b> · {when} — {text}",
         "btn_rm_del": "🗑 {n}",
         "reminders_max": "Не больше {n} напоминаний. Сначала удалите одно.",
-        "ask_rm_text": (
-            "О чём напомнить? Напишите текст или отправьте фото.\n"
-            "Например: <i>Читать книгу</i>"
-        ),
+        "ask_rm_text": "Напишите название напоминания.\nНапример: <i>Читать книгу</i>",
         "rm_text_too_long": "Напишите короче (до 100 символов).",
-        "rm_text_or_photo": "Отправьте текст или фото 🙏",
+        "rm_name_first": "Сначала напишите название 🙏",
+        "ask_rm_photo": "Отправьте фото или пропустите:",
+        "btn_skip": "⏭ Пропустить",
+        "rm_photo_or_skip": "Отправьте фото или нажмите «⏭ Пропустить» 👇",
+        "use_keyboard": "Выберите вариант на клавиатуре ниже 👇",
         "rm_photo_mark": "🖼",
         "ask_rm_time": (
             "Во сколько? Формат: <code>ЧЧ:ММ</code> — например: <code>21:00</code> "
@@ -361,7 +364,6 @@ BOT = {
             "например: <code>25.09</code>"
         ),
         "rm_past": "❗ Это время уже прошло. Укажите более позднее.",
-        "rm_added": "✅ Напоминание сохранено: {when}, <b>{time}</b>\n{text}",
         "rm_deleted": "🗑 Удалено",
         "reminder_msg": "⏰ {text}",
         # Обращение

@@ -51,7 +51,7 @@ from config import (
     WEBAPP_URL,
     expectancy_for,
 )
-from texts import (BOT, LEGACY_BUTTONS, WEEKDAYS_EVERY, WEEKDAYS_SHORT, fmt_date,
+from texts import (BOT, LEGACY_BUTTONS, WEEKDAYS_EVERY, WEEKDAYS_FULL, fmt_date,
                    fmt_day_month, t)
 from visual import life_stats, render_life_poster, stats_caption
 from webserver import start_webserver
@@ -114,9 +114,11 @@ class Broadcast(StatesGroup):
 
 
 class Reminder(StatesGroup):
-    """Eslatma qo'shish: matn → takrorlanish → (hafta kuni | oy sanasi |
-    sana) → soat."""
+    """Eslatmalar menyusi va qo'shish: nom → rasm (ixtiyoriy) → takrorlanish
+    → (hafta kuni | oy sanasi | sana) → soat."""
+    menu = State()     # ro'yxat ko'rsatilgan; FSM'da raqam → id moslamasi
     text = State()
+    photo = State()
     freq = State()
     weekday = State()
     monthday = State()
@@ -639,10 +641,16 @@ async def settings_non_text(message: Message) -> None:
 
 @router.message(F.text.in_(btn_variants("btn_back")))
 async def go_back(message: Message, state: FSMContext) -> None:
-    """Sozlamalardan ham, admin paneldan ham asosiy menyuga qaytaradi."""
-    await state.clear()
+    """Sozlamalardan ham, admin paneldan ham asosiy menyuga qaytaradi.
+    Eslatma qo'shish jarayonidan esa eslatmalar ro'yxatiga."""
+    current = await state.get_state()
     user = db.get_user(message.from_user.id)
     lang = user_lang(user, message.from_user)
+    if user and current and current.startswith("Reminder:") \
+            and current != Reminder.menu.state:
+        await show_reminders(message, state, lang)
+        return
+    await state.clear()
     await message.answer(t(lang, "menu"),
                          reply_markup=main_keyboard(lang, message.from_user.id))
 
@@ -738,10 +746,11 @@ async def suggest_reply_send(message: Message, state: FSMContext) -> None:
 
 
 # ── Eslatma ──────────────────────────────────────────────────────────────────
-# Eslatma: matn + takrorlanish + soat (Toshkent vaqti). Takrorlanish:
-# har kuni, ish kunlari (Du–Ju), haftada bir (kun tanlanadi), oyda bir (sana
-# tanlanadi), bir marta (sana yoziladi, yuborilgach o'chadi). Har daqiqada
-# ishlaydigan vazifa o'sha daqiqaga to'g'ri kelganlarini yuboradi.
+# Eslatma: nom + ixtiyoriy rasm + takrorlanish + soat (Toshkent vaqti).
+# Takrorlanish: har kuni, ish kunlari (Du–Ju), haftada bir (kun tanlanadi),
+# oyda bir (sana tanlanadi), bir marta (sana yoziladi, yuborilgach o'chadi).
+# Barcha tanlovlar pastki (reply) klaviaturada — inline tugma ishlatilmaydi.
+# Har daqiqada ishlaydigan vazifa o'sha daqiqaga to'g'ri kelganlarini yuboradi.
 
 FREQS = ("daily", "weekdays", "weekly", "monthly", "once")
 
@@ -804,218 +813,301 @@ def reminder_when(r: dict, lang: str) -> str:
 
 
 def reminder_label(r: dict, lang: str) -> str:
-    """Ro'yxat va tasdiqdagi ko'rinish: «🖼 Kitob o'qish», faqat rasm — «🖼»."""
+    """Ro'yxatdagi ko'rinish: «🖼 Kitob o'qish» (rasm bo'lsa belgi bilan)."""
     parts = [t(lang, "rm_photo_mark")] if r.get("photo") else []
     if r.get("text"):
         parts.append(esc(r["text"]))
     return " ".join(parts)
 
 
-# Albom (bir nechta rasm bir yo'la) har bir rasm uchun alohida update bo'lib
-# keladi, polling esa ularni parallel ishlaydi. Eslatmaga faqat birinchi rasm
-# olinadi; qolganlari jimgina tashlab yuboriladi. Tekshiruv await'siz — shuning
-# uchun parallel handlerlar orasida poyga bo'lmaydi.
-_seen_albums: dict[str, float] = {}
+# Albom (bir nechta rasm bir yo'la) har element uchun alohida update bo'lib
+# keladi, polling esa ularni parallel va tartibsiz ishlaydi — izoh qaysi
+# elementga tushgani ham noma'lum. Shuning uchun albom qisqa muddat yig'iladi
+# va bir marta, butunicha ko'rib chiqiladi. Lug'at tekshiruvlari orasida await
+# yo'q — parallel handlerlar orasida poyga bo'lmaydi.
+ALBUM_WAIT = 0.7                             # soniya
+_albums: dict[str, list[Message]] = {}       # yig'ilayotganlar
+_albums_done: dict[str, float] = {}          # ishlanganlar — kechikkanlari jim
 
 
-def first_of_album(message: Message) -> bool:
+async def album_items(message: Message) -> list[Message] | None:
+    """Oddiy xabar → [xabar]. Albom → birinchi kelgan handlerga butun albom
+    (message_id tartibida), qolganlariga None (ular javob bermaydi)."""
     gid = message.media_group_id
     if not gid:
-        return True
+        return [message]
     now = time.monotonic()
-    for k in [k for k, v in _seen_albums.items() if now - v > 120]:
-        del _seen_albums[k]
-    if gid in _seen_albums:
-        return False
-    _seen_albums[gid] = now
-    return True
+    for k in [k for k, v in _albums_done.items() if now - v > 120]:
+        del _albums_done[k]
+    if gid in _albums_done:
+        return None
+    if gid in _albums:
+        _albums[gid].append(message)
+        return None
+    _albums[gid] = [message]
+    await asyncio.sleep(ALBUM_WAIT)
+    _albums_done[gid] = time.monotonic()
+    return sorted(_albums.pop(gid), key=lambda m: m.message_id)
 
 
-def reminders_view(user_id: int, lang: str) -> tuple[str, InlineKeyboardMarkup]:
-    """Raqamlangan ro'yxat va raqam bo'yicha o'chirish tugmalari."""
-    items = db.get_reminders(user_id)
-    del_buttons = [InlineKeyboardButton(
-        text=t(lang, "btn_rm_del").format(n=i),
-        callback_data=f"rm:del:{r['id']}",
-    ) for i, r in enumerate(items, start=1)]
-    rows = [del_buttons] if del_buttons else []
-    if len(items) < MAX_REMINDERS:
-        rows.append([InlineKeyboardButton(text=t(lang, "btn_add"),
-                                          callback_data="rm:add")])
+def first_caption(items: list[Message]) -> str:
+    return next((m.caption.strip() for m in items if m.caption and m.caption.strip()), "")
+
+
+# ── klaviaturalar ──
+
+def _kb(rows: list[list[str]], lang: str) -> ReplyKeyboardMarkup:
+    """Matnlar qatorlari + oxirida «⬅️ Orqaga»."""
+    rows = rows + [[t(lang, "btn_back")]]
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text=x) for x in row] for row in rows],
+        resize_keyboard=True,
+    )
+
+
+def reminders_keyboard(lang: str, count: int) -> ReplyKeyboardMarkup:
+    rows = []
+    if count:
+        rows.append([t(lang, "btn_rm_del").format(n=i) for i in range(1, count + 1)])
+    if count < MAX_REMINDERS:
+        rows.append([t(lang, "btn_add")])
+    return _kb(rows, lang)
+
+
+def photo_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return _kb([[t(lang, "btn_skip")]], lang)
+
+
+def freq_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    f = lambda k: t(lang, f"freq_{k}")
+    return _kb([[f("daily"), f("weekdays")],
+                [f("weekly"), f("monthly")],
+                [f("once")]], lang)
+
+
+def weekday_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    names = WEEKDAYS_FULL[lang]
+    return _kb([names[0:3], names[3:6], names[6:7]], lang)
+
+
+def monthday_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    days = [str(d) for d in range(1, 32)]
+    return _kb([days[i:i + 7] for i in range(0, 31, 7)], lang)
+
+
+# Tugma matni → qiymat (ikkala tilda ham taniladi)
+DEL_LABELS = {t(lg, "btn_rm_del").format(n=i): i
+              for lg in BOT for i in range(1, MAX_REMINDERS + 1)}
+FREQ_LABELS = {t(lg, f"freq_{f}"): f for lg in BOT for f in FREQS}
+WEEKDAY_LABELS = {name.lower(): i for lg in WEEKDAYS_FULL
+                  for i, name in enumerate(WEEKDAYS_FULL[lg])}
+
+
+# ── ro'yxat ──
+
+def reminders_text(items: list[dict], lang: str) -> str:
     if not items:
-        return t(lang, "reminders_empty"), InlineKeyboardMarkup(inline_keyboard=rows)
+        return t(lang, "reminders_empty")
     listing = "\n".join(
         t(lang, "reminder_item").format(n=i, time=r["time"],
                                         when=reminder_when(r, lang),
                                         text=reminder_label(r, lang))
         for i, r in enumerate(items, start=1)
     )
-    return (t(lang, "reminders_list").format(items=listing),
-            InlineKeyboardMarkup(inline_keyboard=rows))
+    return t(lang, "reminders_list").format(items=listing)
 
 
-def freq_keyboard(lang: str) -> InlineKeyboardMarkup:
-    b = lambda f: InlineKeyboardButton(text=t(lang, f"freq_{f}"), callback_data=f"rmf:{f}")
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [b("daily"), b("weekdays")],
-        [b("weekly"), b("monthly")],
-        [b("once")],
-    ])
+async def show_reminders(message: Message, state: FSMContext, lang: str,
+                         prefix: str = "") -> None:
+    """Ro'yxat + klaviatura. «🗑 N» qaysi eslatmaga tegishli ekani FSM'da
+    saqlanadi — ro'yxat ko'rsatilgandan keyin o'zgarsa (masalan bir martalik
+    eslatma yuborilib o'chsa) boshqa eslatma o'chib ketmasin."""
+    items = db.get_reminders(message.chat.id)
+    await state.clear()
+    await state.set_state(Reminder.menu)
+    await state.update_data(rm_ids=[r["id"] for r in items])
+    text = reminders_text(items, lang)
+    if prefix:
+        text = f"{prefix}\n\n{text}"
+    await message.answer(text, reply_markup=reminders_keyboard(lang, len(items)))
 
 
-def weekday_keyboard(lang: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text=name, callback_data=f"rmw:{i}")
-        for i, name in enumerate(WEEKDAYS_SHORT[lang])
-    ]])
-
-
-def monthday_keyboard() -> InlineKeyboardMarkup:
-    days = [InlineKeyboardButton(text=str(d), callback_data=f"rmd:{d}")
-            for d in range(1, 32)]
-    return InlineKeyboardMarkup(inline_keyboard=[days[i:i + 7]
-                                                 for i in range(0, 31, 7)])
-
-
-async def drop_question(callback: CallbackQuery) -> None:
-    """Tanlov qilingach savol xabari o'chiriladi — chat toza qoladi."""
-    try:
-        await callback.message.delete()
-    except Exception:
-        try:
-            await callback.message.edit_reply_markup(reply_markup=None)
-        except Exception:
-            pass
+def _lang(message: Message) -> str:
+    return user_lang(db.get_user(message.from_user.id), message.from_user)
 
 
 @router.message(F.text.in_(btn_variants("btn_reminder")))
 async def reminders_menu(message: Message, state: FSMContext) -> None:
-    await state.clear()
+    user = db.get_user(message.from_user.id)
+    if not user:
+        await message.answer(t(user_lang(None, message.from_user), "not_registered"))
+        return
+    await show_reminders(message, state, user.get("lang") or "uz")
+
+
+@router.message(F.text.in_(btn_variants("btn_add")))
+async def reminder_add_start(message: Message, state: FSMContext) -> None:
     user = db.get_user(message.from_user.id)
     if not user:
         await message.answer(t(user_lang(None, message.from_user), "not_registered"))
         return
     lang = user.get("lang") or "uz"
-    text, kb = reminders_view(message.from_user.id, lang)
-    await message.answer(text, reply_markup=kb)
-
-
-@router.callback_query(F.data == "rm:add")
-async def reminder_add_start(callback: CallbackQuery, state: FSMContext) -> None:
-    user = db.get_user(callback.from_user.id)
-    lang = user_lang(user, callback.from_user)
-    await callback.answer()
-    if len(db.get_reminders(callback.from_user.id)) >= MAX_REMINDERS:
-        await callback.message.answer(t(lang, "reminders_max").format(n=MAX_REMINDERS))
+    if len(db.get_reminders(message.from_user.id)) >= MAX_REMINDERS:
+        await show_reminders(message, state, lang,
+                             prefix=t(lang, "reminders_max").format(n=MAX_REMINDERS))
         return
     await state.clear()
     await state.set_state(Reminder.text)
-    await callback.message.answer(t(lang, "ask_rm_text"),
-                                  reply_markup=back_keyboard(lang))
+    await message.answer(t(lang, "ask_rm_text"), reply_markup=back_keyboard(lang))
 
 
-@router.callback_query(F.data.startswith("rm:del:"))
-async def reminder_delete(callback: CallbackQuery) -> None:
-    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
-    db.delete_reminder(int(callback.data.split(":")[2]), callback.from_user.id)
-    await callback.answer(t(lang, "rm_deleted"))
-    text, kb = reminders_view(callback.from_user.id, lang)
+@router.message(F.text.in_(set(DEL_LABELS)))
+async def reminder_delete(message: Message, state: FSMContext) -> None:
+    user = db.get_user(message.from_user.id)
+    if not user:
+        await message.answer(t(user_lang(None, message.from_user), "not_registered"))
+        return
+    lang = user.get("lang") or "uz"
+    n = DEL_LABELS[message.text]
+    ids = (await state.get_data()).get("rm_ids") or []
+    if await state.get_state() != Reminder.menu.state or n > len(ids):
+        # Moslama yo'q (bot qayta ishga tushgan yoki eski klaviatura) —
+        # taxmin bilan o'chirmaymiz, ro'yxatni yangidan ko'rsatamiz
+        await show_reminders(message, state, lang)
+        return
+    db.delete_reminder(ids[n - 1], message.from_user.id)
+    await show_reminders(message, state, lang, prefix=t(lang, "rm_deleted"))
+
+
+@router.callback_query(F.data.startswith(("rm:", "rmf:", "rmw:", "rmd:")))
+async def reminder_legacy_inline(callback: CallbackQuery, state: FSMContext) -> None:
+    """Eski xabarlardagi inline tugmalar: tugmalar olinadi, yangi menyu
+    ko'rsatiladi."""
+    await callback.answer()
     try:
-        await callback.message.edit_text(text, reply_markup=kb)
+        await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:
         pass
+    user = db.get_user(callback.from_user.id)
+    if user:
+        await show_reminders(callback.message, state, user.get("lang") or "uz")
+
+
+# ── qo'shish: nom → rasm → takrorlanish → … → soat ──
+
+async def ask_reminder_freq(message: Message, state: FSMContext, lang: str) -> None:
+    await state.set_state(Reminder.freq)
+    await message.answer(t(lang, "ask_rm_freq"), reply_markup=freq_keyboard(lang))
+
+
+async def ask_reminder_time(message: Message, state: FSMContext, lang: str) -> None:
+    await state.set_state(Reminder.time)
+    await message.answer(t(lang, "ask_rm_time"), reply_markup=back_keyboard(lang))
 
 
 @router.message(Reminder.text, F.text)
 async def reminder_save_text(message: Message, state: FSMContext) -> None:
-    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    lang = _lang(message)
     text = message.text.strip()
     if not text or len(text) > REMINDER_TEXT_MAX:
         await message.answer(t(lang, "rm_text_too_long"))
         return
     await state.update_data(rm_text=text, rm_photo=None)
-    await state.set_state(Reminder.freq)
-    await message.answer(t(lang, "ask_rm_freq"), reply_markup=freq_keyboard(lang))
-
-
-@router.message(Reminder.text, F.photo)
-async def reminder_save_photo(message: Message, state: FSMContext) -> None:
-    """Rasm: eng katta o'lchamining file_id si saqlanadi, izohi — matn."""
-    if not first_of_album(message):
-        return
-    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
-    text = (message.caption or "").strip()
-    if len(text) > REMINDER_TEXT_MAX:
-        await message.answer(t(lang, "rm_text_too_long"))
-        return
-    await state.update_data(rm_text=text, rm_photo=message.photo[-1].file_id)
-    await state.set_state(Reminder.freq)
-    await message.answer(t(lang, "ask_rm_freq"), reply_markup=freq_keyboard(lang))
+    await state.set_state(Reminder.photo)
+    await message.answer(t(lang, "ask_rm_photo"), reply_markup=photo_keyboard(lang))
 
 
 @router.message(Reminder.text)
-async def reminder_text_other(message: Message) -> None:
-    """Stiker, fayl, ovoz va h.k. — faqat matn yoki rasm qabul qilinadi."""
-    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
-    await message.answer(t(lang, "rm_text_or_photo"))
+async def reminder_name_media(message: Message, state: FSMContext) -> None:
+    """Nom so'ralganda matn o'rniga boshqa narsa keldi. Izohli rasm (yoki
+    izohli albom) — izoh nom, birinchi rasm rasm bo'ladi, rasm qadami
+    o'tkaziladi. Qolgan hammasi — avval nom kerak."""
+    items = await album_items(message)
+    if items is None:
+        return
+    lang = _lang(message)
+    photos = [m for m in items if m.photo]
+    text = first_caption(items)
+    if not photos or not text:
+        await message.answer(t(lang, "rm_name_first"))
+        return
+    if len(text) > REMINDER_TEXT_MAX:
+        await message.answer(t(lang, "rm_text_too_long"))
+        return
+    await state.update_data(rm_text=text, rm_photo=photos[0].photo[-1].file_id)
+    await ask_reminder_freq(message, state, lang)
 
 
-async def ask_reminder_time(message: Message, state: FSMContext, lang: str) -> None:
-    await state.set_state(Reminder.time)
-    await message.answer(t(lang, "ask_rm_time"))
+@router.message(Reminder.photo, F.text.in_(btn_variants("btn_skip")))
+async def reminder_skip_photo(message: Message, state: FSMContext) -> None:
+    await ask_reminder_freq(message, state, _lang(message))
 
 
-@router.callback_query(Reminder.freq, F.data.startswith("rmf:"))
-async def reminder_pick_freq(callback: CallbackQuery, state: FSMContext) -> None:
-    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
-    freq = callback.data.split(":")[1]
-    await callback.answer()
-    if freq not in FREQS:
+@router.message(Reminder.photo)
+async def reminder_photo_media(message: Message, state: FSMContext) -> None:
+    """Rasm qadami: birinchi rasmning eng katta o'lchami saqlanadi (izoh
+    e'tiborga olinmaydi — nom yozilgan). Rasm bo'lmasa — eslatma."""
+    items = await album_items(message)
+    if items is None:
+        return
+    lang = _lang(message)
+    photos = [m for m in items if m.photo]
+    if not photos:
+        await message.answer(t(lang, "rm_photo_or_skip"), reply_markup=photo_keyboard(lang))
+        return
+    await state.update_data(rm_photo=photos[0].photo[-1].file_id)
+    await ask_reminder_freq(message, state, lang)
+
+
+@router.message(Reminder.freq, F.text)
+async def reminder_pick_freq(message: Message, state: FSMContext) -> None:
+    lang = _lang(message)
+    freq = FREQ_LABELS.get(message.text)
+    if freq is None:
+        await message.answer(t(lang, "use_keyboard"), reply_markup=freq_keyboard(lang))
         return
     await state.update_data(rm_freq=freq)
-    await drop_question(callback)
     if freq == "weekly":
         await state.set_state(Reminder.weekday)
-        await callback.message.answer(t(lang, "ask_rm_weekday"),
-                                      reply_markup=weekday_keyboard(lang))
+        await message.answer(t(lang, "ask_rm_weekday"),
+                             reply_markup=weekday_keyboard(lang))
     elif freq == "monthly":
         await state.set_state(Reminder.monthday)
-        await callback.message.answer(t(lang, "ask_rm_monthday"),
-                                      reply_markup=monthday_keyboard())
+        await message.answer(t(lang, "ask_rm_monthday"),
+                             reply_markup=monthday_keyboard(lang))
     elif freq == "once":
         await state.set_state(Reminder.date)
-        await callback.message.answer(t(lang, "ask_rm_date"))
+        await message.answer(t(lang, "ask_rm_date"), reply_markup=back_keyboard(lang))
     else:
-        await ask_reminder_time(callback.message, state, lang)
+        await ask_reminder_time(message, state, lang)
 
 
-@router.callback_query(Reminder.weekday, F.data.startswith("rmw:"))
-async def reminder_pick_weekday(callback: CallbackQuery, state: FSMContext) -> None:
-    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
-    wd = int(callback.data.split(":")[1])
-    await callback.answer()
-    if not 0 <= wd <= 6:
+@router.message(Reminder.weekday, F.text)
+async def reminder_pick_weekday(message: Message, state: FSMContext) -> None:
+    lang = _lang(message)
+    wd = WEEKDAY_LABELS.get(message.text.strip().lower())
+    if wd is None:
+        await message.answer(t(lang, "use_keyboard"), reply_markup=weekday_keyboard(lang))
         return
     await state.update_data(rm_weekday=wd)
-    await drop_question(callback)
-    await ask_reminder_time(callback.message, state, lang)
+    await ask_reminder_time(message, state, lang)
 
 
-@router.callback_query(Reminder.monthday, F.data.startswith("rmd:"))
-async def reminder_pick_monthday(callback: CallbackQuery, state: FSMContext) -> None:
-    lang = user_lang(db.get_user(callback.from_user.id), callback.from_user)
-    md = int(callback.data.split(":")[1])
-    await callback.answer()
+@router.message(Reminder.monthday, F.text)
+async def reminder_pick_monthday(message: Message, state: FSMContext) -> None:
+    lang = _lang(message)
+    raw = message.text.strip()
+    md = int(raw) if raw.isdigit() else 0
     if not 1 <= md <= 31:
+        await message.answer(t(lang, "use_keyboard"), reply_markup=monthday_keyboard(lang))
         return
     await state.update_data(rm_monthday=md)
-    await drop_question(callback)
-    await ask_reminder_time(callback.message, state, lang)
+    await ask_reminder_time(message, state, lang)
 
 
 @router.message(Reminder.date, F.text)
 async def reminder_save_date(message: Message, state: FSMContext) -> None:
-    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    lang = _lang(message)
     d = parse_reminder_date(message.text, now_local().date())
     if d is None:
         await message.answer(t(lang, "bad_rm_date"))
@@ -1026,7 +1118,7 @@ async def reminder_save_date(message: Message, state: FSMContext) -> None:
 
 @router.message(Reminder.time, F.text)
 async def reminder_save_time(message: Message, state: FSMContext) -> None:
-    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
+    lang = _lang(message)
     hhmm = parse_hhmm(message.text)
     if hhmm is None:
         await message.answer(t(lang, "bad_time"))
@@ -1039,34 +1131,35 @@ async def reminder_save_time(message: Message, state: FSMContext) -> None:
         if (on_date.isoformat(), hhmm) <= (now.date().isoformat(), now.strftime("%H:%M")):
             await message.answer(t(lang, "rm_past"))
             return
-    await state.clear()
-    text = data.get("rm_text", "")
     if len(db.get_reminders(message.from_user.id)) >= MAX_REMINDERS:
-        await message.answer(t(lang, "reminders_max").format(n=MAX_REMINDERS),
-                             reply_markup=main_keyboard(lang, message.from_user.id))
+        await show_reminders(message, state, lang,
+                             prefix=t(lang, "reminders_max").format(n=MAX_REMINDERS))
         return
-    row = {"freq": freq, "weekday": data.get("rm_weekday"),
-           "monthday": data.get("rm_monthday"), "date": data.get("rm_date"),
-           "text": text, "photo": data.get("rm_photo")}
-    db.add_reminder(message.from_user.id, text, hhmm, freq,
-                    weekday=row["weekday"], monthday=row["monthday"], on_date=on_date,
-                    photo=row["photo"])
-    await message.answer(
-        t(lang, "rm_added").format(when=reminder_when(row, lang), time=hhmm,
-                                   text=reminder_label(row, lang)),
-        reply_markup=main_keyboard(lang, message.from_user.id),
-    )
+    db.add_reminder(message.from_user.id, data.get("rm_text", ""), hhmm, freq,
+                    weekday=data.get("rm_weekday"), monthday=data.get("rm_monthday"),
+                    on_date=on_date, photo=data.get("rm_photo"))
+    await show_reminders(message, state, lang, prefix=t(lang, "updated"))
+
+
+@router.message(Reminder.menu)
+async def reminder_menu_other(message: Message, state: FSMContext) -> None:
+    """Ro'yxat ochiq turganda boshqa narsa yozilsa — menyu klaviaturasi qoladi."""
+    if await album_items(message) is None:
+        return
+    lang = _lang(message)
+    ids = (await state.get_data()).get("rm_ids") or []
+    await message.answer(t(lang, "use_keyboard"),
+                         reply_markup=reminders_keyboard(lang, len(ids)))
 
 
 @router.message(Reminder.freq)
 @router.message(Reminder.weekday)
 @router.message(Reminder.monthday)
-async def reminder_use_buttons(message: Message) -> None:
-    """Takrorlanish, hafta kuni va oy sanasi tugma bilan tanlanadi."""
-    if not first_of_album(message):
-        return          # albomning qolgan rasmlari — javobsiz
-    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
-    await message.answer(t(lang, "use_buttons"))
+async def reminder_use_keyboard(message: Message) -> None:
+    """Takrorlanish, hafta kuni va oy sanasi klaviaturadan tanlanadi."""
+    if await album_items(message) is None:
+        return          # albomning qolgan elementlari — javobsiz
+    await message.answer(t(_lang(message), "use_keyboard"))
 
 
 @router.message(Suggest.text)
@@ -1074,8 +1167,7 @@ async def reminder_use_buttons(message: Message) -> None:
 @router.message(Reminder.date)
 @router.message(Reminder.time)
 async def new_flows_non_text(message: Message) -> None:
-    lang = user_lang(db.get_user(message.from_user.id), message.from_user)
-    await message.answer(t(lang, "text_only"))
+    await message.answer(t(_lang(message), "text_only"))
 
 
 # ── Admin ────────────────────────────────────────────────────────────────────
