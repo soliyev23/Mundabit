@@ -28,7 +28,7 @@ Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
   Matn (100 belgigacha) va soat (`SS:DD`, Toshkent vaqti) so'raladi, bir
   foydalanuvchida ko'pi bilan 5 ta. Ro'yxatdagi har biri bitta tugma bilan
   o'chiriladi.
-- **💡 Taklif** — foydalanuvchi g'oyasini yozadi, u ismi va username'i bilan
+- **✉️ Murojaat** — foydalanuvchi savol, taklif yoki fikrini yozadi, u ismi va username'i bilan
   adminga boradi. Admin xabardagi **✍️ Javob yozish** tugmasi orqali o'sha
   odamga javob qaytaradi; javob unga "📩 Admin javobi" ko'rinishida yetadi.
 - **⚙️ Sozlamalar** — ism, jins va tilni o'zgartirish. Joriy ma'lumot ham shu

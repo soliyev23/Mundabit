@@ -51,7 +51,7 @@ from config import (
     WEBAPP_URL,
     expectancy_for,
 )
-from texts import BOT, fmt_date, t
+from texts import BOT, LEGACY_BUTTONS, fmt_date, t
 from visual import life_stats, render_life_poster, stats_caption
 from webserver import start_webserver
 
@@ -97,12 +97,12 @@ class Settings(StatesGroup):
 
 
 class Suggest(StatesGroup):
-    """Foydalanuvchi taklifi — adminga yuboriladi."""
+    """Foydalanuvchi murojaati — adminga yuboriladi."""
     text = State()
 
 
 class AdminReply(StatesGroup):
-    """Admin taklifga javob yozmoqda; FSM'da kimga yozilayotgani saqlanadi."""
+    """Admin murojaatga javob yozmoqda; FSM'da kimga yozilayotgani saqlanadi."""
     text = State()
 
 
@@ -172,8 +172,9 @@ def user_lang(user: dict | None, tg_user: TgUser | None = None) -> str:
 
 
 def btn_variants(key: str) -> set[str]:
-    """Tugma matni foydalanuvchi tilidan qat'i nazar tanilsin."""
-    return {BOT[lang][key] for lang in BOT}
+    """Tugma matni foydalanuvchi tilidan qat'i nazar tanilsin (nomi
+    o'zgargan tugmaning eski matni ham — LEGACY_BUTTONS)."""
+    return {BOT[lang][key] for lang in BOT} | LEGACY_BUTTONS.get(key, set())
 
 
 def main_keyboard(lang: str, user_id: int) -> ReplyKeyboardMarkup:
@@ -640,8 +641,8 @@ async def go_back(message: Message, state: FSMContext) -> None:
                          reply_markup=main_keyboard(lang, message.from_user.id))
 
 
-# ── Taklif ───────────────────────────────────────────────────────────────────
-# Foydalanuvchi g'oyasini yozadi → adminga ismi bilan boradi → admin «Javob
+# ── Murojaat ─────────────────────────────────────────────────────────────────
+# Foydalanuvchi murojaat yoki taklifini yozadi → adminga ismi bilan boradi → admin «Javob
 # yozish» tugmasi orqali o'sha odamga javob qaytaradi. Alohida jadval kerak
 # emas: kimga javob berilayotgani callback ma'lumotida saqlanadi.
 
@@ -679,7 +680,7 @@ async def suggest_save(message: Message, state: FSMContext) -> None:
             ]]),
         )
     except Exception as e:
-        log.warning("Taklif adminga yetmadi: %s", e)
+        log.warning("Murojaat adminga yetmadi: %s", e)
     await message.answer(t(lang, "suggestion_sent"),
                          reply_markup=main_keyboard(lang, message.from_user.id))
 

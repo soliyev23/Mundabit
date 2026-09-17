@@ -116,8 +116,11 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Admin tarqatishi `copy_message` bilan — admin yozgan formatlash va rasm o'z
   holicha boradi, HTML'ni qochirish kerak emas. Bir vaqtda bitta tarqatish
   (`broadcasting` bayrog'i), fon vazifasida ishlaydi.
-- Taklif uchun alohida jadval yo'q: kimga javob berilayotgani callback
-  ma'lumotida (`sg:reply:<user_id>`) saqlanadi.
+- Murojaat (ilgari "Taklif", 2026-09-17 da nomi o'zgartirildi) uchun alohida
+  jadval yo'q: kimga javob berilayotgani callback ma'lumotida
+  (`sg:reply:<user_id>`) saqlanadi. Kod ichidagi nomlar (`Suggest`,
+  `btn_suggest`, `sg:`) o'zgarmagan. Tugma nomi o'zgarsa eski matni
+  `texts.LEGACY_BUTTONS` ga qo'shiladi — eski klaviaturali foydalanuvchi uchun.
 - Admin panel faqat egasiga (`000000000`, `config.py` dagi standart). Boshqa
   admin kerak bo'lsa faqat `.env` dagi `ADMIN_IDS` orqali — kodga qattiq
   yozilmaydi (bir marta boshqa foydalanuvchi ID'si standartda qolib, unga

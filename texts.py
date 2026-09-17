@@ -54,7 +54,7 @@ BOT = {
             "<b>Mundabit</b> — vaqt qadrini anglash boti.\n\n"
             "/start — kalendarni ko'rish va menyuni ochish\n"
             "⏰ Eslatma — har kuni belgilangan vaqtda eslatma\n"
-            "💡 Taklif — botga g'oya yuborish\n"
+            "✉️ Murojaat — savol, taklif yoki fikr yuborish\n"
             "⚙️ Sozlamalar — ism, jins va til\n\n"
             "Har juma 13:00–14:00 — hayot kalendari.\n"
             "Har dushanba ertalab — o'tgan hafta qanday o'tdi degan so'rov."
@@ -143,11 +143,11 @@ BOT = {
         "rm_added": "✅ Har kuni <b>{time}</b> da eslataman: {text}",
         "rm_deleted": "🗑 O'chirildi",
         "reminder_msg": "⏰ {text}",
-        # Taklif
-        "btn_suggest": "💡 Taklif",
-        "ask_suggestion": "Botga qanday g'oya qo'shmoqchisiz? Yozing:",
-        "suggestion_sent": "Rahmat! Taklifingiz adminga yetkazildi ✅",
-        "admin_suggestion": "💡 <b>Taklif</b>\n\n{name} · {handle}\n\n{text}",
+        # Murojaat
+        "btn_suggest": "✉️ Murojaat",
+        "ask_suggestion": "Murojaat yoki takliflaringiz bo'lsa, o'z fikringizni yozib qoldiring:",
+        "suggestion_sent": "Rahmat! Murojaatingiz adminga yetkazildi ✅",
+        "admin_suggestion": "✉️ <b>Murojaat</b>\n\n{name} · {handle}\n\n{text}",
         "btn_reply": "✍️ Javob yozish",
         "ask_reply": "<b>{name}</b> uchun javobingizni yozing:",
         "reply_sent": "Javob yuborildi ✅",
@@ -210,7 +210,7 @@ BOT = {
             "<b>Mundabit</b> — бот, помогающий ценить время.\n\n"
             "/start — посмотреть календарь и открыть меню\n"
             "⏰ Напоминание — каждый день в выбранное время\n"
-            "💡 Предложение — идея для бота\n"
+            "✉️ Обращение — вопрос, предложение или отзыв\n"
             "⚙️ Настройки — имя, пол и язык\n\n"
             "Каждую пятницу с 13:00 до 14:00 — календарь жизни.\n"
             "Каждый понедельник утром — опрос о прошедшей неделе."
@@ -299,11 +299,11 @@ BOT = {
         "rm_added": "✅ Буду напоминать каждый день в <b>{time}</b>: {text}",
         "rm_deleted": "🗑 Удалено",
         "reminder_msg": "⏰ {text}",
-        # Предложение
-        "btn_suggest": "💡 Предложение",
-        "ask_suggestion": "Какую идею вы хотите предложить для бота? Напишите:",
-        "suggestion_sent": "Спасибо! Ваше предложение передано администратору ✅",
-        "admin_suggestion": "💡 <b>Предложение</b>\n\n{name} · {handle}\n\n{text}",
+        # Обращение
+        "btn_suggest": "✉️ Обращение",
+        "ask_suggestion": "Если у вас есть обращение или предложение, оставьте своё сообщение:",
+        "suggestion_sent": "Спасибо! Ваше обращение передано администратору ✅",
+        "admin_suggestion": "✉️ <b>Обращение</b>\n\n{name} · {handle}\n\n{text}",
         "btn_reply": "✍️ Ответить",
         "ask_reply": "Напишите ответ для <b>{name}</b>:",
         "reply_sent": "Ответ отправлен ✅",
@@ -354,6 +354,13 @@ POSTER = {
         "stats_left": "Осталось: ",
         "stats_week": " недель",
     },
+}
+
+
+# Nomi o'zgargan tugmalarning eski matnlari. Foydalanuvchida eski klaviatura
+# qolib ketgan bo'lishi mumkin — bosganda baribir tanilsin. Ko'rsatilmaydi.
+LEGACY_BUTTONS = {
+    "btn_suggest": {"💡 Taklif", "💡 Предложение"},   # 2026-09-17: → Murojaat
 }
 
 
