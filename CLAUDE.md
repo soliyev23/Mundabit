@@ -214,6 +214,13 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   nikidan aniqroq). Kalit faqat serverdagi `.env` da (600); bo'sh bo'lsa
   funksiya o'chiq. Kuniga 30 tekshiruv, gap 300 belgigacha. Ertalabki
   yuborishda taklif yo'q.
+- Groq bepul tarif limitlari (2026-09-18, javob sarlavhalaridan): butun bot
+  uchun **kuniga 1000 so'rov**, daqiqasiga 8000 token va **daqiqasiga 1000
+  chiqish tokeni (OTPM)**. `max_completion_tokens` berilmasa Groq ba'zan
+  javobga ~1000 token band qilib 429 qaytaradi ("AI ba'zan ishlamayapti"
+  shikoyati shundan edi) — shuning uchun `MAX_TOKENS = 300` (haqiqiy javob
+  25–100). 429/5xx da `retry-after` ≤ 8 s bo'lsa bir marta qayta urinadi.
+  Har tekshiruv logda: `Groq: <verdict>, N ms` yoki `Groq 429 ...`.
 - Takrorlash — Leitner: 1, 3, 7, 21 kun; 4 ta ketma-ket to'g'ri — yodlandi
   (`due = NULL`), xato — boshidan. Bir o'tirishda 10 tagacha.
 - Savol variantlari orasida **umumiy ma'no bo'lmasligi shart** (sinonimlar:
