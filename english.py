@@ -6,6 +6,8 @@ mavjud id'larni o'zgartirmang va qayta ishlatmang; yangi so'zga yangi id bering.
 
 Telegram handlerlari `bot.py` da; bu modul faqat hisoblaydi va bazaga yozadi.
 """
+import bisect
+import hashlib
 import json
 import random
 from dataclasses import dataclass
@@ -38,6 +40,8 @@ OPTIONS = 4
 
 # Darajani qayta aniqlash — haftada bir marta (birinchi test har doim ochiq).
 RETEST_DAYS = 7
+
+GAME_QUESTIONS = 10        # o'yin: bir o'yinda savollar soni
 
 
 # ── lug'at ───────────────────────────────────────────────────────────────────
@@ -224,6 +228,39 @@ def today_words(user_id: int, level: str, today: date) -> list[int]:
 
 def due_reviews(user_id: int, today: date, limit: int = REVIEW_LIMIT) -> list[int]:
     return db.en_due(user_id, today, LEARNED_BOX, limit)
+
+
+# ── o'yin ────────────────────────────────────────────────────────────────────
+# Orqadagi so'zlardan 10 savol: darajadan pastdagi hamma so'zlar (A2 bo'lsa —
+# butun A1) va foydalanuvchiga berilgan yoki testda topilgan so'zlar. Ular
+# aylana bo'ylab navbat bilan chiqadi — hammasi o'tmaguncha takrorlanmaydi.
+# Topilmagan so'z qaytadan yodlashga tushadi (Leitner, boshidan).
+
+def game_pool(user_id: int, level: str) -> set[int]:
+    pool = {w for lv in LEVELS[:LEVELS.index(level)] for w in _by_level()[lv]}
+    return pool | (db.en_word_ids(user_id) & words().keys())
+
+
+def game_key(user_id: int, word_id: int) -> int:
+    """So'zning foydalanuvchi aylanasidagi o'rni. Barqaror: hovuzga yangi so'z
+    qo'shilsa ham qolganlarining tartibi o'zgarmaydi (SQLite INTEGER'ga sig'adi)."""
+    h = hashlib.blake2b(f"{user_id}:{word_id}".encode(), digest_size=7).digest()
+    return int.from_bytes(h, "big")
+
+
+def game_words(user_id: int, level: str, last: int | None,
+               n: int = GAME_QUESTIONS) -> list[int]:
+    """Navbatdagi n ta so'z: oxirgi javob berilgan so'zdan (`last` — uning
+    kaliti) keyingilari; aylana oxiriga yetsa boshidan davom etadi."""
+    ranked = sorted((game_key(user_id, w), w) for w in game_pool(user_id, level))
+    start = 0 if last is None else bisect.bisect_right([k for k, _ in ranked], last)
+    ordered = ranked[start:] + ranked[:start]
+    return [w for _, w in ordered[:n]]
+
+
+def relearn(user_id: int, word_id: int, today: date) -> None:
+    """O'yinda topilmagan so'z — qaytadan yodlashga: ertadan takrorlanadi."""
+    db.en_relearn(user_id, word_id, today + timedelta(days=REVIEW_INTERVALS[0]))
 
 
 def apply_review(user_id: int, word_id: int, correct: bool, today: date) -> int:

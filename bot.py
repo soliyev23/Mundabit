@@ -141,6 +141,11 @@ class EnglishReview(StatesGroup):
     question = State()
 
 
+class EnglishGame(StatesGroup):
+    """O'yin: 10 savol; FSM'da navbat, to'g'rilar soni va xatolar."""
+    question = State()
+
+
 LANG_NAMES = {"uz": "O'zbekcha", "ru": "Русский"}
 MAX_REMINDERS = 5
 REMINDER_TEXT_MAX = 100
@@ -1229,11 +1234,12 @@ async def new_flows_non_text(message: Message) -> None:
 # Sozlamalardan yoqiladi (standart — o'chiq). Birinchi kirishda lug'at haqida
 # ma'lumot va daraja testi. Keyin «🇬🇧 English» — menyu: «📚 Vocabulary»
 # (bugungi 3 ta so'z, ertalab avtomatik ham keladi, so'ng vaqti kelgan
-# so'zlarni takrorlash) va haftada bir ochiladigan «🎯 Darajani aniqlash».
-# Hamma tanlov pastki klaviaturada. Mantiq english.py da.
+# so'zlarni takrorlash), «🎮 O'yin» (orqadagi so'zlardan 10 savol) va haftada
+# bir ochiladigan «🎯 Darajani aniqlash». Hamma tanlov pastki klaviaturada.
+# Mantiq english.py da.
 
 def english_keyboard(lang: str, user: dict, today: date) -> ReplyKeyboardMarkup:
-    rows = [[t(lang, "btn_en_vocab")]]
+    rows = [[t(lang, "btn_en_vocab"), t(lang, "btn_en_game")]]
     if english.next_test_date(user, today) is None:
         rows.append([t(lang, "btn_en_retest")])
     return _kb(rows, lang)
@@ -1272,12 +1278,24 @@ def english_test_result(st: dict, user: dict, lang: str, today: date) -> str:
         for lv, (ok, total) in st["scores"].items()
     ))
     if st["mistakes"]:
-        lines = [t(lang, "en_test_mistakes")]
-        lines += [t(lang, "en_wrong").format(word=esc(english.words()[w]["word"]),
-                                             tr=esc(english.translation(w, lang)))
-                  for w in st["mistakes"]]
-        parts.append("\n".join(lines))
+        parts.append(_wrong_list(t(lang, "en_test_mistakes"), st["mistakes"], lang))
     return "\n\n".join(parts)
+
+
+def english_game_result(total: int, ok: int, mistakes: list[int], lang: str) -> str:
+    parts = [t(lang, "en_game_done"), t(lang, "en_game_score").format(ok=ok, total=total)]
+    if mistakes:
+        parts.append(_wrong_list(t(lang, "en_game_relearn"), mistakes, lang))
+    return "\n\n".join(parts)
+
+
+def _wrong_list(title: str, word_ids: list[int], lang: str) -> str:
+    """Sarlavha va «❌ so'z — tarjima» qatorlari."""
+    return "\n".join([title] + [
+        t(lang, "en_wrong").format(word=esc(english.words()[w]["word"]),
+                                   tr=esc(english.translation(w, lang)))
+        for w in word_ids
+    ])
 
 
 def _fmt_num(n: int) -> str:
@@ -1324,6 +1342,15 @@ async def ask_review(message: Message, state: FSMContext, lang: str,
     if prefix:
         text = f"{prefix}\n\n{text}"
     await message.answer(text, reply_markup=question_keyboard(lang, q.options))
+
+
+async def ask_game(message: Message, state: FSMContext, lang: str) -> None:
+    data = await state.get_data()
+    queue, i = data["queue"], data["i"]
+    q = english.make_question(queue[i], lang)
+    await state.update_data(options=q.options, answer=q.answer)
+    await message.answer(t(lang, "en_game_q").format(i=i + 1, n=len(queue), word=esc(q.word)),
+                         reply_markup=question_keyboard(lang, q.options))
 
 
 async def ask_test_question(message: Message, state: FSMContext, lang: str,
@@ -1380,6 +1407,23 @@ async def english_vocab_open(message: Message, state: FSMContext) -> None:
         await english_open(message, state)
         return
     await english_vocabulary(message, state, user, lang)
+
+
+@router.message(F.text.in_(btn_variants("btn_en_game")))
+async def english_game_start(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user or not user.get("english") or not user.get("en_level"):
+        await english_open(message, state)
+        return
+    await state.clear()
+    queue = english.game_words(user["user_id"], user["en_level"], user.get("en_game"))
+    if not queue:
+        await message.answer(t(lang, "en_game_empty"),
+                             reply_markup=english_keyboard(lang, user, now_local().date()))
+        return
+    await state.set_state(EnglishGame.question)
+    await state.update_data(queue=queue, i=0, ok=0, mistakes=[])
+    await ask_game(message, state, lang)
 
 
 @router.message(F.text.in_(btn_variants("btn_en_retest")))
@@ -1471,9 +1515,41 @@ async def english_review_answer(message: Message, state: FSMContext) -> None:
                          reply_markup=english_keyboard(lang, user, today))
 
 
+@router.message(EnglishGame.question, F.text)
+async def english_game_answer(message: Message, state: FSMContext) -> None:
+    """Test kabi: o'yin davomida to'g'ri/xato ko'rsatilmaydi, oxirida natija.
+    Aylanadagi o'rin har javobda saqlanadi — tashlab ketilsa keyingi o'yin
+    davomidan boshlanadi. Topilmagan so'z darhol qaytadan yodlashga tushadi."""
+    user, lang = _english_user(message)
+    data = await state.get_data()
+    options = data.get("options") or []
+    if message.text not in options and message.text not in btn_variants("btn_dont_know"):
+        await message.answer(t(lang, "use_keyboard"),
+                             reply_markup=question_keyboard(lang, options))
+        return
+    queue, i = data["queue"], data["i"]
+    wid = queue[i]
+    ok, mistakes = data["ok"], list(data["mistakes"])
+    today = now_local().date()
+    if message.text == data.get("answer"):
+        ok += 1
+    else:
+        mistakes.append(wid)
+        english.relearn(message.from_user.id, wid, today)
+    db.update_user(message.from_user.id, en_game=english.game_key(message.from_user.id, wid))
+    if i + 1 < len(queue):
+        await state.update_data(i=i + 1, ok=ok, mistakes=mistakes)
+        await ask_game(message, state, lang)
+        return
+    await state.clear()
+    await message.answer(english_game_result(len(queue), ok, mistakes, lang),
+                         reply_markup=english_keyboard(lang, user, today))
+
+
 @router.message(EnglishTest.intro)
 @router.message(EnglishTest.question)
 @router.message(EnglishReview.question)
+@router.message(EnglishGame.question)
 async def english_use_keyboard(message: Message) -> None:
     if await album_items(message) is None:
         return

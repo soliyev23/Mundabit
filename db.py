@@ -102,6 +102,9 @@ def init_db() -> None:
                 ) WHERE en_level IS NOT NULL
                 """
             )
+        if "en_game" not in cols:
+            # O'yin aylanasida oxirgi javob berilgan so'zning kaliti (english.game_key)
+            c.execute("ALTER TABLE users ADD COLUMN en_game INTEGER")
         if "blocked" not in cols:
             # Botni bloklagan foydalanuvchi: tarqatishga qo'shilmaydi
             c.execute("ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0")
@@ -130,7 +133,7 @@ def save_user(user_id: int, name: str, birth_date: date, lang: str, gender: str)
 def update_user(user_id: int, **fields) -> None:
     """Faqat berilgan ustunlarni yangilaydi (sozlamalar uchun)."""
     allowed = ("name", "lang", "gender", "blocked",    # birth_date → change_birth_date()
-               "english", "en_level", "en_tested")
+               "english", "en_level", "en_tested", "en_game")
     cols = {k: v for k, v in fields.items() if k in allowed}
     if not cols:
         return
@@ -406,13 +409,28 @@ def en_due(user_id: int, day: date, max_box: int, limit: int) -> list[int]:
             """
             SELECT word_id FROM en_words
             WHERE user_id = ? AND known = 0 AND box < ? AND due IS NOT NULL
-              AND due <= ? AND added < ?
+              AND due <= ? AND (added IS NULL OR added < ?)
             ORDER BY due, added, rowid
             LIMIT ?
             """,
             (user_id, max_box, day.isoformat(), day.isoformat(), limit),
         )
         return [r["word_id"] for r in rows]
+
+
+def en_relearn(user_id: int, word_id: int, due: date) -> None:
+    """Qaytadan yodlashga: boshidan (box 0), `due` kuni takrorlanadi — testda
+    topilgan yoki yodlangan bo'lsa ham. O'yindan kelgan pastki daraja
+    so'zlarida `added` bo'sh (ular kunlik so'z bo'lmagan)."""
+    with _conn() as c:
+        c.execute(
+            """
+            INSERT INTO en_words (user_id, word_id, box, due) VALUES (?, ?, 0, ?)
+            ON CONFLICT(user_id, word_id) DO UPDATE SET
+                box = 0, due = excluded.due, known = 0
+            """,
+            (user_id, word_id, due.isoformat()),
+        )
 
 
 def en_box(user_id: int, word_id: int) -> int:
