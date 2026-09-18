@@ -231,15 +231,19 @@ BOT = {
         "en_is_off": "🇬🇧 English o'chirilgan. Uni ⚙️ Sozlamalardan yoqish mumkin.",
         "en_intro": (
             "🇬🇧 <b>English</b>\n\n"
-            "Har kuni 3 ta yangi so'z: ertalab {time} da keladi va shu tugmada turadi. "
+            "Har kuni 3 ta yangi so'z: ertalab {time} da keladi. "
             "O'rganilgan so'zlar vaqti-vaqti bilan takrorlanadi.\n\n"
             "Lug'atda {total} ta so'z:\n{levels}\n\n"
             "Maqsad: <b>B2</b> darajasi — IELTS 6.0 uchun yetarli so'z boyligi.\n\n"
-            "Avval darajangizni aniqlaymiz: {questions} ta savol. Javoblar oxirida ko'rsatiladi."
+            "Avval darajangizni aniqlaymiz: {questions} tagacha savol."
         ),
         "en_level_line": "{level} — {n} ta",
         "btn_en_start": "▶️ Testni boshlash",
         "btn_en_retest": "🎯 Darajani aniqlash",
+        "btn_en_vocab": "📚 Vocabulary",
+        "en_title": "🇬🇧 <b>English</b>",
+        "en_next_test": "Keyingi test: {date}",
+        "en_retest_locked": "🎯 Darajani qayta aniqlash {date}dan ochiladi.",
         "btn_dont_know": "🤷 Bilmayman",
         "en_test_q": "🎯 Savol {n}\n\nMa'nosini tanlang: <b>{word}</b>",
         "en_test_done": "🎯 Test yakunlandi",
@@ -251,7 +255,8 @@ BOT = {
         "en_review_q": "🔁 Takrorlash {i}/{n}\n\nMa'nosini tanlang: <b>{word}</b>",
         "en_right": "✅ To'g'ri",
         "en_wrong": "❌ <b>{word}</b> — {tr}",
-        "en_reviews_hint": "🔁 Takrorlash uchun {n} ta so'z bor — «🇬🇧 English» tugmasini bosing.",
+        "en_reviews_hint": "🔁 Takrorlash uchun {n} ta so'z bor — «🇬🇧 English» → «📚 Vocabulary».",
+        "en_reviews_done": "🔁 Takrorlash tugadi.",
         "en_announce": (
             "🇬🇧 <b>Yangi: English</b>\n\n"
             "Har kuni ertalab 3 ta inglizcha so'z — darajangizga mos, takrorlash bilan.\n\n"
@@ -448,15 +453,19 @@ BOT = {
         "en_is_off": "🇬🇧 English выключен. Его можно включить в ⚙️ Настройках.",
         "en_intro": (
             "🇬🇧 <b>English</b>\n\n"
-            "Каждый день 3 новых слова: приходят утром в {time} и доступны по этой кнопке. "
+            "Каждый день 3 новых слова: приходят утром в {time}. "
             "Изученные слова время от времени повторяются.\n\n"
             "В словаре {total} слов:\n{levels}\n\n"
             "Цель: уровень <b>B2</b> — словарный запас, достаточный для IELTS 6.0.\n\n"
-            "Сначала определим ваш уровень: {questions} вопросов. Ответы покажем в конце."
+            "Сначала определим ваш уровень: до {questions} вопросов."
         ),
         "en_level_line": "{level} — {n}",
         "btn_en_start": "▶️ Начать тест",
         "btn_en_retest": "🎯 Определить уровень",
+        "btn_en_vocab": "📚 Vocabulary",
+        "en_title": "🇬🇧 <b>English</b>",
+        "en_next_test": "Следующий тест: {date}",
+        "en_retest_locked": "🎯 Повторный тест откроется {date}.",
         "btn_dont_know": "🤷 Не знаю",
         "en_test_q": "🎯 Вопрос {n}\n\nВыберите перевод: <b>{word}</b>",
         "en_test_done": "🎯 Тест завершён",
@@ -468,7 +477,8 @@ BOT = {
         "en_review_q": "🔁 Повторение {i}/{n}\n\nВыберите перевод: <b>{word}</b>",
         "en_right": "✅ Верно",
         "en_wrong": "❌ <b>{word}</b> — {tr}",
-        "en_reviews_hint": "🔁 На повторение {n} слов — нажмите «🇬🇧 English».",
+        "en_reviews_hint": "🔁 На повторение {n} слов — «🇬🇧 English» → «📚 Vocabulary».",
+        "en_reviews_done": "🔁 Повторение завершено.",
         "en_announce": (
             "🇬🇧 <b>Новое: English</b>\n\n"
             "Каждое утро 3 английских слова — по вашему уровню, с повторением.\n\n"

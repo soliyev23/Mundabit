@@ -1227,12 +1227,25 @@ async def new_flows_non_text(message: Message) -> None:
 
 # ── English ──────────────────────────────────────────────────────────────────
 # Sozlamalardan yoqiladi (standart — o'chiq). Birinchi kirishda lug'at haqida
-# ma'lumot va daraja testi; keyin har kuni 3 ta so'z (ertalab avtomatik ham
-# keladi) va vaqti kelgan so'zlarni takrorlash. Hamma tanlov pastki
-# klaviaturada. Mantiq english.py da.
+# ma'lumot va daraja testi. Keyin «🇬🇧 English» — menyu: «📚 Vocabulary»
+# (bugungi 3 ta so'z, ertalab avtomatik ham keladi, so'ng vaqti kelgan
+# so'zlarni takrorlash) va haftada bir ochiladigan «🎯 Darajani aniqlash».
+# Hamma tanlov pastki klaviaturada. Mantiq english.py da.
 
-def english_keyboard(lang: str) -> ReplyKeyboardMarkup:
-    return _kb([[t(lang, "btn_en_retest")]], lang)
+def english_keyboard(lang: str, user: dict, today: date) -> ReplyKeyboardMarkup:
+    rows = [[t(lang, "btn_en_vocab")]]
+    if english.next_test_date(user, today) is None:
+        rows.append([t(lang, "btn_en_retest")])
+    return _kb(rows, lang)
+
+
+def english_level_text(user: dict, lang: str, today: date) -> str:
+    """«Darajangiz: B1» va qayta test yopiq bo'lsa — qachon ochilishi."""
+    text = t(lang, "en_level_result").format(level=user["en_level"])
+    opens = english.next_test_date(user, today)
+    if opens:
+        text += "\n" + t(lang, "en_next_test").format(date=fmt_day_month(opens, lang, today))
+    return text
 
 
 def question_keyboard(lang: str, options: list[str]) -> ReplyKeyboardMarkup:
@@ -1247,13 +1260,13 @@ def english_intro_text(lang: str) -> str:
         time=f"{EN_HOUR:02d}:{EN_MINUTE:02d}",
         total=_fmt_num(sum(counts.values())),
         levels=levels,
-        questions=f"{english.TEST_MIN_QUESTIONS}–{english.TEST_MAX_QUESTIONS}",
+        questions=english.TEST_MAX_QUESTIONS,
     )
 
 
-def english_test_result(st: dict, level: str, lang: str) -> str:
+def english_test_result(st: dict, user: dict, lang: str, today: date) -> str:
     """Yakuniy natija: daraja, har daraja bo'yicha hisob va xatolar."""
-    parts = [t(lang, "en_test_done"), t(lang, "en_level_result").format(level=level)]
+    parts = [t(lang, "en_test_done"), english_level_text(user, lang, today)]
     parts.append("\n".join(
         t(lang, "en_test_score").format(level=lv, ok=ok, total=total)
         for lv, (ok, total) in st["scores"].items()
@@ -1287,23 +1300,18 @@ def english_today_text(user: dict, lang: str, today: date) -> str:
     return "\n\n".join(parts)
 
 
-async def english_session(message: Message, state: FSMContext, user: dict,
-                          lang: str, prefix: str = "") -> None:
-    """Avval vaqti kelgan takrorlashlar, keyin bugungi so'zlar."""
+async def english_vocabulary(message: Message, state: FSMContext, user: dict,
+                             lang: str) -> None:
+    """Bugungi so'zlar, keyin vaqti kelgan so'zlarni takrorlash (bo'lsa)."""
     today = now_local().date()
-    english.today_words(user["user_id"], user["en_level"], today)
+    await state.clear()
+    await message.answer(english_today_text(user, lang, today),
+                         reply_markup=english_keyboard(lang, user, today))
     queue = english.due_reviews(user["user_id"], today)
     if queue:
-        await state.clear()
         await state.set_state(EnglishReview.question)
         await state.update_data(queue=queue, i=0)
-        await ask_review(message, state, lang, prefix)
-        return
-    await state.clear()
-    text = english_today_text(user, lang, today)
-    if prefix:
-        text = f"{prefix}\n\n{text}"
-    await message.answer(text, reply_markup=english_keyboard(lang))
+        await ask_review(message, state, lang)
 
 
 async def ask_review(message: Message, state: FSMContext, lang: str,
@@ -1349,18 +1357,29 @@ async def english_open(message: Message, state: FSMContext) -> None:
     if not user:
         await message.answer(t(lang, "not_registered"))
         return
+    await state.clear()
     if not user.get("english"):
-        await state.clear()
         await message.answer(t(lang, "en_is_off"),
                              reply_markup=main_keyboard(lang, message.from_user.id))
         return
     if not user.get("en_level"):
-        await state.clear()
         await state.set_state(EnglishTest.intro)
         await message.answer(english_intro_text(lang),
                              reply_markup=_kb([[t(lang, "btn_en_start")]], lang))
         return
-    await english_session(message, state, user, lang)
+    today = now_local().date()
+    await message.answer(f"{t(lang, 'en_title')}\n\n{english_level_text(user, lang, today)}",
+                         reply_markup=english_keyboard(lang, user, today))
+
+
+@router.message(F.text.in_(btn_variants("btn_en_vocab")))
+async def english_vocab_open(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user or not user.get("english") or not user.get("en_level"):
+        # ro'yxatdan o'tmagan, o'chirilgan yoki daraja yo'q — English menyusi hal qiladi
+        await english_open(message, state)
+        return
+    await english_vocabulary(message, state, user, lang)
 
 
 @router.message(F.text.in_(btn_variants("btn_en_retest")))
@@ -1374,6 +1393,16 @@ async def english_test_start(message: Message, state: FSMContext) -> None:
         await message.answer(t(lang, "en_is_off"),
                              reply_markup=main_keyboard(lang, message.from_user.id))
         return
+    today = now_local().date()
+    opens = english.next_test_date(user, today)
+    if opens:
+        # eski klaviaturadagi tugma — qayta test hali yopiq
+        await state.clear()
+        await message.answer(
+            t(lang, "en_retest_locked").format(date=fmt_day_month(opens, lang, today)),
+            reply_markup=english_keyboard(lang, user, today))
+        return
+    db.update_user(message.from_user.id, en_tested=today.isoformat())
     await start_english_test(message, state, lang)
 
 
@@ -1411,10 +1440,10 @@ async def english_test_answer(message: Message, state: FSMContext) -> None:
     db.update_user(message.from_user.id, en_level=level)
     db.en_mark_known(message.from_user.id, st["known"])
     user = db.get_user(message.from_user.id)
+    today = now_local().date()
     await state.clear()
-    await message.answer(english_test_result(st, level, lang),
-                         reply_markup=english_keyboard(lang))
-    await english_session(message, state, user, lang)
+    await message.answer(english_test_result(st, user, lang, today),
+                         reply_markup=english_keyboard(lang, user, today))
 
 
 @router.message(EnglishReview.question, F.text)
@@ -1438,8 +1467,8 @@ async def english_review_answer(message: Message, state: FSMContext) -> None:
         await ask_review(message, state, lang, prefix=feedback)
         return
     await state.clear()
-    text = english_today_text(user, lang, today)
-    await message.answer(f"{feedback}\n\n{text}", reply_markup=english_keyboard(lang))
+    await message.answer(f"{feedback}\n\n{t(lang, 'en_reviews_done')}",
+                         reply_markup=english_keyboard(lang, user, today))
 
 
 @router.message(EnglishTest.intro)

@@ -38,9 +38,11 @@ Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
 - **🇬🇧 English** — sozlamalardan yoqiladi (standart — o'chiq). Birinchi
   kirishda lug'at haqida ma'lumot va daraja testi (12 yoki 18 savol, javoblar
   oxirida ko'rsatiladi).
-  Keyin har kuni 3 ta yangi so'z (tarjima va misol bilan) ertalab 05:00 da
-  keladi va shu tugmada turadi; o'tgan so'zlar 1, 3, 7, 21 kundan keyin
-  savol bilan takrorlanadi. Hamma tanlov pastki klaviaturada.
+  Keyin English menyusida daraja va ikki tugma: **📚 Vocabulary** — har
+  kuni 3 ta yangi so'z (tarjima va misol bilan; ertalab 05:00 da o'zi ham
+  keladi), so'ng o'tgan so'zlar 1, 3, 7, 21 kundan keyin savol bilan
+  takrorlanadi; **🎯 Darajani aniqlash** — haftada bir marta ochiladi.
+  Hamma tanlov pastki klaviaturada.
 - **⚙️ Sozlamalar** — ism, jins, til va English'ni yoqish/o'chirish. Joriy ma'lumot ham shu
   yerda ko'rinadi. Jins yoki til o'zgarsa kalendar darhol qayta yuboriladi.
 - **🛠 Admin Panel** — faqat `ADMIN_IDS` ichidagilarga:

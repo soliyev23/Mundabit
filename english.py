@@ -36,6 +36,9 @@ TEST_MIN_QUESTIONS = 2 * TEST_PER_LEVEL
 TEST_MAX_QUESTIONS = 3 * TEST_PER_LEVEL
 OPTIONS = 4
 
+# Darajani qayta aniqlash — haftada bir marta (birinchi test har doim ochiq).
+RETEST_DAYS = 7
+
 
 # ── lug'at ───────────────────────────────────────────────────────────────────
 
@@ -178,8 +181,12 @@ def test_answer(st: dict, word_id: int, correct: bool) -> str | None:
     i = LEVELS.index(st["level"])
     st["dir"] = st["dir"] or ("up" if passed else "down")
     if st["dir"] == "up":
-        if failed or i == len(LEVELS) - 1:
+        if failed:
             return st["level"]
+        if i + 1 >= len(LEVELS) - 1:
+            # Eng yuqori darajani tekshirish natijani o'zgartirmaydi (o'tsa ham,
+            # o'tmasa ham o'sha daraja chiqadi) — ortiqcha 6 savol so'ralmaydi.
+            return LEVELS[-1]
         nxt = LEVELS[i + 1]
     else:
         if passed:
@@ -189,6 +196,16 @@ def test_answer(st: dict, word_id: int, correct: bool) -> str | None:
         nxt = LEVELS[i - 1]
     st["level"] = nxt
     return None
+
+
+def next_test_date(user: dict, today: date) -> date | None:
+    """Darajani qayta aniqlash qachon ochiladi; hozir ochiq bo'lsa — None.
+    Daraja hali yo'q bo'lsa (birinchi test) har doim ochiq. Sana test
+    boshlanganda yoziladi: boshlab tashlab ketilgan test ham imkonni sarflaydi."""
+    if not user.get("en_level") or not user.get("en_tested"):
+        return None
+    opens = date.fromisoformat(user["en_tested"]) + timedelta(days=RETEST_DAYS)
+    return opens if today < opens else None
 
 
 # ── kunlik so'zlar va takrorlash ─────────────────────────────────────────────

@@ -91,6 +91,17 @@ def init_db() -> None:
             """
         )
         c.execute("CREATE INDEX IF NOT EXISTS idx_en_words_added ON en_words(user_id, added)")
+        if "en_tested" not in cols:
+            # Oxirgi daraja testi boshlangan sana — qayta test haftada bir marta.
+            # Ustun qo'shilganda: test sanasi sifatida birinchi kunlik so'zlar sanasi.
+            c.execute("ALTER TABLE users ADD COLUMN en_tested TEXT")
+            c.execute(
+                """
+                UPDATE users SET en_tested = (
+                    SELECT MIN(added) FROM en_words w WHERE w.user_id = users.user_id
+                ) WHERE en_level IS NOT NULL
+                """
+            )
         if "blocked" not in cols:
             # Botni bloklagan foydalanuvchi: tarqatishga qo'shilmaydi
             c.execute("ALTER TABLE users ADD COLUMN blocked INTEGER NOT NULL DEFAULT 0")
@@ -119,7 +130,7 @@ def save_user(user_id: int, name: str, birth_date: date, lang: str, gender: str)
 def update_user(user_id: int, **fields) -> None:
     """Faqat berilgan ustunlarni yangilaydi (sozlamalar uchun)."""
     allowed = ("name", "lang", "gender", "blocked",    # birth_date → change_birth_date()
-               "english", "en_level")
+               "english", "en_level", "en_tested")
     cols = {k: v for k, v in fields.items() if k in allowed}
     if not cols:
         return

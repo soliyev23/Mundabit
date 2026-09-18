@@ -167,16 +167,31 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
 - Sozlamalarda yoqiladi, **standart — o'chiq** (foydalanuvchi qarori). Yoqilsa
   asosiy menyuda «🇬🇧 English» chiqadi. Birinchi kirishda lug'atdagi so'zlar
   soni darajalar bo'yicha va maqsad (B2) ko'rsatiladi, keyin daraja testi.
+  Bu tanishtiruv matnini foydalanuvchi o'zi yozib bergan ("18 tagacha savol"
+  bilan) — so'ramasdan qayta tahrirlamang.
+- Darajadan keyin «🇬🇧 English» — menyu: «Darajangiz: B1» va klaviaturada
+  «📚 Vocabulary» (bugungi 3 ta so'z, so'ng vaqti kelgan so'zlarni
+  takrorlash), «🎯 Darajani aniqlash». So'zlar English bosilganda emas, faqat
+  Vocabulary'da chiqadi (foydalanuvchi talabi). Test natijasidan keyin ham
+  so'zlar avtomatik chiqmaydi.
+- Qayta test **haftada bir marta**: `users.en_tested` + 7 kun
+  (`english.next_test_date`). Sana test **boshlanganda** yoziladi —
+  boshlab tashlab ketilgan test ham imkonni sarflaydi. Yopiq paytda tugma
+  klaviaturada yo'q, menyuda «Keyingi test: sana»; eski klaviaturadan
+  bosilsa — qachon ochilishi aytiladi. Birinchi test (daraja yo'q) har doim ochiq.
 - Daraja testi: B1 dan, har darajada **har doim 6 ta savol** (erta to'xtash
   yo'q — avval 2 xato bilan daraja hal qilinardi, foydalanuvchi "6 savol
   darajani aniqlay olmaydi" degan), 5/6 — o'tdi. O'tsa yuqoriga, o'tmasa
-  pastga; jami 12 yoki 18 savol. **Test davomida to'g'ri/xato ko'rsatilmaydi**
+  pastga. Yuqoriga yo'l har doim 12 savol (B2 dan o'tsa — C1; C1 ni so'rash
+  natijani o'zgartirmas edi), pastga — 12 yoki 18 (A1 ham tekshiriladi,
+  A2/A1 ni ajratish uchun; foydalanuvchi 18 ni qoldirishni tanlagan).
+  **Test davomida to'g'ri/xato ko'rsatilmaydi**
   — oxirida bitta natija: «Darajangiz: B1» (IELTS balli yo'q), har daraja
   bo'yicha hisob va xato javoblar ro'yxati. Kunlik takrorlashda esa har
   javobdan keyin ✅/❌ chiqadi (o'rganish uchun). Testda topilgan so'zlar
   `known` — o'rgatilmaydi.
-- Har kuni 3 ta yangi so'z: `EN_HOUR:EN_MINUTE` (05:00) da avtomatik, tugmada
-  ham. Bir kunda o'sha 3 ta (`en_words.added`), tanlov deterministik — push va
+- Har kuni 3 ta yangi so'z: `EN_HOUR:EN_MINUTE` (05:00) da avtomatik,
+  Vocabulary tugmasida ham. Bir kunda o'sha 3 ta (`en_words.added`), tanlov deterministik — push va
   tugma bir vaqtda kelsa ham takrorlanmaydi. So'zlar daraja ichida har
   foydalanuvchiga o'z tartibida (faylda A2+ alifbo bo'yicha turibdi).
 - Takrorlash — Leitner: 1, 3, 7, 21 kun; 4 ta ketma-ket to'g'ri — yodlandi
