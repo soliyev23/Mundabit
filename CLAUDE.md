@@ -31,7 +31,7 @@ Mac'da restart qilib bo'lmaydi — u yerdan faqat push qilinadi.
 
 ## Git'ga hech qachon kirmasligi kerak
 
-`.env` (bot tokeni), `mundabit.db` (foydalanuvchilar bazasi), `.venv/`,
+`.env` (bot tokeni, `GROQ_API_KEY`), `mundabit.db` (foydalanuvchilar bazasi), `.venv/`,
 `__pycache__/`, `tunnel.log`. Hammasi `.gitignore` da. Commit'dan oldin
 staged ro'yxatni tekshiring — token bir marta tarixga tushsa, tozalash og'ir.
 (2026-09-12 da `.env.example` dagi haqiqiy token `filter-branch` bilan butun
@@ -48,6 +48,7 @@ klon qilish kerak.)
 | `db.py` | SQLite: `users`, `week_ratings`, `reminders`, `en_words` |
 | `english.py` | English: lug'at, daraja testi, kunlik so'z, takrorlash (sof mantiq) |
 | `english/words.json` | English lug'ati: so'z, turkum, daraja, uz/ru tarjima, misol |
+| `grammar.py` | English: tuzilgan gapni Groq (LLM) orqali tekshirish |
 | `webserver.py` | Mini App uchun aiohttp server, initData imzosi tekshiriladi |
 | `webapp/index.html` | Mini App frontend (canvas) |
 | `config.py` | `.env` dan sozlamalar |
@@ -194,6 +195,25 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   Vocabulary tugmasida ham. Bir kunda o'sha 3 ta (`en_words.added`), tanlov deterministik — push va
   tugma bir vaqtda kelsa ham takrorlanmaydi. So'zlar daraja ichida har
   foydalanuvchiga o'z tartibida (faylda A2+ alifbo bo'yicha turibdi).
+- **🎮 O'yin** (English menyusida, Vocabulary yonida): 10 savol, test kabi —
+  oraliqda to'g'ri/xato yo'q, oxirida hisob va topilmaganlar. So'zlar
+  hovuzi: darajadan **pastdagi hamma** so'zlar (A2 bo'lsa — butun A1) va
+  `en_words` dagilar (berilgan, testda topilgan); hali berilmagan joriy
+  daraja so'zlari yo'q. Har foydalanuvchiga barqaror aylana
+  (`english.game_key` — hash; `users.en_game` — oxirgi javob berilgan so'z
+  kaliti, har javobda yoziladi): hamma so'z bir martadan chiqmaguncha
+  takror yo'q, tashlab ketilgan o'yin davomidan. Topilmagan so'z darhol
+  `db.en_relearn` — box 0, ertaga takror, `known = 0`. Foydalanuvchi
+  maqsadi: "A2 gacha bilmagan so'zlarini qaytadan yodlatish".
+- **Gap tuzish** (Groq, `grammar.py`): Vocabulary'da so'zlardan keyin
+  (takrorlash bo'lsa — u tugagach) «✍️ gap tuzib ko'ring» taklifi va
+  `EnglishSentence.waiting` rejimi — erkin matn Groq'ga boradi: ✅ yoki
+  to'g'ri varianti + qisqa izoh (foydalanuvchi tilida). Handler fallback'dan
+  oldin, barcha tugma/buyruqlardan keyin turadi. Model `GROQ_MODEL`
+  (standart `qwen/qwen3.8-27b` — sinovda o'zbekcha izohlari `gpt-oss-120b`
+  nikidan aniqroq). Kalit faqat serverdagi `.env` da (600); bo'sh bo'lsa
+  funksiya o'chiq. Kuniga 30 tekshiruv, gap 300 belgigacha. Ertalabki
+  yuborishda taklif yo'q.
 - Takrorlash — Leitner: 1, 3, 7, 21 kun; 4 ta ketma-ket to'g'ri — yodlandi
   (`due = NULL`), xato — boshidan. Bir o'tirishda 10 tagacha.
 - Savol variantlari orasida **umumiy ma'no bo'lmasligi shart** (sinonimlar:

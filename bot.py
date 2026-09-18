@@ -37,6 +37,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 import db
 import english
+import grammar
 from config import (
     ADMIN_ID,
     ADMIN_IDS,
@@ -144,6 +145,11 @@ class EnglishReview(StatesGroup):
 class EnglishGame(StatesGroup):
     """O'yin: 10 savol; FSM'da navbat, to'g'rilar soni va xatolar."""
     question = State()
+
+
+class EnglishSentence(StatesGroup):
+    """Bugungi so'zlar bilan gap tuzish (Groq tekshiradi); FSM'da so'zlar."""
+    waiting = State()
 
 
 LANG_NAMES = {"uz": "O'zbekcha", "ru": "Русский"}
@@ -1235,8 +1241,9 @@ async def new_flows_non_text(message: Message) -> None:
 # ma'lumot va daraja testi. Keyin «🇬🇧 English» — menyu: «📚 Vocabulary»
 # (bugungi 3 ta so'z, ertalab avtomatik ham keladi, so'ng vaqti kelgan
 # so'zlarni takrorlash), «🎮 O'yin» (orqadagi so'zlardan 10 savol) va haftada
-# bir ochiladigan «🎯 Darajani aniqlash». Hamma tanlov pastki klaviaturada.
-# Mantiq english.py da.
+# bir ochiladigan «🎯 Darajani aniqlash». So'zlardan (yoki takrorlashdan) keyin
+# gap tuzish taklif qilinadi — Groq tekshiradi (grammar.py). Hamma tanlov
+# pastki klaviaturada. Mantiq english.py da.
 
 def english_keyboard(lang: str, user: dict, today: date) -> ReplyKeyboardMarkup:
     rows = [[t(lang, "btn_en_vocab"), t(lang, "btn_en_game")]]
@@ -1323,13 +1330,26 @@ async def english_vocabulary(message: Message, state: FSMContext, user: dict,
     """Bugungi so'zlar, keyin vaqti kelgan so'zlarni takrorlash (bo'lsa)."""
     today = now_local().date()
     await state.clear()
-    await message.answer(english_today_text(user, lang, today),
-                         reply_markup=english_keyboard(lang, user, today))
+    text = english_today_text(user, lang, today)
     queue = english.due_reviews(user["user_id"], today)
+    if not queue and await offer_sentence(state, user, today):
+        text += "\n\n" + t(lang, "en_try_sentence")
+    await message.answer(text, reply_markup=english_keyboard(lang, user, today))
     if queue:
+        # gap tuzish taklifi takrorlash tugagach chiqadi
         await state.set_state(EnglishReview.question)
         await state.update_data(queue=queue, i=0)
         await ask_review(message, state, lang)
+
+
+async def offer_sentence(state: FSMContext, user: dict, today: date) -> bool:
+    """Gap tuzish rejimini yoqadi — Groq ulangan va bugungi so'zlar bo'lsa."""
+    ids = db.en_today(user["user_id"], today)
+    if not grammar.enabled() or not ids:
+        return False
+    await state.set_state(EnglishSentence.waiting)
+    await state.update_data(words=ids)
+    return True
 
 
 async def ask_review(message: Message, state: FSMContext, lang: str,
@@ -1511,8 +1531,10 @@ async def english_review_answer(message: Message, state: FSMContext) -> None:
         await ask_review(message, state, lang, prefix=feedback)
         return
     await state.clear()
-    await message.answer(f"{feedback}\n\n{t(lang, 'en_reviews_done')}",
-                         reply_markup=english_keyboard(lang, user, today))
+    text = f"{feedback}\n\n{t(lang, 'en_reviews_done')}"
+    if await offer_sentence(state, user, today):
+        text += "\n\n" + t(lang, "en_try_sentence")
+    await message.answer(text, reply_markup=english_keyboard(lang, user, today))
 
 
 @router.message(EnglishGame.question, F.text)
@@ -1930,6 +1952,42 @@ async def delete_user_run(callback: CallbackQuery) -> None:
             t(lang, "del_done").format(name=esc(target["name"])))
     except Exception:
         pass
+
+
+# ── English: gap tuzish ──────────────────────────────────────────────────────
+# Erkin matnni ushlaydi, shuning uchun barcha tugma va buyruq handlerlaridan
+# keyin, fallback'dan oldin turadi. Rejim Vocabulary'dan keyin yoqiladi va
+# boshqa bo'limga o'tilguncha turadi — bir necha gap yuborish mumkin.
+
+@router.message(EnglishSentence.waiting, F.text, ~F.text.startswith("/"))
+async def english_sentence(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user or not user.get("english") or not user.get("en_level"):
+        await english_open(message, state)
+        return
+    sentence = " ".join(message.text.split())
+    if len(sentence) > grammar.MAX_LEN:
+        await message.answer(t(lang, "en_sentence_long").format(n=grammar.MAX_LEN))
+        return
+    if not grammar.take(message.from_user.id, now_local().date()):
+        await message.answer(t(lang, "en_sentence_limit"))
+        return
+    data = await state.get_data()
+    words = [english.words()[w]["word"] for w in data.get("words", [])
+             if w in english.words()]
+    await message.bot.send_chat_action(message.chat.id, "typing")
+    v = await grammar.check(sentence, words, user["en_level"], lang)
+    if v is None:
+        text = t(lang, "en_sentence_error")
+    elif v.verdict == "correct":
+        text = t(lang, "en_sentence_ok")
+    elif v.verdict == "not_english":
+        text = t(lang, "en_sentence_not_en")
+    else:
+        text = t(lang, "en_sentence_fix").format(corrected=esc(v.corrected))
+        if v.note:
+            text += "\n\n" + t(lang, "en_sentence_note").format(note=esc(v.note))
+    await message.answer(text)
 
 
 # ── Tushunilmagan xabarlar ─────────────────────────────────────────────────────

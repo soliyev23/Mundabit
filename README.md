@@ -38,10 +38,14 @@ Ro'yxatdan o'tgach doimiy klaviatura chiqadi:
 - **🇬🇧 English** — sozlamalardan yoqiladi (standart — o'chiq). Birinchi
   kirishda lug'at haqida ma'lumot va daraja testi (12 yoki 18 savol, javoblar
   oxirida ko'rsatiladi).
-  Keyin English menyusida daraja va ikki tugma: **📚 Vocabulary** — har
+  Keyin English menyusida daraja va tugmalar: **📚 Vocabulary** — har
   kuni 3 ta yangi so'z (tarjima va misol bilan; ertalab 05:00 da o'zi ham
   keladi), so'ng o'tgan so'zlar 1, 3, 7, 21 kundan keyin savol bilan
-  takrorlanadi; **🎯 Darajani aniqlash** — haftada bir marta ochiladi.
+  takrorlanadi, keyin so'zlar bilan gap tuzib yuborsa bo'ladi — Groq (LLM)
+  tekshirib, xato bo'lsa to'g'ri variantini qaytaradi; **🎮 O'yin** —
+  orqadagi so'zlardan (darajadan pastdagi hammasi va o'rganilganlari) 10
+  savol, hammasi navbat bilan aylanadi, topilmaganlari qaytadan yodlashga
+  tushadi; **🎯 Darajani aniqlash** — haftada bir marta ochiladi.
   Hamma tanlov pastki klaviaturada.
 - **⚙️ Sozlamalar** — ism, jins, til va English'ni yoqish/o'chirish. Joriy ma'lumot ham shu
   yerda ko'rinadi. Jins yoki til o'zgarsa kalendar darhol qayta yuboriladi.
@@ -150,6 +154,7 @@ sudo systemctl restart mundabit            # serverda, bot kodi o'zgargan bo'lsa
 - `db.py` — SQLite baza (foydalanuvchilar, hafta baholari, eslatmalar, English progressi)
 - `english.py` — English: lug'at, daraja testi, kunlik so'zlar, takrorlash
 - `english/words.json` — English lug'ati (uz/ru tarjima, misol gap)
+- `grammar.py` — tuzilgan gapni Groq orqali tekshirish
 - `webserver.py` — Mini App server: statik sahifa + initData imzosi tekshiruvi
 - `webapp/index.html` — Mini App frontend
 - `config.py` — sozlamalar (`.env` orqali)
@@ -166,6 +171,7 @@ sudo systemctl restart mundabit            # serverda, bot kodi o'zgargan bo'lsa
 | `CALENDAR_DAY_OF_WEEK` / `_HOUR` / `_MINUTE` | fri / 13 / 0 | kalendar oynasi boshlanishi |
 | `BROADCAST_WINDOW_MINUTES` | 60 | tarqatish shu oyna bo'ylab yoyiladi |
 | `EN_HOUR` / `EN_MINUTE` | 5 / 0 | English kunlik so'zlari |
+| `GROQ_API_KEY` / `GROQ_MODEL` | — / `qwen/qwen3.8-27b` | gap tekshirish; kalit bo'sh bo'lsa o'chiq |
 | `ADMIN_IDS` | egasi | vergul bilan; birinchisiga yangi user xabari boradi. Standart — faqat egasi |
 | `WEBAPP_URL` / `WEBAPP_PORT` | — / 8080 | Mini App |
 | `DB_PATH` | `mundabit.db` | |

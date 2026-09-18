@@ -36,6 +36,10 @@ CALENDAR_MINUTE = int(os.getenv("CALENDAR_MINUTE", "0"))
 EN_HOUR = int(os.getenv("EN_HOUR", "5"))
 EN_MINUTE = int(os.getenv("EN_MINUTE", "0"))
 
+# English: tuzilgan gapni tekshirish (Groq). Kalit bo'sh bo'lsa — o'chiq.
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
+GROQ_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+
 # Tarqatish bir zumda emas, shu oyna bo'ylab yoyiladi (daqiqa).
 # Juma 13:00 → 14:00, dushanba 08:00 → 09:00. Bot shu vaqtda ham javob beradi.
 BROADCAST_WINDOW_MINUTES = int(os.getenv("BROADCAST_WINDOW_MINUTES", "60"))
