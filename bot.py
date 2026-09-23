@@ -1321,34 +1321,50 @@ def _fmt_num(n: int) -> str:
     return f"{n:,}".replace(",", " ")
 
 
-def english_today_text(user: dict, lang: str, today: date) -> str:
-    """Bugungi so'zlar (kerak bo'lsa shu yerda tanlanadi)."""
-    ids = english.today_words(user["user_id"], user["en_level"], today)
-    parts = [t(lang, "en_today_title").format(level=user["en_level"])]
-    for wid in ids:
-        w = english.words()[wid]
-        parts.append(
-            f"<b>{esc(w['word'])}</b> · {POS_NAMES[lang][w['pos']]}\n"
+def english_word_block(wid: int, lang: str) -> str:
+    """Bitta so'z: so'z · turkum / tarjima / misol."""
+    w = english.words()[wid]
+    return (f"<b>{esc(w['word'])}</b> · {POS_NAMES[lang][w['pos']]}\n"
             f"{esc(english.translation(wid, lang))}\n"
-            f"<i>{esc(w['ex'])}</i>"
-        )
+            f"<i>{esc(w['ex'])}</i>")
+
+
+async def send_daily_words(bot: Bot, user: dict, lang: str, today: date,
+                           tail: str = "", markup=None) -> None:
+    """Bugungi so'zlar: <b>har so'z — bitta xabar</b>, talaffuzi va matni birga.
+
+    Ilgari matn bitta xabarda, audiolar esa alohida kelardi — foydalanuvchiga
+    yoqmadi, chunki qaysi audio qaysi so'zniki ekani uzilib qolardi. Endi so'z
+    izoh (caption) bo'lib audio ostida turadi.
+
+    Sarlavha birinchi xabarga, qo'shimcha (`tail`) va klaviatura oxirgisiga
+    qo'shiladi. Audio topilmasa o'sha so'z oddiy matn bo'lib ketadi.
+    """
+    chat_id = user["user_id"]
+    ids = english.today_words(user["user_id"], user["en_level"], today)
+    header = t(lang, "en_today_title").format(level=user["en_level"])
     if not ids:
-        parts.append(t(lang, "en_all_done"))
-    return "\n\n".join(parts)
-
-
-async def send_word_audio(bot: Bot, chat_id: int, word_ids: list[int]) -> None:
-    """Bugungi so'zlarning talaffuzi — har so'zga bitta qisqa ovozli xabar.
-    Fayllar oldindan tayyorlangan; audio topilmasa jim o'tkazib yuboriladi."""
-    for wid in word_ids:
+        text = f"{header}\n\n{t(lang, 'en_all_done')}"
+        await bot.send_message(chat_id, text + (f"\n\n{tail}" if tail else ""),
+                               reply_markup=markup)
+        return
+    last = len(ids) - 1
+    for n, wid in enumerate(ids):
+        caption = english_word_block(wid, lang)
+        if n == 0:
+            caption = f"{header}\n\n{caption}"
+        if n == last and tail:
+            caption += f"\n\n{tail}"
+        mk = markup if n == last else None
         clip = english.word_audio(wid)
-        if not clip:
-            continue
-        try:
-            await bot.send_voice(chat_id, FSInputFile(clip),
-                                 caption=f"<b>{esc(english.words()[wid]['word'])}</b>")
-        except Exception as e:
-            log.warning("So'z audiosi yuborilmadi word_id=%s: %s", wid, e)
+        if clip:
+            try:
+                await bot.send_voice(chat_id, FSInputFile(clip), caption=caption,
+                                     reply_markup=mk)
+                continue
+            except Exception as e:
+                log.warning("So'z audiosi yuborilmadi word_id=%s: %s", wid, e)
+        await bot.send_message(chat_id, caption, reply_markup=mk)
 
 
 async def english_vocabulary(message: Message, state: FSMContext, user: dict,
@@ -1356,12 +1372,14 @@ async def english_vocabulary(message: Message, state: FSMContext, user: dict,
     """Bugungi so'zlar, keyin vaqti kelgan so'zlarni takrorlash (bo'lsa)."""
     today = now_local().date()
     await state.clear()
-    text = english_today_text(user, lang, today)
+    # gap tuzish taklifi bugungi so'zlar tayinlangandan keyin tekshiriladi
+    english.today_words(user["user_id"], user["en_level"], today)
     queue = english.due_reviews(user["user_id"], today)
+    tail = ""
     if not queue and await offer_sentence(state, user, today):
-        text += "\n\n" + t(lang, "en_try_sentence")
-    await message.answer(text, reply_markup=english_keyboard(lang, user, today))
-    await send_word_audio(message.bot, user["user_id"], db.en_today(user["user_id"], today))
+        tail = t(lang, "en_try_sentence")
+    await send_daily_words(message.bot, user, lang, today, tail=tail,
+                           markup=english_keyboard(lang, user, today))
     if queue:
         # gap tuzish taklifi takrorlash tugagach chiqadi
         await state.set_state(EnglishReview.question)
@@ -2268,12 +2286,9 @@ async def english_morning(bot: Bot) -> None:
 
     async def send_one(bot: Bot, user: dict) -> None:
         lang = user.get("lang") or "uz"
-        text = english_today_text(user, lang, today)
         due = len(english.due_reviews(user["user_id"], today))
-        if due:
-            text += "\n\n" + t(lang, "en_reviews_hint").format(n=due)
-        await bot.send_message(user["user_id"], text)
-        await send_word_audio(bot, user["user_id"], db.en_today(user["user_id"], today))
+        tail = t(lang, "en_reviews_hint").format(n=due) if due else ""
+        await send_daily_words(bot, user, lang, today, tail=tail)
 
     await spread_send(bot, users, send_one, "English so'zlari", window_minutes=0)
 

@@ -225,8 +225,12 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   shikoyati shundan edi) — shuning uchun `MAX_TOKENS = 300` (haqiqiy javob
   25–100). 429/5xx da `retry-after` ≤ 8 s bo'lsa bir marta qayta urinadi.
   Har tekshiruv logda: `Groq: <verdict>, N ms` yoki `Groq 429 ...`.
-- **So'z audiosi:** kunlik 3 ta so'z matndan keyin uchta qisqa ovozli xabar
-  bilan keladi (Vocabulary tugmasida ham, ertalabki yuborishda ham).
+- **So'z audiosi:** kunlik 3 ta so'zning har biri — <b>bitta xabar</b>:
+  ovozli xabar, matni esa uning izohida (`send_daily_words`). Ilgari matn
+  alohida, audiolar alohida kelardi — foydalanuvchiga yoqmadi, qaysi audio
+  qaysi so'zniki ekani uzilib qolardi. Sarlavha birinchi xabarda, gap tuzish
+  taklifi va klaviatura oxirgisida. Vocabulary tugmasida ham, ertalabki
+  yuborishda ham shunday.
   Fayllar oldindan tayyorlangan — `english/audio/words/<word_id>.ogg`, id
   `words.json` dagi barqaror id. Audio topilmasa jim o'tkazib yuboriladi,
   matn baribir ketadi. Faqat so'zning o'zi o'qiladi (misol jumla emas: u
