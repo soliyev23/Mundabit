@@ -1337,6 +1337,20 @@ def english_today_text(user: dict, lang: str, today: date) -> str:
     return "\n\n".join(parts)
 
 
+async def send_word_audio(bot: Bot, chat_id: int, word_ids: list[int]) -> None:
+    """Bugungi so'zlarning talaffuzi — har so'zga bitta qisqa ovozli xabar.
+    Fayllar oldindan tayyorlangan; audio topilmasa jim o'tkazib yuboriladi."""
+    for wid in word_ids:
+        clip = english.word_audio(wid)
+        if not clip:
+            continue
+        try:
+            await bot.send_voice(chat_id, FSInputFile(clip),
+                                 caption=f"<b>{esc(english.words()[wid]['word'])}</b>")
+        except Exception as e:
+            log.warning("So'z audiosi yuborilmadi word_id=%s: %s", wid, e)
+
+
 async def english_vocabulary(message: Message, state: FSMContext, user: dict,
                              lang: str) -> None:
     """Bugungi so'zlar, keyin vaqti kelgan so'zlarni takrorlash (bo'lsa)."""
@@ -1347,6 +1361,7 @@ async def english_vocabulary(message: Message, state: FSMContext, user: dict,
     if not queue and await offer_sentence(state, user, today):
         text += "\n\n" + t(lang, "en_try_sentence")
     await message.answer(text, reply_markup=english_keyboard(lang, user, today))
+    await send_word_audio(message.bot, user["user_id"], db.en_today(user["user_id"], today))
     if queue:
         # gap tuzish taklifi takrorlash tugagach chiqadi
         await state.set_state(EnglishReview.question)
@@ -2258,6 +2273,7 @@ async def english_morning(bot: Bot) -> None:
         if due:
             text += "\n\n" + t(lang, "en_reviews_hint").format(n=due)
         await bot.send_message(user["user_id"], text)
+        await send_word_audio(bot, user["user_id"], db.en_today(user["user_id"], today))
 
     await spread_send(bot, users, send_one, "English so'zlari", window_minutes=0)
 

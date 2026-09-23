@@ -18,6 +18,7 @@ from pathlib import Path
 import db
 
 WORDS_PATH = Path(__file__).parent / "english" / "words.json"
+AUDIO_DIR = Path(__file__).parent / "english" / "audio" / "words"
 
 LEVELS = ("A1", "A2", "B1", "B2", "C1")
 DAILY_NEW = 3
@@ -47,6 +48,13 @@ GAME_QUESTIONS = 10        # o'yin: bir o'yinda savollar soni
 # ── lug'at ───────────────────────────────────────────────────────────────────
 
 @lru_cache(maxsize=1)
+def word_audio(word_id: int) -> Path | None:
+    """So'z talaffuzi — tayyor .ogg (tools/gen_word_audio.py yaratgan).
+    Fayl bo'lmasa None; audio ixtiyoriy, u yo'q bo'lsa matn baribir ketadi."""
+    p = AUDIO_DIR / f"{word_id}.ogg"
+    return p if p.exists() else None
+
+
 def words() -> dict[int, dict]:
     data = json.loads(WORDS_PATH.read_text(encoding="utf-8"))
     return {w["id"]: w for w in data["words"]}

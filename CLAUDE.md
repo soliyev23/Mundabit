@@ -50,6 +50,7 @@ klon qilish kerak.)
 | `lessons.py` | English «Asoslar»: boshlang'ich darslar mantiqi |
 | `english/lessons.json` | 22 ta dars: nazariya (uz/ru), misollar, mashqlar |
 | `english/audio/` | darslar audiosi (.ogg) — `tools/gen_lesson_audio.py` yaratgan |
+| `english/audio/words/` | 3171 ta so'z talaffuzi (`<id>.ogg`, 13 MB) — `tools/gen_word_audio.py` |
 | `english/words.json` | English lug'ati: so'z, turkum, daraja, uz/ru tarjima, misol |
 | `grammar.py` | English: tuzilgan gapni Groq (LLM) orqali tekshirish |
 | `webserver.py` | Mini App uchun aiohttp server, initData imzosi tekshiriladi |
@@ -224,6 +225,14 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   shikoyati shundan edi) — shuning uchun `MAX_TOKENS = 300` (haqiqiy javob
   25–100). 429/5xx da `retry-after` ≤ 8 s bo'lsa bir marta qayta urinadi.
   Har tekshiruv logda: `Groq: <verdict>, N ms` yoki `Groq 429 ...`.
+- **So'z audiosi:** kunlik 3 ta so'z matndan keyin uchta qisqa ovozli xabar
+  bilan keladi (Vocabulary tugmasida ham, ertalabki yuborishda ham).
+  Fayllar oldindan tayyorlangan — `english/audio/words/<word_id>.ogg`, id
+  `words.json` dagi barqaror id. Audio topilmasa jim o'tkazib yuboriladi,
+  matn baribir ketadi. Faqat so'zning o'zi o'qiladi (misol jumla emas: u
+  53 MB bo'lardi, so'z esa 13 MB). Ovozni almashtirish —
+  `english/audio/words/` ni o'chirib, `tools/gen_word_audio.py` ni boshqa
+  model bilan qayta ishga tushirish (~6 daqiqa).
 - Takrorlash — Leitner: 1, 3, 7, 21 kun; 4 ta ketma-ket to'g'ri — yodlandi
   (`due = NULL`), xato — boshidan. Bir o'tirishda 10 tagacha.
 - Savol variantlari orasida **umumiy ma'no bo'lmasligi shart** (sinonimlar:
