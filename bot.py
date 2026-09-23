@@ -1331,14 +1331,16 @@ def english_word_block(wid: int, lang: str) -> str:
 
 async def send_daily_words(bot: Bot, user: dict, lang: str, today: date,
                            tail: str = "", markup=None) -> None:
-    """Bugungi so'zlar: <b>har so'z — bitta xabar</b>, talaffuzi va matni birga.
+    """Bugungi so'zlar: har so'z uchun <b>matn, so'ng darhol uning audiosi</b>.
 
-    Ilgari matn bitta xabarda, audiolar esa alohida kelardi — foydalanuvchiga
-    yoqmadi, chunki qaysi audio qaysi so'zniki ekani uzilib qolardi. Endi so'z
-    izoh (caption) bo'lib audio ostida turadi.
+    Nega shunday: ovozli xabarning puffagi pleyer kengligiga qarab o'lchanadi
+    va izoh (caption) matnini torroq o'raydi — matnni izohga qo'yish sinab
+    ko'rildi, foydalanuvchiga yoqmadi. Ko'rinmas belgilar bilan kengaytirish
+    ham ta'sir qilmadi. Shuning uchun matn alohida xabar (to'liq enda), audio
+    esa darhol ostida — juftlik ko'zga birga tashlanadi.
 
-    Sarlavha birinchi xabarga, qo'shimcha (`tail`) va klaviatura oxirgisiga
-    qo'shiladi. Audio topilmasa o'sha so'z oddiy matn bo'lib ketadi.
+    Sarlavha birinchi so'zning matniga, qo'shimcha (`tail`) va klaviatura
+    oxirgisiga qo'shiladi. Audio topilmasa o'sha so'z faqat matn bo'lib ketadi.
     """
     chat_id = user["user_id"]
     ids = english.today_words(user["user_id"], user["en_level"], today)
@@ -1350,21 +1352,20 @@ async def send_daily_words(bot: Bot, user: dict, lang: str, today: date,
         return
     last = len(ids) - 1
     for n, wid in enumerate(ids):
-        caption = english_word_block(wid, lang)
+        text = english_word_block(wid, lang)
         if n == 0:
-            caption = f"{header}\n\n{caption}"
+            text = f"{header}\n\n{text}"
         if n == last and tail:
-            caption += f"\n\n{tail}"
-        mk = markup if n == last else None
+            text += f"\n\n{tail}"
+        # klaviatura matn xabariga qo'yiladi: u audiodan oldin ketadi, lekin
+        # pastki klaviatura keyingi xabarlardan o'zgarmaydi
+        await bot.send_message(chat_id, text, reply_markup=markup if n == last else None)
         clip = english.word_audio(wid)
         if clip:
             try:
-                await bot.send_voice(chat_id, FSInputFile(clip), caption=caption,
-                                     reply_markup=mk)
-                continue
+                await bot.send_voice(chat_id, FSInputFile(clip))
             except Exception as e:
                 log.warning("So'z audiosi yuborilmadi word_id=%s: %s", wid, e)
-        await bot.send_message(chat_id, caption, reply_markup=mk)
 
 
 async def english_vocabulary(message: Message, state: FSMContext, user: dict,
