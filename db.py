@@ -91,6 +91,19 @@ def init_db() -> None:
             """
         )
         c.execute("CREATE INDEX IF NOT EXISTS idx_en_words_added ON en_words(user_id, added)")
+        c.execute(
+            """
+            CREATE TABLE IF NOT EXISTS en_lessons (
+                user_id   INTEGER NOT NULL,
+                lesson_id INTEGER NOT NULL,      -- english/lessons.json dagi id
+                score     INTEGER NOT NULL DEFAULT 0,   -- oxirgi urinishdagi to'g'ri javoblar
+                total     INTEGER NOT NULL DEFAULT 0,   -- darsdagi mashqlar soni
+                done      INTEGER NOT NULL DEFAULT 0,   -- o'tdimi (PASS_RATIO)
+                updated   TEXT,
+                PRIMARY KEY (user_id, lesson_id)
+            )
+            """
+        )
         if "en_tested" not in cols:
             # Oxirgi daraja testi boshlangan sana — qayta test haftada bir marta.
             # Ustun qo'shilganda: test sanasi sifatida birinchi kunlik so'zlar sanasi.
@@ -445,6 +458,42 @@ def en_set_box(user_id: int, word_id: int, box: int, due: date | None) -> None:
         c.execute(
             "UPDATE en_words SET box = ?, due = ? WHERE user_id = ? AND word_id = ?",
             (box, due.isoformat() if due else None, user_id, word_id),
+        )
+
+
+def en_lessons_progress(user_id: int) -> dict[int, dict]:
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT lesson_id, score, total, done FROM en_lessons WHERE user_id = ?",
+            (user_id,),
+        ).fetchall()
+        return {r["lesson_id"]: dict(r) for r in rows}
+
+
+def en_lessons_done(user_id: int) -> set[int]:
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT lesson_id FROM en_lessons WHERE user_id = ? AND done = 1", (user_id,)
+        ).fetchall()
+        return {r["lesson_id"] for r in rows}
+
+
+def en_lesson_save(user_id: int, lesson_id: int, score: int, total: int,
+                   done: bool) -> None:
+    """Natijani saqlaydi. Bir marta o'tilgan dars qayta ishlanganda ham
+    o'tilgan bo'lib qoladi — takrorlash natijasi uni bekor qilmaydi."""
+    with _conn() as c:
+        c.execute(
+            """
+            INSERT INTO en_lessons (user_id, lesson_id, score, total, done, updated)
+            VALUES (?, ?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(user_id, lesson_id) DO UPDATE SET
+                score = excluded.score,
+                total = excluded.total,
+                done = MAX(en_lessons.done, excluded.done),
+                updated = excluded.updated
+            """,
+            (user_id, lesson_id, score, total, 1 if done else 0),
         )
 
 

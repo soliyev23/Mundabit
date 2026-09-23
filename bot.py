@@ -21,6 +21,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
     BotCommand,
     BufferedInputFile,
+    FSInputFile,
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -37,6 +38,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 import db
 import english
+import lessons
 import grammar
 from config import (
     ADMIN_ID,
@@ -145,6 +147,13 @@ class EnglishReview(StatesGroup):
 class EnglishGame(StatesGroup):
     """O'yin: 10 savol; FSM'da navbat, to'g'rilar soni va xatolar."""
     question = State()
+
+
+class Basics(StatesGroup):
+    """Boshlang'ich darslar: ro'yxatdan tanlash, nazariya, mashqlar."""
+    pick = State()
+    intro = State()
+    task = State()
 
 
 class EnglishSentence(StatesGroup):
@@ -1246,7 +1255,8 @@ async def new_flows_non_text(message: Message) -> None:
 # pastki klaviaturada. Mantiq english.py da.
 
 def english_keyboard(lang: str, user: dict, today: date) -> ReplyKeyboardMarkup:
-    rows = [[t(lang, "btn_en_vocab"), t(lang, "btn_en_game")]]
+    rows = [[t(lang, "btn_en_basics")],
+            [t(lang, "btn_en_vocab"), t(lang, "btn_en_game")]]
     if english.next_test_date(user, today) is None:
         rows.append([t(lang, "btn_en_retest")])
     return _kb(rows, lang)
@@ -1255,6 +1265,8 @@ def english_keyboard(lang: str, user: dict, today: date) -> ReplyKeyboardMarkup:
 def english_level_text(user: dict, lang: str, today: date) -> str:
     """«Darajangiz: B1» va qayta test yopiq bo'lsa — qachon ochilishi."""
     text = t(lang, "en_level_result").format(level=user["en_level"])
+    if user.get("en_level") in (None, "A1"):
+        text += t(lang, "basics_hint")
     opens = english.next_test_date(user, today)
     if opens:
         text += "\n" + t(lang, "en_next_test").format(date=fmt_day_month(opens, lang, today))
@@ -1391,6 +1403,154 @@ async def start_english_test(message: Message, state: FSMContext, lang: str) -> 
     await state.set_state(EnglishTest.question)
     await state.update_data(test=english.new_test())
     await ask_test_question(message, state, lang)
+
+
+# ── Asoslar: boshlang'ich darslar ────────────────────────────────────────────
+# Lug'atdan mustaqil yo'nalish (foydalanuvchi tanlovi — ikkalasi ham ochiq).
+# Kontent english/lessons.json da, mashqlar qo'lda yozilgan. Alifbo darslarida
+# va ba'zi mashqlarda audio bor — tayyor .ogg fayllar english/audio/ da.
+
+
+def basics_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return _kb([[t(lang, "btn_basics_start"), t(lang, "btn_basics_list")]], lang)
+
+
+def basics_menu_text(user: dict, lang: str) -> str:
+    done = db.en_lessons_done(user["user_id"])
+    nxt = lessons.next_lesson(done)
+    tail = (t(lang, "basics_next").format(n=lessons.position(nxt["id"]),
+                                          title=esc(nxt["title"][lang]))
+            if nxt else t(lang, "basics_all_done"))
+    return t(lang, "basics_menu").format(done=len(done), total=lessons.total(), next=tail)
+
+
+def basics_lesson_text(les: dict, lang: str) -> str:
+    """Nazariya + misollar. Nazariya matnida HTML ataylab bor — qochirilmaydi."""
+    items = les.get("items") or []
+    if items and "letter" in items[0]:
+        rows = "\n".join(
+            f'<b>{i["letter"]}</b>  «{i["name_" + lang]}»   {esc(i["word"])} — {esc(i["tr_" + lang])}'
+            for i in items)
+    else:
+        rows = "\n".join(f'• <i>{esc(i["en"])}</i>\n  {esc(i["tr_" + lang])}' for i in items)
+    body = les["theory"][lang] + (f"\n\n{rows}" if rows else "")
+    return t(lang, "basics_lesson").format(
+        n=lessons.position(les["id"]), title=esc(les["title"][lang]), theory=body)
+
+
+async def send_basics_lesson(message: Message, state: FSMContext, les: dict,
+                             lang: str) -> None:
+    await state.set_state(Basics.intro)
+    await state.update_data(lesson=les["id"])
+    await message.answer(basics_lesson_text(les, lang),
+                         reply_markup=_kb([[t(lang, "btn_basics_tasks")]], lang))
+    audio = lessons.lesson_audio(les["id"])
+    if audio:
+        await message.answer_voice(FSInputFile(audio), caption=t(lang, "basics_go"))
+
+
+async def ask_basics_task(message: Message, state: FSMContext, lang: str,
+                          prefix: str = "") -> None:
+    data = await state.get_data()
+    les = lessons.get(data["lesson"])
+    i = data["i"]
+    task = les["tasks"][i]
+    await state.update_data(options=task["options"], answer=task["answer"])
+    text = t(lang, "basics_q").format(i=i + 1, n=len(les["tasks"]), q=task["q"][lang])
+    if prefix:
+        text = f"{prefix}\n\n{text}"
+    if task.get("audio"):
+        clip = lessons.task_audio(les["id"], i + 1)
+        if clip:
+            await message.answer_voice(FSInputFile(clip))
+    await message.answer(text, reply_markup=question_keyboard(lang, task["options"]))
+
+
+@router.message(F.text.in_(btn_variants("btn_en_basics")))
+async def basics_open(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user:
+        return
+    await state.clear()
+    await message.answer(basics_menu_text(user, lang), reply_markup=basics_keyboard(lang))
+
+
+@router.message(F.text.in_(btn_variants("btn_basics_start")))
+async def basics_start(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user:
+        return
+    done = db.en_lessons_done(user["user_id"])
+    await send_basics_lesson(message, state,
+                             lessons.next_lesson(done) or lessons.lessons()[0], lang)
+
+
+@router.message(F.text.in_(btn_variants("btn_basics_list")))
+async def basics_list(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user:
+        return
+    done = db.en_lessons_done(user["user_id"])
+    rows = "\n".join(
+        f'{"✅" if les["id"] in done else "▫️"} <b>{n}.</b> {esc(les["title"][lang])}'
+        for n, les in enumerate(lessons.lessons(), 1))
+    nums = [str(n) for n in range(1, lessons.total() + 1)]
+    await state.set_state(Basics.pick)
+    await message.answer(t(lang, "basics_list").format(rows=rows),
+                         reply_markup=_kb([nums[i:i + 5] for i in range(0, len(nums), 5)], lang))
+
+
+@router.message(Basics.pick, F.text)
+async def basics_pick(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    text = (message.text or "").strip()
+    if not text.isdigit() or not 1 <= int(text) <= lessons.total():
+        await message.answer(t(lang, "use_keyboard"))
+        return
+    await send_basics_lesson(message, state, lessons.lessons()[int(text) - 1], lang)
+
+
+@router.message(F.text.in_(btn_variants("btn_basics_tasks")))
+async def basics_tasks(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    if not user:
+        return
+    les = lessons.get((await state.get_data()).get("lesson") or 0)
+    if not les:                      # eski klaviaturadan bosilgan bo'lsa
+        await message.answer(basics_menu_text(user, lang), reply_markup=basics_keyboard(lang))
+        return
+    await state.set_state(Basics.task)
+    await state.update_data(lesson=les["id"], i=0, score=0)
+    await ask_basics_task(message, state, lang)
+
+
+@router.message(Basics.task, F.text)
+async def basics_answer(message: Message, state: FSMContext) -> None:
+    user, lang = _english_user(message)
+    data = await state.get_data()
+    options = data.get("options") or []
+    if message.text not in options and message.text not in btn_variants("btn_dont_know"):
+        await message.answer(t(lang, "use_keyboard"),
+                             reply_markup=question_keyboard(lang, options))
+        return
+    correct = message.text == data.get("answer")
+    score = data.get("score", 0) + (1 if correct else 0)
+    feedback = (t(lang, "en_right") if correct
+                else t(lang, "basics_wrong").format(answer=esc(data["answer"])))
+    les = lessons.get(data["lesson"])
+    i = data["i"] + 1
+    if i < len(les["tasks"]):
+        await state.update_data(i=i, score=score)
+        await ask_basics_task(message, state, lang, prefix=feedback)
+        return
+    n = len(les["tasks"])
+    ok = lessons.passed(score, n)
+    db.en_lesson_save(message.from_user.id, les["id"], score, n, ok)
+    result = (t(lang, "basics_pass").format(score=score, total=n) if ok else
+              t(lang, "basics_fail").format(score=score, total=n, need=lessons.need_correct(n)))
+    await state.clear()
+    await message.answer(f"{feedback}\n\n{result}\n\n{basics_menu_text(user, lang)}",
+                         reply_markup=basics_keyboard(lang))
 
 
 def _english_user(message: Message) -> tuple[dict | None, str]:

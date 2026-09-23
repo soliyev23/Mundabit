@@ -240,6 +240,29 @@ BOT = {
         "en_level_line": "{level} — {n} ta",
         "btn_en_start": "▶️ Testni boshlash",
         "btn_en_retest": "🎯 Darajani aniqlash",
+        "btn_en_basics": "🔤 Asoslar",
+        "btn_basics_start": "▶️ Boshlash",
+        "btn_basics_list": "📋 Darslar",
+        "btn_basics_tasks": "✍️ Mashqlar",
+        "basics_menu": (
+            "🔤 <b>Asoslar</b> — noldan boshlovchilar uchun\n"
+            "Alifbo, to be, uchinchi shaxs birligi va boshqa asosiy mavzular.\n\n"
+            "Bajarildi: <b>{done} / {total}</b>\n\n{next}"
+        ),
+        "basics_next": "Keyingi dars: <b>{n}. {title}</b>",
+        "basics_all_done": "Barcha darslar bajarildi 🎉\nXohlagan darsni qaytadan ko'rishingiz mumkin.",
+        "basics_list": "📋 <b>Darslar</b>\n\n{rows}\n\nRaqamni tanlang.",
+        "basics_lesson": "<b>{n}. {title}</b>\n\n{theory}",
+        "basics_go": "Tayyor bo'lsangiz — «✍️ Mashqlar».",
+        "basics_q": "<b>{i}/{n}</b>  {q}",
+        "basics_wrong": "❌ To'g'ri javob: <b>{answer}</b>",
+        "basics_pass": "✅ <b>Dars bajarildi!</b>  {score}/{total}",
+        "basics_fail": (
+            "Natija: <b>{score}/{total}</b>\n"
+            "O'tish uchun kamida {need} ta to'g'ri javob kerak. Darsni qayta o'qib, "
+            "yana urinib ko'ring."
+        ),
+        "basics_hint": "\n\n💡 Yangi boshlayotgan bo'lsangiz — «🔤 Asoslar» dan boshlang.",
         "btn_en_vocab": "📚 Vocabulary",
         "btn_en_game": "🎮 O'yin",
         "en_game_q": "🎮 {i}/{n}\n\nMa'nosini tanlang: <b>{word}</b>",
@@ -477,6 +500,29 @@ BOT = {
         "en_level_line": "{level} — {n}",
         "btn_en_start": "▶️ Начать тест",
         "btn_en_retest": "🎯 Определить уровень",
+        "btn_en_basics": "🔤 Основы",
+        "btn_basics_start": "▶️ Начать",
+        "btn_basics_list": "📋 Уроки",
+        "btn_basics_tasks": "✍️ Упражнения",
+        "basics_menu": (
+            "🔤 <b>Основы</b> — для начинающих с нуля\n"
+            "Алфавит, to be, 3-е лицо ед. числа и другие базовые темы.\n\n"
+            "Пройдено: <b>{done} / {total}</b>\n\n{next}"
+        ),
+        "basics_next": "Следующий урок: <b>{n}. {title}</b>",
+        "basics_all_done": "Все уроки пройдены 🎉\nЛюбой урок можно повторить.",
+        "basics_list": "📋 <b>Уроки</b>\n\n{rows}\n\nВыберите номер.",
+        "basics_lesson": "<b>{n}. {title}</b>\n\n{theory}",
+        "basics_go": "Когда будете готовы — «✍️ Упражнения».",
+        "basics_q": "<b>{i}/{n}</b>  {q}",
+        "basics_wrong": "❌ Правильный ответ: <b>{answer}</b>",
+        "basics_pass": "✅ <b>Урок пройден!</b>  {score}/{total}",
+        "basics_fail": (
+            "Результат: <b>{score}/{total}</b>\n"
+            "Для зачёта нужно минимум {need} правильных. Перечитайте урок и "
+            "попробуйте ещё раз."
+        ),
+        "basics_hint": "\n\n💡 Если начинаете с нуля — начните с «🔤 Основы».",
         "btn_en_vocab": "📚 Vocabulary",
         "btn_en_game": "🎮 Игра",
         "en_game_q": "🎮 {i}/{n}\n\nВыберите перевод: <b>{word}</b>",

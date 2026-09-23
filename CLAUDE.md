@@ -45,8 +45,11 @@ klon qilish kerak.)
 | `bot.py` | handlerlar, FSM, sozlamalar menyusi, admin panel, tarqatish |
 | `visual.py` | statistika hisoblash va PNG poster (Pillow) |
 | `texts.py` | **barcha** foydalanuvchi matnlari, uz va ru |
-| `db.py` | SQLite: `users`, `week_ratings`, `reminders`, `en_words` |
+| `db.py` | SQLite: `users`, `week_ratings`, `reminders`, `en_words`, `en_lessons` |
 | `english.py` | English: lug'at, daraja testi, kunlik so'z, takrorlash (sof mantiq) |
+| `lessons.py` | English «Asoslar»: boshlang'ich darslar mantiqi |
+| `english/lessons.json` | 22 ta dars: nazariya (uz/ru), misollar, mashqlar |
+| `english/audio/` | darslar audiosi (.ogg) — `tools/gen_lesson_audio.py` yaratgan |
 | `english/words.json` | English lug'ati: so'z, turkum, daraja, uz/ru tarjima, misol |
 | `grammar.py` | English: tuzilgan gapni Groq (LLM) orqali tekshirish |
 | `webserver.py` | Mini App uchun aiohttp server, initData imzosi tekshiriladi |
@@ -231,6 +234,30 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   10001 dan). Yordamchi so'zlar (the, a, he…) o'rgatilmaydi, faylda yo'q.
   Tarjimalar model tomonidan yozilgan; xato topilsa shu faylda tuzatiladi.
 - Uzbek tarjimada apostrof faqat ASCII `'` (o', g', tutuq belgisi).
+
+## Asoslar (boshlang'ich darslar)
+
+- English menyusida «🔤 Asoslar» — lug'atdan **mustaqil** yo'nalish, ikkalasi
+  ham ochiq (foydalanuvchi tanlovi). Darajasi A1 yoki yo'q bo'lganlarga English
+  menyusida tavsiya ko'rsatiladi.
+- 22 ta dars, 4 blok: alifbo (1–5), birinchi gaplar (6–11), oddiy zamon
+  (12–17), kundalik (18–22). Har darsda nazariya + misollar + 6 ta mashq.
+- Mashq faqat bitta turda — 4 variantli savol, mavjud `question_keyboard`
+  ishlatiladi. Grammatika savolini avtomatik yasab bo'lmaydi, shuning uchun
+  mashqlar `lessons.json` da **qo'lda** yozilgan.
+- O'tish chegarasi `lessons.PASS_RATIO` = 0.8 (6 mashqdan 5 tasi). Bir marta
+  o'tilgan dars keyin yomon qayta topshirilsa ham o'tilgan bo'lib qoladi
+  (`en_lesson_save` da `MAX(done, ...)`).
+- Darslar **qulflanmaydi** — «📋 Darslar» ro'yxatidan istalganini ochsa bo'ladi;
+  «▶️ Boshlash» esa birinchi bajarilmaganini ochadi.
+- Nazariya matnida HTML (`<b>`, `<code>`) **ataylab** bor — `esc()` qilinmaydi.
+  Misollar va mashq variantlari esa `esc()` dan o'tadi.
+- Audio: alifbo darslari (1–4) va 6 ta mashq uchun tayyor `.ogg` fayllar
+  repoda. Bot faqat yuboradi — piper/onnxruntime/soundfile **ishlab
+  chiqarishga o'rnatilmagan**, ular faqat `tools/gen_lesson_audio.py` uchun.
+  Ovoz: Piper `en_US-amy-medium`. Harf yolg'iz berilsa ("A") Piper uning nomini
+  o'qiydi — foydalanuvchi shu variantni tanlagan.
+- Dars `id` si barqaror — progress (`en_lessons`) unga bog'langan.
 
 ## Ochiq ishlar
 

@@ -1,0 +1,2689 @@
+{
+ "meta": {
+  "version": 1,
+  "count": 22,
+  "note": "Boshlang'ich darslar. id barqaror — progress unga bog'langan."
+ },
+ "lessons": [
+  {
+   "id": 1,
+   "unit": "alphabet",
+   "order": 1,
+   "title": {
+    "uz": "Alifbo: A — F",
+    "ru": "Алфавит: A — F"
+   },
+   "theory": {
+    "uz": "Ingliz alifbosida 26 ta harf bor.\n\nEng muhimi: harfning <b>nomi</b> va <b>tovushi</b> boshqa-boshqa narsa. A harfi «ey» deb ataladi, lekin <i>cat</i> so'zida «a» bo'lib o'qiladi.\n\nO'zbek tilida qanday yozilsa, shunday o'qiladi. Ingliz tilida esa bunday emas — shuning uchun har bir harfning nomini alohida yodlash kerak.\n\n⚠️ Eng ko'p adashtiradigani: <b>E</b> harfi «i» deb ataladi, <b>I</b> harfi esa «ay».",
+    "ru": "В английском алфавите 26 букв.\n\nСамое важное: <b>название</b> буквы и её <b>звук</b> — разные вещи. Буква A называется «эй», но в слове <i>cat</i> читается как «а».\n\nВ узбекском как пишется, так и читается. В английском не так — поэтому название каждой буквы нужно запомнить отдельно.\n\n⚠️ Чаще всего путают: буква <b>E</b> называется «и», а буква <b>I</b> — «ай»."
+   },
+   "items": [
+    {
+     "letter": "A",
+     "name_uz": "ey",
+     "name_ru": "эй",
+     "say": "ay",
+     "word": "apple",
+     "tr_uz": "olma",
+     "tr_ru": "яблоко"
+    },
+    {
+     "letter": "B",
+     "name_uz": "bi",
+     "name_ru": "би",
+     "say": "bee",
+     "word": "book",
+     "tr_uz": "kitob",
+     "tr_ru": "книга"
+    },
+    {
+     "letter": "C",
+     "name_uz": "si",
+     "name_ru": "си",
+     "say": "see",
+     "word": "cat",
+     "tr_uz": "mushuk",
+     "tr_ru": "кошка"
+    },
+    {
+     "letter": "D",
+     "name_uz": "di",
+     "name_ru": "ди",
+     "say": "dee",
+     "word": "dog",
+     "tr_uz": "it",
+     "tr_ru": "собака"
+    },
+    {
+     "letter": "E",
+     "name_uz": "i",
+     "name_ru": "и",
+     "say": "ee",
+     "word": "egg",
+     "tr_uz": "tuxum",
+     "tr_ru": "яйцо"
+    },
+    {
+     "letter": "F",
+     "name_uz": "ef",
+     "name_ru": "эф",
+     "say": "ef",
+     "word": "fish",
+     "tr_uz": "baliq",
+     "tr_ru": "рыба"
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "<b>B</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>B</b>?"
+     },
+     "options": [
+      "bi",
+      "be",
+      "ba",
+      "bey"
+     ],
+     "answer": "bi"
+    },
+    {
+     "q": {
+      "uz": "<b>E</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>E</b>?"
+     },
+     "options": [
+      "i",
+      "e",
+      "ey",
+      "iy"
+     ],
+     "answer": "i"
+    },
+    {
+     "q": {
+      "uz": "<i>cat</i> so'zi qaysi harf bilan boshlanadi?",
+      "ru": "С какой буквы начинается <i>cat</i>?"
+     },
+     "options": [
+      "C",
+      "K",
+      "S",
+      "Q"
+     ],
+     "answer": "C"
+    },
+    {
+     "q": {
+      "uz": "<i>egg</i> so'zi qaysi harf bilan boshlanadi?",
+      "ru": "С какой буквы начинается <i>egg</i>?"
+     },
+     "options": [
+      "E",
+      "A",
+      "I",
+      "Y"
+     ],
+     "answer": "E"
+    },
+    {
+     "q": {
+      "uz": "Qaysi juftlik to'g'ri?",
+      "ru": "Какая пара верная?"
+     },
+     "options": [
+      "F — ef",
+      "F — fe",
+      "F — if",
+      "F — ay"
+     ],
+     "answer": "F — ef"
+    },
+    {
+     "q": {
+      "uz": "🔊 Eshiting. Qaysi harf?",
+      "ru": "🔊 Послушайте. Какая буква?"
+     },
+     "options": [
+      "D",
+      "B",
+      "T",
+      "P"
+     ],
+     "answer": "D",
+     "audio": "dee"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "unit": "alphabet",
+   "order": 2,
+   "title": {
+    "uz": "Alifbo: G — M",
+    "ru": "Алфавит: G — M"
+   },
+   "theory": {
+    "uz": "Alifboning ikkinchi qismi. Bu yerda ikkita qiyin harf bor.\n\n<b>G</b> — «ji» deb ataladi, lekin so'zda ko'pincha «g» bo'lib o'qiladi: <i>girl</i>.\n<b>J</b> — «jey». G va J ning nomlari o'xshash («ji» va «jey»), shuning uchun adashtirmang.\n\n<b>I</b> harfi «ay» deb ataladi — o'tgan darsdagi <b>E</b> («i») bilan juftlab yodlang:\n<code>E = i      I = ay</code>",
+    "ru": "Вторая часть алфавита. Здесь две сложные буквы.\n\n<b>G</b> — называется «джи», но в словах чаще читается как «г»: <i>girl</i>.\n<b>J</b> — «джей». Названия G и J похожи («джи» и «джей») — не путайте.\n\nБуква <b>I</b> называется «ай» — запоминайте в паре с <b>E</b> («и») из прошлого урока:\n<code>E = и      I = ай</code>"
+   },
+   "items": [
+    {
+     "letter": "G",
+     "name_uz": "ji",
+     "name_ru": "джи",
+     "word": "girl",
+     "tr_uz": "qiz",
+     "tr_ru": "девочка"
+    },
+    {
+     "letter": "H",
+     "name_uz": "eych",
+     "name_ru": "эйч",
+     "word": "house",
+     "tr_uz": "uy",
+     "tr_ru": "дом"
+    },
+    {
+     "letter": "I",
+     "name_uz": "ay",
+     "name_ru": "ай",
+     "word": "ice",
+     "tr_uz": "muz",
+     "tr_ru": "лёд"
+    },
+    {
+     "letter": "J",
+     "name_uz": "jey",
+     "name_ru": "джей",
+     "word": "juice",
+     "tr_uz": "sharbat",
+     "tr_ru": "сок"
+    },
+    {
+     "letter": "K",
+     "name_uz": "key",
+     "name_ru": "кей",
+     "word": "key",
+     "tr_uz": "kalit",
+     "tr_ru": "ключ"
+    },
+    {
+     "letter": "L",
+     "name_uz": "el",
+     "name_ru": "эл",
+     "word": "lion",
+     "tr_uz": "sher",
+     "tr_ru": "лев"
+    },
+    {
+     "letter": "M",
+     "name_uz": "em",
+     "name_ru": "эм",
+     "word": "milk",
+     "tr_uz": "sut",
+     "tr_ru": "молоко"
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "<b>I</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>I</b>?"
+     },
+     "options": [
+      "ay",
+      "i",
+      "ey",
+      "ays"
+     ],
+     "answer": "ay"
+    },
+    {
+     "q": {
+      "uz": "<b>G</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>G</b>?"
+     },
+     "options": [
+      "ji",
+      "gi",
+      "jey",
+      "ge"
+     ],
+     "answer": "ji"
+    },
+    {
+     "q": {
+      "uz": "Qaysi harf «jey» deb ataladi?",
+      "ru": "Какая буква называется «джей»?"
+     },
+     "options": [
+      "J",
+      "G",
+      "Y",
+      "I"
+     ],
+     "answer": "J"
+    },
+    {
+     "q": {
+      "uz": "<i>house</i> so'zi qaysi harf bilan boshlanadi?",
+      "ru": "С какой буквы начинается <i>house</i>?"
+     },
+     "options": [
+      "H",
+      "X",
+      "A",
+      "O"
+     ],
+     "answer": "H"
+    },
+    {
+     "q": {
+      "uz": "<i>key</i> so'zi qaysi harf bilan boshlanadi?",
+      "ru": "С какой буквы начинается <i>key</i>?"
+     },
+     "options": [
+      "K",
+      "C",
+      "Q",
+      "G"
+     ],
+     "answer": "K"
+    },
+    {
+     "q": {
+      "uz": "🔊 Eshiting. Qaysi harf?",
+      "ru": "🔊 Послушайте. Какая буква?"
+     },
+     "options": [
+      "M",
+      "N",
+      "L",
+      "H"
+     ],
+     "answer": "M",
+     "audio": "M"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "unit": "alphabet",
+   "order": 3,
+   "title": {
+    "uz": "Alifbo: N — S",
+    "ru": "Алфавит: N — S"
+   },
+   "theory": {
+    "uz": "Uchinchi qism. Diqqat qiladigan joylar:\n\n<b>Q</b> — «kyu». Ingliz tilida Q deyarli har doim <b>u</b> bilan birga keladi: <i>queen, question, quick</i>.\n<b>R</b> — «ar». Amerikacha talaffuzda r tovushi kuchli eshitiladi.\n<b>O</b> — «ou», o'zbekcha «o» emas.\n\n<b>N</b> va <b>M</b> nomlarini ham juftlab yodlang: «en» va «em».",
+    "ru": "Третья часть. На что обратить внимание:\n\n<b>Q</b> — «кью». В английском Q почти всегда идёт вместе с <b>u</b>: <i>queen, question, quick</i>.\n<b>R</b> — «ар». В американском произношении звук r слышен отчётливо.\n<b>O</b> — «оу», а не узбекское «о».\n\nНазвания <b>N</b> и <b>M</b> тоже запоминайте парой: «эн» и «эм»."
+   },
+   "items": [
+    {
+     "letter": "N",
+     "name_uz": "en",
+     "name_ru": "эн",
+     "word": "name",
+     "tr_uz": "ism",
+     "tr_ru": "имя"
+    },
+    {
+     "letter": "O",
+     "name_uz": "ou",
+     "name_ru": "оу",
+     "word": "orange",
+     "tr_uz": "apelsin",
+     "tr_ru": "апельсин"
+    },
+    {
+     "letter": "P",
+     "name_uz": "pi",
+     "name_ru": "пи",
+     "word": "pen",
+     "tr_uz": "ruchka",
+     "tr_ru": "ручка"
+    },
+    {
+     "letter": "Q",
+     "name_uz": "kyu",
+     "name_ru": "кью",
+     "word": "queen",
+     "tr_uz": "qirolicha",
+     "tr_ru": "королева"
+    },
+    {
+     "letter": "R",
+     "name_uz": "ar",
+     "name_ru": "ар",
+     "word": "red",
+     "tr_uz": "qizil",
+     "tr_ru": "красный"
+    },
+    {
+     "letter": "S",
+     "name_uz": "es",
+     "name_ru": "эс",
+     "word": "sun",
+     "tr_uz": "quyosh",
+     "tr_ru": "солнце"
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "<b>Q</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>Q</b>?"
+     },
+     "options": [
+      "kyu",
+      "ku",
+      "kvi",
+      "qu"
+     ],
+     "answer": "kyu"
+    },
+    {
+     "q": {
+      "uz": "<b>O</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>O</b>?"
+     },
+     "options": [
+      "ou",
+      "o",
+      "au",
+      "oy"
+     ],
+     "answer": "ou"
+    },
+    {
+     "q": {
+      "uz": "Q harfidan keyin odatda qaysi harf keladi?",
+      "ru": "Какая буква обычно идёт после Q?"
+     },
+     "options": [
+      "u",
+      "a",
+      "o",
+      "i"
+     ],
+     "answer": "u"
+    },
+    {
+     "q": {
+      "uz": "<i>sun</i> so'zi qaysi harf bilan boshlanadi?",
+      "ru": "С какой буквы начинается <i>sun</i>?"
+     },
+     "options": [
+      "S",
+      "C",
+      "Z",
+      "X"
+     ],
+     "answer": "S"
+    },
+    {
+     "q": {
+      "uz": "Qaysi juftlik to'g'ri?",
+      "ru": "Какая пара верная?"
+     },
+     "options": [
+      "N — en",
+      "N — ne",
+      "N — em",
+      "N — an"
+     ],
+     "answer": "N — en"
+    },
+    {
+     "q": {
+      "uz": "🔊 Eshiting. Qaysi harf?",
+      "ru": "🔊 Послушайте. Какая буква?"
+     },
+     "options": [
+      "P",
+      "B",
+      "D",
+      "T"
+     ],
+     "answer": "P",
+     "audio": "P"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "unit": "alphabet",
+   "order": 4,
+   "title": {
+    "uz": "Alifbo: T — Z",
+    "ru": "Алфавит: T — Z"
+   },
+   "theory": {
+    "uz": "Alifboning oxirgi qismi — eng notanish nomlar shu yerda.\n\n<b>W</b> — «dabl-yu», ya'ni «ikkita U». Nomi uzun, lekin tovushi qisqa: <i>water</i>.\n<b>Y</b> — «way», <b>U</b> esa «yu». Bular ham chalkashadi.\n<b>X</b> — «eks». Bu harf bilan boshlanadigan so'z deyarli yo'q, u ko'pincha so'z o'rtasida yoki oxirida keladi: <i>box, six</i>.\n\n<b>Z</b> — AQShda «zi», Britaniyada «zed».",
+    "ru": "Последняя часть алфавита — здесь самые непривычные названия.\n\n<b>W</b> — «дабл-ю», то есть «двойное U». Название длинное, а звук короткий: <i>water</i>.\n<b>Y</b> — «уай», а <b>U</b> — «ю». Их тоже путают.\n<b>X</b> — «экс». Слов на эту букву почти нет, она чаще в середине или в конце: <i>box, six</i>.\n\n<b>Z</b> — в США «зи», в Британии «зед»."
+   },
+   "items": [
+    {
+     "letter": "T",
+     "name_uz": "ti",
+     "name_ru": "ти",
+     "word": "table",
+     "tr_uz": "stol",
+     "tr_ru": "стол"
+    },
+    {
+     "letter": "U",
+     "name_uz": "yu",
+     "name_ru": "ю",
+     "word": "umbrella",
+     "tr_uz": "soyabon",
+     "tr_ru": "зонт"
+    },
+    {
+     "letter": "V",
+     "name_uz": "vi",
+     "name_ru": "ви",
+     "word": "voice",
+     "tr_uz": "ovoz",
+     "tr_ru": "голос"
+    },
+    {
+     "letter": "W",
+     "name_uz": "dabl-yu",
+     "name_ru": "дабл-ю",
+     "word": "water",
+     "tr_uz": "suv",
+     "tr_ru": "вода"
+    },
+    {
+     "letter": "X",
+     "name_uz": "eks",
+     "name_ru": "экс",
+     "word": "box",
+     "tr_uz": "quti",
+     "tr_ru": "коробка"
+    },
+    {
+     "letter": "Y",
+     "name_uz": "way",
+     "name_ru": "уай",
+     "word": "yellow",
+     "tr_uz": "sariq",
+     "tr_ru": "жёлтый"
+    },
+    {
+     "letter": "Z",
+     "name_uz": "zi",
+     "name_ru": "зи",
+     "word": "zero",
+     "tr_uz": "nol",
+     "tr_ru": "ноль"
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "<b>W</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>W</b>?"
+     },
+     "options": [
+      "dabl-yu",
+      "vi",
+      "way",
+      "du"
+     ],
+     "answer": "dabl-yu"
+    },
+    {
+     "q": {
+      "uz": "<b>Y</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>Y</b>?"
+     },
+     "options": [
+      "way",
+      "yu",
+      "yey",
+      "ay"
+     ],
+     "answer": "way"
+    },
+    {
+     "q": {
+      "uz": "<b>U</b> harfi qanday ataladi?",
+      "ru": "Как называется буква <b>U</b>?"
+     },
+     "options": [
+      "yu",
+      "u",
+      "way",
+      "yey"
+     ],
+     "answer": "yu"
+    },
+    {
+     "q": {
+      "uz": "<i>water</i> so'zi qaysi harf bilan boshlanadi?",
+      "ru": "С какой буквы начинается <i>water</i>?"
+     },
+     "options": [
+      "W",
+      "V",
+      "U",
+      "Y"
+     ],
+     "answer": "W"
+    },
+    {
+     "q": {
+      "uz": "Qaysi so'zda X harfi bor?",
+      "ru": "В каком слове есть буква X?"
+     },
+     "options": [
+      "box",
+      "book",
+      "bus",
+      "bag"
+     ],
+     "answer": "box"
+    },
+    {
+     "q": {
+      "uz": "🔊 Eshiting. Qaysi harf?",
+      "ru": "🔊 Послушайте. Какая буква?"
+     },
+     "options": [
+      "Z",
+      "S",
+      "C",
+      "X"
+     ],
+     "answer": "Z",
+     "audio": "Z"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "unit": "alphabet",
+   "order": 5,
+   "title": {
+    "uz": "Qiyin tovushlar: th, sh, ch, ng",
+    "ru": "Сложные звуки: th, sh, ch, ng"
+   },
+   "theory": {
+    "uz": "Ba'zi tovushlar ikkita harf bilan yoziladi va ular alohida o'qilmaydi.\n\n<b>sh</b> — «ш»: <i>she, fish, English</i>\n<b>ch</b> — «ч»: <i>chair, teacher, much</i>\n<b>ng</b> — burun tovushi, «нг» emas, bitta tovush: <i>sing, morning</i>\n\n<b>th</b> — o'zbek tilida bunday tovush <b>yo'q</b>. Til uchini tishlar orasiga qo'yib aytiladi. Ikki xil bo'ladi:\n• jarangsiz: <i>think, three, mouth</i>\n• jarangli: <i>this, the, mother</i>\n\n⚠️ Ko'pchilik <i>think</i> ni «sink», <i>this</i> ni «zis» deb aytadi — bu xato.",
+    "ru": "Некоторые звуки записываются двумя буквами и читаются как один.\n\n<b>sh</b> — «ш»: <i>she, fish, English</i>\n<b>ch</b> — «ч»: <i>chair, teacher, much</i>\n<b>ng</b> — носовой звук, не «нг», а один звук: <i>sing, morning</i>\n\n<b>th</b> — такого звука в узбекском и русском <b>нет</b>. Кончик языка ставится между зубами. Бывает двух видов:\n• глухой: <i>think, three, mouth</i>\n• звонкий: <i>this, the, mother</i>\n\n⚠️ Многие говорят «синк» вместо <i>think</i> и «зис» вместо <i>this</i> — это ошибка."
+   },
+   "items": [
+    {
+     "en": "she, fish, English",
+     "tr_uz": "sh — «ш» tovushi",
+     "tr_ru": "sh — звук «ш»"
+    },
+    {
+     "en": "chair, teacher, much",
+     "tr_uz": "ch — «ч» tovushi",
+     "tr_ru": "ch — звук «ч»"
+    },
+    {
+     "en": "sing, morning, long",
+     "tr_uz": "ng — burun tovushi",
+     "tr_ru": "ng — носовой звук"
+    },
+    {
+     "en": "think, three, mouth",
+     "tr_uz": "th — jarangsiz (til tishlar orasida)",
+     "tr_ru": "th — глухой (язык между зубами)"
+    },
+    {
+     "en": "this, the, mother",
+     "tr_uz": "th — jarangli",
+     "tr_ru": "th — звонкий"
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "<i>fish</i> so'zining oxirida qaysi tovush bor?",
+      "ru": "Какой звук в конце слова <i>fish</i>?"
+     },
+     "options": [
+      "sh",
+      "ch",
+      "s",
+      "th"
+     ],
+     "answer": "sh"
+    },
+    {
+     "q": {
+      "uz": "Qaysi so'zda <b>th</b> tovushi bor?",
+      "ru": "В каком слове есть звук <b>th</b>?"
+     },
+     "options": [
+      "three",
+      "tree",
+      "free",
+      "see"
+     ],
+     "answer": "three"
+    },
+    {
+     "q": {
+      "uz": "<i>teacher</i> so'zida qaysi tovush bor?",
+      "ru": "Какой звук есть в слове <i>teacher</i>?"
+     },
+     "options": [
+      "ch",
+      "sh",
+      "th",
+      "ng"
+     ],
+     "answer": "ch"
+    },
+    {
+     "q": {
+      "uz": "<i>morning</i> so'zi qaysi tovush bilan tugaydi?",
+      "ru": "Каким звуком заканчивается <i>morning</i>?"
+     },
+     "options": [
+      "ng",
+      "n",
+      "g",
+      "nk"
+     ],
+     "answer": "ng"
+    },
+    {
+     "q": {
+      "uz": "<i>this</i> so'zi qanday aytiladi?",
+      "ru": "Как произносится <i>this</i>?"
+     },
+     "options": [
+      "til tishlar orasida",
+      "«zis»",
+      "«dis»",
+      "«tis»"
+     ],
+     "answer": "til tishlar orasida"
+    },
+    {
+     "q": {
+      "uz": "🔊 Eshiting. Qaysi so'z?",
+      "ru": "🔊 Послушайте. Какое слово?"
+     },
+     "options": [
+      "think",
+      "sink",
+      "thing",
+      "sing"
+     ],
+     "answer": "think",
+     "audio": "think"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "unit": "pronouns",
+   "order": 6,
+   "title": {
+    "uz": "Olmoshlar: I, you, he, she, it",
+    "ru": "Местоимения: I, you, he, she, it"
+   },
+   "theory": {
+    "uz": "Gap kim haqida ekanini ko'rsatadigan so'zlar:\n\n<code>I     — men\nyou   — sen, siz\nhe    — u (erkak)\nshe   — u (ayol)\nit    — u (jonsiz, hayvon)\nwe    — biz\nthey  — ular</code>\n\nIkkita muhim farq:\n\n1. O'zbek tilida «u» bitta, ingliz tilida <b>uchta</b>: erkak bo'lsa <i>he</i>, ayol bo'lsa <i>she</i>, narsa yoki hayvon bo'lsa <i>it</i>.\n\n2. «Sen» va «siz» uchun ham bitta so'z — <i>you</i>.\n\n⚠️ <b>I</b> har doim katta harf bilan yoziladi, gap o'rtasida ham.",
+    "ru": "Слова, которые показывают, о ком идёт речь:\n\n<code>I     — я\nyou   — ты, вы\nhe    — он\nshe   — она\nit    — оно (предмет, животное)\nwe    — мы\nthey  — они</code>\n\nДва важных отличия:\n\n1. В узбекском «u» одно, в английском <b>три</b> слова: мужчина — <i>he</i>, женщина — <i>she</i>, предмет или животное — <i>it</i>.\n\n2. Для «ты» и «вы» тоже одно слово — <i>you</i>.\n\n⚠️ <b>I</b> всегда пишется с большой буквы, даже в середине предложения."
+   },
+   "items": [
+    {
+     "en": "I am a student.",
+     "tr_uz": "Men talabaman.",
+     "tr_ru": "Я студент."
+    },
+    {
+     "en": "He is my father.",
+     "tr_uz": "U mening otam.",
+     "tr_ru": "Он мой отец."
+    },
+    {
+     "en": "She is a teacher.",
+     "tr_uz": "U o'qituvchi.",
+     "tr_ru": "Она учительница."
+    },
+    {
+     "en": "It is a big dog.",
+     "tr_uz": "U katta it.",
+     "tr_ru": "Это большая собака."
+    },
+    {
+     "en": "We are friends.",
+     "tr_uz": "Biz do'stmiz.",
+     "tr_ru": "Мы друзья."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "«Mening singlim» haqida gapirsak, qaysi olmosh?",
+      "ru": "Если говорим о сестре, какое местоимение?"
+     },
+     "options": [
+      "she",
+      "he",
+      "it",
+      "they"
+     ],
+     "answer": "she"
+    },
+    {
+     "q": {
+      "uz": "Mushuk haqida gapirsak?",
+      "ru": "Если говорим о кошке?"
+     },
+     "options": [
+      "it",
+      "he",
+      "she",
+      "we"
+     ],
+     "answer": "it"
+    },
+    {
+     "q": {
+      "uz": "«Biz» qanday bo'ladi?",
+      "ru": "Как будет «мы»?"
+     },
+     "options": [
+      "we",
+      "they",
+      "you",
+      "us"
+     ],
+     "answer": "we"
+    },
+    {
+     "q": {
+      "uz": "Qaysi yozuv to'g'ri?",
+      "ru": "Какая запись верная?"
+     },
+     "options": [
+      "Today I am busy.",
+      "Today i am busy.",
+      "today I am busy.",
+      "Today I Am busy."
+     ],
+     "answer": "Today I am busy."
+    },
+    {
+     "q": {
+      "uz": "«Ular» qanday bo'ladi?",
+      "ru": "Как будет «они»?"
+     },
+     "options": [
+      "they",
+      "them",
+      "we",
+      "those"
+     ],
+     "answer": "they"
+    },
+    {
+     "q": {
+      "uz": "Otangiz haqida gapirsak?",
+      "ru": "Если говорим об отце?"
+     },
+     "options": [
+      "he",
+      "she",
+      "it",
+      "him"
+     ],
+     "answer": "he"
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "unit": "to_be",
+   "order": 7,
+   "title": {
+    "uz": "to be: am / is / are",
+    "ru": "to be: am / is / are"
+   },
+   "theory": {
+    "uz": "O'zbek tilida «Men talabaman» deymiz — alohida fe'l yo'q, qo'shimcha yetarli.\n\nIngliz tilida esa <b>har bir gapda fe'l bo'lishi shart</b>. «Men talabaman» = <i>I <b>am</b> a student</i>. <i>am</i> ni tushirib qoldirish — eng ko'p uchraydigan xato.\n\nFe'l shaxsga qarab o'zgaradi:\n<code>I         am\nyou/we/they  are\nhe/she/it    is</code>\n\nQisqartirilgan shakli ko'proq ishlatiladi: I'm, you're, he's, she's, it's, we're, they're.",
+    "ru": "По-узбекски говорят «Men talabaman» — отдельный глагол не нужен, хватает окончания.\n\nВ английском <b>в каждом предложении должен быть глагол</b>. «Я студент» = <i>I <b>am</b> a student</i>. Пропуск <i>am</i> — самая частая ошибка.\n\nГлагол меняется по лицам:\n<code>I         am\nyou/we/they  are\nhe/she/it    is</code>\n\nЧаще используют краткую форму: I'm, you're, he's, she's, it's, we're, they're."
+   },
+   "items": [
+    {
+     "en": "I am a student.",
+     "tr_uz": "Men talabaman.",
+     "tr_ru": "Я студент."
+    },
+    {
+     "en": "She is my sister.",
+     "tr_uz": "U mening singlim.",
+     "tr_ru": "Она моя сестра."
+    },
+    {
+     "en": "We are from Uzbekistan.",
+     "tr_uz": "Biz O'zbekistondanmiz.",
+     "tr_ru": "Мы из Узбекистана."
+    },
+    {
+     "en": "They are at home.",
+     "tr_uz": "Ular uyda.",
+     "tr_ru": "Они дома."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "She ___ a doctor.",
+      "ru": "She ___ a doctor."
+     },
+     "options": [
+      "is",
+      "am",
+      "are",
+      "be"
+     ],
+     "answer": "is"
+    },
+    {
+     "q": {
+      "uz": "I ___ from Tashkent.",
+      "ru": "I ___ from Tashkent."
+     },
+     "options": [
+      "am",
+      "is",
+      "are",
+      "be"
+     ],
+     "answer": "am"
+    },
+    {
+     "q": {
+      "uz": "They ___ my friends.",
+      "ru": "They ___ my friends."
+     },
+     "options": [
+      "are",
+      "is",
+      "am",
+      "be"
+     ],
+     "answer": "are"
+    },
+    {
+     "q": {
+      "uz": "«Biz baxtlimiz» qanday bo'ladi?",
+      "ru": "Как будет «Мы счастливы»?"
+     },
+     "options": [
+      "We are happy.",
+      "We happy.",
+      "We is happy.",
+      "We am happy."
+     ],
+     "answer": "We are happy."
+    },
+    {
+     "q": {
+      "uz": "It ___ cold today.",
+      "ru": "It ___ cold today."
+     },
+     "options": [
+      "is",
+      "are",
+      "am",
+      "be"
+     ],
+     "answer": "is"
+    },
+    {
+     "q": {
+      "uz": "Qaysi qisqartma to'g'ri?",
+      "ru": "Какое сокращение верное?"
+     },
+     "options": [
+      "he's",
+      "he're",
+      "he'm",
+      "hes'"
+     ],
+     "answer": "he's"
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "unit": "to_be",
+   "order": 8,
+   "title": {
+    "uz": "to be inkori: not",
+    "ru": "Отрицание to be: not"
+   },
+   "theory": {
+    "uz": "Inkor qilish juda oson: fe'ldan <b>keyin</b> <i>not</i> qo'yiladi.\n\n<code>I am not      → I'm not\nhe is not     → he isn't\nyou are not   → you aren't</code>\n\nO'zbek tilida inkor qo'shimcha bilan («emas», «-ma») bo'ladi, bu yerda esa alohida so'z bilan.\n\n⚠️ <i>am not</i> ning qisqartmasi <b>yo'q</b> — «amn't» degan so'z ingliz tilida ishlatilmaydi. Faqat <i>I'm not</i>.",
+    "ru": "Отрицание делается просто: <i>not</i> ставится <b>после</b> глагола.\n\n<code>I am not      → I'm not\nhe is not     → he isn't\nyou are not   → you aren't</code>\n\nВ узбекском отрицание — окончание («emas», «-ma»), здесь — отдельное слово.\n\n⚠️ У <i>am not</i> сокращения <b>нет</b> — «amn't» в английском не используется. Только <i>I'm not</i>."
+   },
+   "items": [
+    {
+     "en": "I am not tired.",
+     "tr_uz": "Men charchamaganman.",
+     "tr_ru": "Я не устал."
+    },
+    {
+     "en": "He isn't at home.",
+     "tr_uz": "U uyda emas.",
+     "tr_ru": "Его нет дома."
+    },
+    {
+     "en": "They aren't students.",
+     "tr_uz": "Ular talaba emas.",
+     "tr_ru": "Они не студенты."
+    },
+    {
+     "en": "It isn't cold today.",
+     "tr_uz": "Bugun sovuq emas.",
+     "tr_ru": "Сегодня не холодно."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "She ___ a doctor. (emas)",
+      "ru": "She ___ a doctor. (не)"
+     },
+     "options": [
+      "isn't",
+      "aren't",
+      "amn't",
+      "not is"
+     ],
+     "answer": "isn't"
+    },
+    {
+     "q": {
+      "uz": "I ___ hungry. (emas)",
+      "ru": "I ___ hungry. (не)"
+     },
+     "options": [
+      "am not",
+      "isn't",
+      "aren't",
+      "not am"
+     ],
+     "answer": "am not"
+    },
+    {
+     "q": {
+      "uz": "We ___ late. (emas)",
+      "ru": "We ___ late. (не)"
+     },
+     "options": [
+      "aren't",
+      "isn't",
+      "am not",
+      "not are"
+     ],
+     "answer": "aren't"
+    },
+    {
+     "q": {
+      "uz": "Qaysi shakl ingliz tilida yo'q?",
+      "ru": "Какой формы в английском нет?"
+     },
+     "options": [
+      "amn't",
+      "isn't",
+      "aren't",
+      "I'm not"
+     ],
+     "answer": "amn't"
+    },
+    {
+     "q": {
+      "uz": "«U uyda emas» qanday bo'ladi?",
+      "ru": "Как будет «Его нет дома»?"
+     },
+     "options": [
+      "He isn't at home.",
+      "He not at home.",
+      "He no at home.",
+      "He isn't home at."
+     ],
+     "answer": "He isn't at home."
+    },
+    {
+     "q": {
+      "uz": "It ___ my bag.",
+      "ru": "It ___ my bag."
+     },
+     "options": [
+      "isn't",
+      "aren't",
+      "am not",
+      "don't"
+     ],
+     "answer": "isn't"
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "unit": "to_be",
+   "order": 9,
+   "title": {
+    "uz": "to be savoli va qisqa javob",
+    "ru": "Вопрос с to be и краткий ответ"
+   },
+   "theory": {
+    "uz": "Savol berish uchun fe'l <b>oldinga</b> chiqadi — so'zlar o'rin almashadi.\n\n<code>You are busy.  →  Are you busy?\nHe is a doctor. →  Is he a doctor?</code>\n\nJavob ham maxsus shaklda beriladi — <b>qisqa javob</b>:\n\n<code>Are you busy?   Yes, I am.  /  No, I'm not.\nIs he a doctor? Yes, he is. /  No, he isn't.</code>\n\n⚠️ Ijobiy qisqa javobda qisqartma ishlatilmaydi: «Yes, I'm» — xato, faqat <b>Yes, I am</b>.",
+    "ru": "Чтобы задать вопрос, глагол выходит <b>вперёд</b> — слова меняются местами.\n\n<code>You are busy.  →  Are you busy?\nHe is a doctor. →  Is he a doctor?</code>\n\nОтвечают тоже особой формой — <b>краткий ответ</b>:\n\n<code>Are you busy?   Yes, I am.  /  No, I'm not.\nIs he a doctor? Yes, he is. /  No, he isn't.</code>\n\n⚠️ В утвердительном кратком ответе сокращение не используется: «Yes, I'm» — ошибка, только <b>Yes, I am</b>."
+   },
+   "items": [
+    {
+     "en": "Are you from Uzbekistan?",
+     "tr_uz": "Siz O'zbekistondanmisiz?",
+     "tr_ru": "Вы из Узбекистана?"
+    },
+    {
+     "en": "Is she your sister?",
+     "tr_uz": "U sizning singlingizmi?",
+     "tr_ru": "Она ваша сестра?"
+    },
+    {
+     "en": "Yes, she is.",
+     "tr_uz": "Ha, u.",
+     "tr_ru": "Да."
+    },
+    {
+     "en": "No, they aren't.",
+     "tr_uz": "Yo'q, ular emas.",
+     "tr_ru": "Нет."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "___ you a student?",
+      "ru": "___ you a student?"
+     },
+     "options": [
+      "Are",
+      "Is",
+      "Am",
+      "Do"
+     ],
+     "answer": "Are"
+    },
+    {
+     "q": {
+      "uz": "___ he your brother?",
+      "ru": "___ he your brother?"
+     },
+     "options": [
+      "Is",
+      "Are",
+      "Am",
+      "Does"
+     ],
+     "answer": "Is"
+    },
+    {
+     "q": {
+      "uz": "«Are you tired?» ga ijobiy qisqa javob:",
+      "ru": "Краткий утвердительный ответ на «Are you tired?»:"
+     },
+     "options": [
+      "Yes, I am.",
+      "Yes, I'm.",
+      "Yes, I are.",
+      "Yes, am I."
+     ],
+     "answer": "Yes, I am."
+    },
+    {
+     "q": {
+      "uz": "«Is it cold?» ga inkor qisqa javob:",
+      "ru": "Краткий отрицательный ответ на «Is it cold?»:"
+     },
+     "options": [
+      "No, it isn't.",
+      "No, it not.",
+      "No, is not.",
+      "No, it aren't."
+     ],
+     "answer": "No, it isn't."
+    },
+    {
+     "q": {
+      "uz": "To'g'ri savolni tanlang:",
+      "ru": "Выберите верный вопрос:"
+     },
+     "options": [
+      "Are they at school?",
+      "They are at school?",
+      "Are at school they?",
+      "Is they at school?"
+     ],
+     "answer": "Are they at school?"
+    },
+    {
+     "q": {
+      "uz": "___ I late?",
+      "ru": "___ I late?"
+     },
+     "options": [
+      "Am",
+      "Is",
+      "Are",
+      "Do"
+     ],
+     "answer": "Am"
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "unit": "articles",
+   "order": 10,
+   "title": {
+    "uz": "Artikllar: a / an / the",
+    "ru": "Артикли: a / an / the"
+   },
+   "theory": {
+    "uz": "O'zbek tilida artikl <b>yo'q</b>, shuning uchun bu mavzu qiyin tuyuladi. Qoida oddiy:\n\n<b>a / an</b> — noaniq, «qandaydir bitta». Birinchi marta aytilayotgan narsa:\n<i>I see a cat.</i> (qandaydir mushuk)\n\n<b>the</b> — aniq, «o'sha». Ikkalamiz ham bilamiz qaysi narsa:\n<i>The cat is black.</i> (o'sha mushuk)\n\n<b>a</b> yoki <b>an</b>?\n• undosh <b>tovush</b>dan oldin — <i>a</i>: a book, a car\n• unli <b>tovush</b>dan oldin — <i>an</i>: an apple, an hour\n\n⚠️ Harfga emas, <b>tovushga</b> qaraladi: <i>an hour</i> (h o'qilmaydi), <i>a university</i> («yu» deb boshlanadi).",
+    "ru": "В узбекском артиклей <b>нет</b>, поэтому тема кажется сложной. Правило простое:\n\n<b>a / an</b> — неопределённый, «какой-то один». Предмет упоминается впервые:\n<i>I see a cat.</i> (какая-то кошка)\n\n<b>the</b> — определённый, «тот самый». Оба знаем, о чём речь:\n<i>The cat is black.</i> (та самая кошка)\n\n<b>a</b> или <b>an</b>?\n• перед согласным <b>звуком</b> — <i>a</i>: a book, a car\n• перед гласным <b>звуком</b> — <i>an</i>: an apple, an hour\n\n⚠️ Смотрим на <b>звук</b>, а не на букву: <i>an hour</i> (h не читается), <i>a university</i> (начинается со «ю»)."
+   },
+   "items": [
+    {
+     "en": "I have a car.",
+     "tr_uz": "Mening mashinam bor.",
+     "tr_ru": "У меня есть машина."
+    },
+    {
+     "en": "She is an engineer.",
+     "tr_uz": "U muhandis.",
+     "tr_ru": "Она инженер."
+    },
+    {
+     "en": "The book is on the table.",
+     "tr_uz": "Kitob stol ustida.",
+     "tr_ru": "Книга на столе."
+    },
+    {
+     "en": "I waited an hour.",
+     "tr_uz": "Men bir soat kutdim.",
+     "tr_ru": "Я ждал час."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "I have ___ apple.",
+      "ru": "I have ___ apple."
+     },
+     "options": [
+      "an",
+      "a",
+      "the",
+      "—"
+     ],
+     "answer": "an"
+    },
+    {
+     "q": {
+      "uz": "She is ___ teacher.",
+      "ru": "She is ___ teacher."
+     },
+     "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+     ],
+     "answer": "a"
+    },
+    {
+     "q": {
+      "uz": "___ sun is bright today.",
+      "ru": "___ sun is bright today."
+     },
+     "options": [
+      "The",
+      "A",
+      "An",
+      "—"
+     ],
+     "answer": "The"
+    },
+    {
+     "q": {
+      "uz": "I waited ___ hour.",
+      "ru": "I waited ___ hour."
+     },
+     "options": [
+      "an",
+      "a",
+      "the",
+      "—"
+     ],
+     "answer": "an"
+    },
+    {
+     "q": {
+      "uz": "He is ___ university student.",
+      "ru": "He is ___ university student."
+     },
+     "options": [
+      "a",
+      "an",
+      "the",
+      "—"
+     ],
+     "answer": "a"
+    },
+    {
+     "q": {
+      "uz": "Qachon <b>the</b> ishlatiladi?",
+      "ru": "Когда используется <b>the</b>?"
+     },
+     "options": [
+      "qaysi narsa ekani aniq bo'lganda",
+      "har doim",
+      "hech qachon",
+      "faqat ko'plikda"
+     ],
+     "answer": "qaysi narsa ekani aniq bo'lganda"
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "unit": "plural",
+   "order": 11,
+   "title": {
+    "uz": "Ko'plik: -s, -es",
+    "ru": "Множественное число: -s, -es"
+   },
+   "theory": {
+    "uz": "Ko'plik uchun otga <b>-s</b> qo'shiladi: <i>book → books</i>.\n\nQoidalar:\n• odatda <b>-s</b>: car → cars\n• <i>-s, -ss, -sh, -ch, -x, -o</i> dan keyin <b>-es</b>: box → boxes, watch → watches\n• undosh + <i>-y</i> → <b>-ies</b>: city → cities (lekin boy → boys)\n• <i>-f, -fe</i> → <b>-ves</b>: knife → knives\n\nQoidaga bo'ysunmaydiganlari (yodlash kerak):\n<code>man    → men\nwoman  → women\nchild  → children\nfoot   → feet\ntooth  → teeth</code>\n\n⚠️ O'zbek tilidagi «-lar» dan farqi: sondan keyin ham ko'plik qo'yiladi — <i>five books</i>, «besh kitob» emas.",
+    "ru": "Для множественного числа к существительному добавляется <b>-s</b>: <i>book → books</i>.\n\nПравила:\n• обычно <b>-s</b>: car → cars\n• после <i>-s, -ss, -sh, -ch, -x, -o</i> — <b>-es</b>: box → boxes, watch → watches\n• согласная + <i>-y</i> → <b>-ies</b>: city → cities (но boy → boys)\n• <i>-f, -fe</i> → <b>-ves</b>: knife → knives\n\nИсключения (надо запомнить):\n<code>man    → men\nwoman  → women\nchild  → children\nfoot   → feet\ntooth  → teeth</code>\n\n⚠️ Отличие от узбекского: после числа тоже ставится множественное — <i>five books</i>."
+   },
+   "items": [
+    {
+     "en": "I have two books.",
+     "tr_uz": "Mening ikkita kitobim bor.",
+     "tr_ru": "У меня две книги."
+    },
+    {
+     "en": "There are three boxes.",
+     "tr_uz": "Uchta quti bor.",
+     "tr_ru": "Есть три коробки."
+    },
+    {
+     "en": "The children are playing.",
+     "tr_uz": "Bolalar o'ynayapti.",
+     "tr_ru": "Дети играют."
+    },
+    {
+     "en": "She has big feet.",
+     "tr_uz": "Uning oyoqlari katta.",
+     "tr_ru": "У неё большие ноги."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "one box → two ___",
+      "ru": "one box → two ___"
+     },
+     "options": [
+      "boxes",
+      "boxs",
+      "boxies",
+      "box"
+     ],
+     "answer": "boxes"
+    },
+    {
+     "q": {
+      "uz": "one city → three ___",
+      "ru": "one city → three ___"
+     },
+     "options": [
+      "cities",
+      "citys",
+      "cityes",
+      "cities'"
+     ],
+     "answer": "cities"
+    },
+    {
+     "q": {
+      "uz": "one man → five ___",
+      "ru": "one man → five ___"
+     },
+     "options": [
+      "men",
+      "mans",
+      "mens",
+      "manes"
+     ],
+     "answer": "men"
+    },
+    {
+     "q": {
+      "uz": "one child → two ___",
+      "ru": "one child → two ___"
+     },
+     "options": [
+      "children",
+      "childs",
+      "childrens",
+      "childes"
+     ],
+     "answer": "children"
+    },
+    {
+     "q": {
+      "uz": "one boy → four ___",
+      "ru": "one boy → four ___"
+     },
+     "options": [
+      "boys",
+      "boies",
+      "boyes",
+      "boy"
+     ],
+     "answer": "boys"
+    },
+    {
+     "q": {
+      "uz": "one knife → two ___",
+      "ru": "one knife → two ___"
+     },
+     "options": [
+      "knives",
+      "knifes",
+      "knifs",
+      "knive"
+     ],
+     "answer": "knives"
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "unit": "present_simple",
+   "order": 12,
+   "title": {
+    "uz": "Present Simple: doimiy ish",
+    "ru": "Present Simple: регулярное действие"
+   },
+   "theory": {
+    "uz": "Present Simple — <b>doimiy, takrorlanadigan</b> ish uchun: har kuni, odatda, har hafta.\n\n<code>I work    — men ishlayman\nyou work  — sen ishlaysan\nwe work   — biz ishlaymiz\nthey work — ular ishlaydi</code>\n\nBu shaxslarda fe'l <b>umuman o'zgarmaydi</b> — asl shaklida qoladi.\n\nKo'p ishlatiladigan so'zlar: <i>always</i> (har doim), <i>usually</i> (odatda), <i>often</i> (tez-tez), <i>sometimes</i> (ba'zan), <i>never</i> (hech qachon), <i>every day</i> (har kuni).\n\n⚠️ Hozir sodir bo'layotgan ish uchun boshqa zamon ishlatiladi — buni keyinroq o'rganasiz.",
+    "ru": "Present Simple — для <b>постоянных, повторяющихся</b> действий: каждый день, обычно, каждую неделю.\n\n<code>I work    — я работаю\nyou work  — ты работаешь\nwe work   — мы работаем\nthey work — они работают</code>\n\nС этими лицами глагол <b>вообще не меняется</b> — остаётся в начальной форме.\n\nЧастые слова: <i>always</i> (всегда), <i>usually</i> (обычно), <i>often</i> (часто), <i>sometimes</i> (иногда), <i>never</i> (никогда), <i>every day</i> (каждый день).\n\n⚠️ Для действия прямо сейчас используется другое время — изучите позже."
+   },
+   "items": [
+    {
+     "en": "I work every day.",
+     "tr_uz": "Men har kuni ishlayman.",
+     "tr_ru": "Я работаю каждый день."
+    },
+    {
+     "en": "They live in Tashkent.",
+     "tr_uz": "Ular Toshkentda yashaydi.",
+     "tr_ru": "Они живут в Ташкенте."
+    },
+    {
+     "en": "We usually have breakfast at 8.",
+     "tr_uz": "Biz odatda soat 8 da nonushta qilamiz.",
+     "tr_ru": "Мы обычно завтракаем в 8."
+    },
+    {
+     "en": "You speak English very well.",
+     "tr_uz": "Siz ingliz tilida juda yaxshi gapirasiz.",
+     "tr_ru": "Вы очень хорошо говорите по-английски."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "I ___ in a bank.",
+      "ru": "I ___ in a bank."
+     },
+     "options": [
+      "work",
+      "works",
+      "working",
+      "am work"
+     ],
+     "answer": "work"
+    },
+    {
+     "q": {
+      "uz": "They ___ in Samarkand.",
+      "ru": "They ___ in Samarkand."
+     },
+     "options": [
+      "live",
+      "lives",
+      "living",
+      "are live"
+     ],
+     "answer": "live"
+    },
+    {
+     "q": {
+      "uz": "Qaysi so'z «har doim» degani?",
+      "ru": "Какое слово значит «всегда»?"
+     },
+     "options": [
+      "always",
+      "never",
+      "often",
+      "sometimes"
+     ],
+     "answer": "always"
+    },
+    {
+     "q": {
+      "uz": "We ___ English every day.",
+      "ru": "We ___ English every day."
+     },
+     "options": [
+      "study",
+      "studies",
+      "studying",
+      "are study"
+     ],
+     "answer": "study"
+    },
+    {
+     "q": {
+      "uz": "Qaysi gap to'g'ri?",
+      "ru": "Какое предложение верное?"
+     },
+     "options": [
+      "You speak English.",
+      "You speaks English.",
+      "You speaking English.",
+      "You is speak English."
+     ],
+     "answer": "You speak English."
+    },
+    {
+     "q": {
+      "uz": "Qaysi so'z «hech qachon» degani?",
+      "ru": "Какое слово значит «никогда»?"
+     },
+     "options": [
+      "never",
+      "always",
+      "usually",
+      "often"
+     ],
+     "answer": "never"
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "unit": "present_simple",
+   "order": 13,
+   "title": {
+    "uz": "Uchinchi shaxs birligi: -s",
+    "ru": "3-е лицо ед. числа: -s"
+   },
+   "theory": {
+    "uz": "Present Simple da <b>he, she, it</b> bilan fe'lga <b>-s</b> qo'shiladi. Boshqa shaxslarda fe'l o'zgarmaydi.\n\n<code>I work     →  he work<b>s</b>\nyou play   →  she play<b>s</b>\nwe read    →  it read<b>s</b></code>\n\nQoidalar:\n• odatda <b>-s</b>: work → works\n• <i>-o, -ch, -sh, -ss, -x</i> dan keyin <b>-es</b>: go → goes, watch → watches\n• undosh + <i>-y</i> bo'lsa <b>-ies</b>: study → studies (lekin play → plays)\n• istisno: have → <b>has</b>\n\n⚠️ Bu -s ko'plik emas. <i>He works</i> — bitta odam.",
+    "ru": "В Present Simple с <b>he, she, it</b> к глаголу добавляется <b>-s</b>. С другими лицами глагол не меняется.\n\n<code>I work     →  he work<b>s</b>\nyou play   →  she play<b>s</b>\nwe read    →  it read<b>s</b></code>\n\nПравила:\n• обычно <b>-s</b>: work → works\n• после <i>-o, -ch, -sh, -ss, -x</i> — <b>-es</b>: go → goes, watch → watches\n• согласная + <i>-y</i> → <b>-ies</b>: study → studies (но play → plays)\n• исключение: have → <b>has</b>\n\n⚠️ Это -s не множественное число. <i>He works</i> — один человек."
+   },
+   "items": [
+    {
+     "en": "He works in a bank.",
+     "tr_uz": "U bankda ishlaydi.",
+     "tr_ru": "Он работает в банке."
+    },
+    {
+     "en": "She goes to school every day.",
+     "tr_uz": "U har kuni maktabga boradi.",
+     "tr_ru": "Она ходит в школу каждый день."
+    },
+    {
+     "en": "My brother studies English.",
+     "tr_uz": "Akam ingliz tilini o'rganadi.",
+     "tr_ru": "Мой брат учит английский."
+    },
+    {
+     "en": "It has four legs.",
+     "tr_uz": "Uning to'rtta oyog'i bor.",
+     "tr_ru": "У него четыре ноги."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "He ___ (work) in a shop.",
+      "ru": "He ___ (work) in a shop."
+     },
+     "options": [
+      "works",
+      "work",
+      "workes",
+      "working"
+     ],
+     "answer": "works"
+    },
+    {
+     "q": {
+      "uz": "She ___ (go) to the park.",
+      "ru": "She ___ (go) to the park."
+     },
+     "options": [
+      "goes",
+      "gos",
+      "go",
+      "goies"
+     ],
+     "answer": "goes"
+    },
+    {
+     "q": {
+      "uz": "My father ___ (have) a car.",
+      "ru": "My father ___ (have) a car."
+     },
+     "options": [
+      "has",
+      "haves",
+      "have",
+      "hases"
+     ],
+     "answer": "has"
+    },
+    {
+     "q": {
+      "uz": "They ___ (play) football.",
+      "ru": "They ___ (play) football."
+     },
+     "options": [
+      "play",
+      "plays",
+      "playes",
+      "playies"
+     ],
+     "answer": "play"
+    },
+    {
+     "q": {
+      "uz": "She ___ (study) at university.",
+      "ru": "She ___ (study) at university."
+     },
+     "options": [
+      "studies",
+      "studys",
+      "study",
+      "studyes"
+     ],
+     "answer": "studies"
+    },
+    {
+     "q": {
+      "uz": "Qaysi gap to'g'ri?",
+      "ru": "Какое предложение верное?"
+     },
+     "options": [
+      "He watches TV.",
+      "He watchs TV.",
+      "He watch TV.",
+      "He watching TV."
+     ],
+     "answer": "He watches TV."
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "unit": "present_simple",
+   "order": 14,
+   "title": {
+    "uz": "Inkor: don't / doesn't",
+    "ru": "Отрицание: don't / doesn't"
+   },
+   "theory": {
+    "uz": "Present Simple da inkor uchun yordamchi fe'l kerak:\n\n<code>I / you / we / they  →  don't\nhe / she / it        →  doesn't</code>\n\n<i>I don't work.</i> — Men ishlamayman.\n<i>He doesn't work.</i> — U ishlamaydi.\n\n⚠️ Eng muhim qoida: <b>doesn't</b> dan keyin fe'lga <b>-s qo'shilmaydi</b>. «-s» allaqachon <i>does</i> ichida bor:\n\n<code>✅ He doesn't work.\n❌ He doesn't works.</code>",
+    "ru": "Для отрицания в Present Simple нужен вспомогательный глагол:\n\n<code>I / you / we / they  →  don't\nhe / she / it        →  doesn't</code>\n\n<i>I don't work.</i> — Я не работаю.\n<i>He doesn't work.</i> — Он не работает.\n\n⚠️ Главное правило: после <b>doesn't</b> к глаголу <b>-s не добавляется</b>. «-s» уже внутри <i>does</i>:\n\n<code>✅ He doesn't work.\n❌ He doesn't works.</code>"
+   },
+   "items": [
+    {
+     "en": "I don't like coffee.",
+     "tr_uz": "Men qahvani yoqtirmayman.",
+     "tr_ru": "Я не люблю кофе."
+    },
+    {
+     "en": "She doesn't speak French.",
+     "tr_uz": "U fransuzcha gapirmaydi.",
+     "tr_ru": "Она не говорит по-французски."
+    },
+    {
+     "en": "They don't live here.",
+     "tr_uz": "Ular bu yerda yashamaydi.",
+     "tr_ru": "Они здесь не живут."
+    },
+    {
+     "en": "It doesn't work.",
+     "tr_uz": "U ishlamayapti.",
+     "tr_ru": "Это не работает."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "He ___ like tea.",
+      "ru": "He ___ like tea."
+     },
+     "options": [
+      "doesn't",
+      "don't",
+      "isn't",
+      "not"
+     ],
+     "answer": "doesn't"
+    },
+    {
+     "q": {
+      "uz": "I ___ understand.",
+      "ru": "I ___ understand."
+     },
+     "options": [
+      "don't",
+      "doesn't",
+      "am not",
+      "not"
+     ],
+     "answer": "don't"
+    },
+    {
+     "q": {
+      "uz": "Qaysi gap to'g'ri?",
+      "ru": "Какое предложение верное?"
+     },
+     "options": [
+      "She doesn't work.",
+      "She doesn't works.",
+      "She don't works.",
+      "She not work."
+     ],
+     "answer": "She doesn't work."
+    },
+    {
+     "q": {
+      "uz": "They ___ have a car.",
+      "ru": "They ___ have a car."
+     },
+     "options": [
+      "don't",
+      "doesn't",
+      "isn't",
+      "aren't"
+     ],
+     "answer": "don't"
+    },
+    {
+     "q": {
+      "uz": "My brother ___ eat meat.",
+      "ru": "My brother ___ eat meat."
+     },
+     "options": [
+      "doesn't",
+      "don't",
+      "isn't",
+      "not"
+     ],
+     "answer": "doesn't"
+    },
+    {
+     "q": {
+      "uz": "<b>doesn't</b> dan keyin fe'l qanday bo'ladi?",
+      "ru": "Какой глагол после <b>doesn't</b>?"
+     },
+     "options": [
+      "asl shaklida",
+      "-s bilan",
+      "-ing bilan",
+      "-ed bilan"
+     ],
+     "answer": "asl shaklida"
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "unit": "present_simple",
+   "order": 15,
+   "title": {
+    "uz": "Savol: do / does",
+    "ru": "Вопрос: do / does"
+   },
+   "theory": {
+    "uz": "Savol berish uchun gap boshiga <b>Do</b> yoki <b>Does</b> qo'yiladi:\n\n<code>Do    I / you / we / they  ...?\nDoes  he / she / it        ...?</code>\n\n<i>Do you speak English?</i>\n<i>Does she work here?</i>\n\nQisqa javob:\n<code>Do you work?   Yes, I do.   / No, I don't.\nDoes he work?  Yes, he does. / No, he doesn't.</code>\n\n⚠️ Bu yerda ham <b>Does</b> dan keyin fe'lga -s qo'shilmaydi:\n<code>✅ Does he work?\n❌ Does he works?</code>\n\n⚠️ <i>to be</i> bilan <b>do</b> ishlatilmaydi: «Are you busy?» — «Do you are busy?» emas.",
+    "ru": "Чтобы задать вопрос, в начало ставится <b>Do</b> или <b>Does</b>:\n\n<code>Do    I / you / we / they  ...?\nDoes  he / she / it        ...?</code>\n\n<i>Do you speak English?</i>\n<i>Does she work here?</i>\n\nКраткий ответ:\n<code>Do you work?   Yes, I do.   / No, I don't.\nDoes he work?  Yes, he does. / No, he doesn't.</code>\n\n⚠️ Здесь тоже после <b>Does</b> к глаголу -s не добавляется:\n<code>✅ Does he work?\n❌ Does he works?</code>\n\n⚠️ С <i>to be</i> глагол <b>do</b> не используется: «Are you busy?», а не «Do you are busy?»."
+   },
+   "items": [
+    {
+     "en": "Do you speak English?",
+     "tr_uz": "Siz ingliz tilida gapirasizmi?",
+     "tr_ru": "Вы говорите по-английски?"
+    },
+    {
+     "en": "Does she live in Tashkent?",
+     "tr_uz": "U Toshkentda yashaydimi?",
+     "tr_ru": "Она живёт в Ташкенте?"
+    },
+    {
+     "en": "Yes, I do.",
+     "tr_uz": "Ha.",
+     "tr_ru": "Да."
+    },
+    {
+     "en": "No, he doesn't.",
+     "tr_uz": "Yo'q.",
+     "tr_ru": "Нет."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "___ you like music?",
+      "ru": "___ you like music?"
+     },
+     "options": [
+      "Do",
+      "Does",
+      "Are",
+      "Is"
+     ],
+     "answer": "Do"
+    },
+    {
+     "q": {
+      "uz": "___ he work here?",
+      "ru": "___ he work here?"
+     },
+     "options": [
+      "Does",
+      "Do",
+      "Is",
+      "Are"
+     ],
+     "answer": "Does"
+    },
+    {
+     "q": {
+      "uz": "Qaysi savol to'g'ri?",
+      "ru": "Какой вопрос верный?"
+     },
+     "options": [
+      "Does she work?",
+      "Does she works?",
+      "Do she work?",
+      "Is she work?"
+     ],
+     "answer": "Does she work?"
+    },
+    {
+     "q": {
+      "uz": "«Do you study?» ga ijobiy javob:",
+      "ru": "Утвердительный ответ на «Do you study?»:"
+     },
+     "options": [
+      "Yes, I do.",
+      "Yes, I am.",
+      "Yes, I does.",
+      "Yes, I study do."
+     ],
+     "answer": "Yes, I do."
+    },
+    {
+     "q": {
+      "uz": "«Does he swim?» ga inkor javob:",
+      "ru": "Отрицательный ответ на «Does he swim?»:"
+     },
+     "options": [
+      "No, he doesn't.",
+      "No, he don't.",
+      "No, he isn't.",
+      "No, he not."
+     ],
+     "answer": "No, he doesn't."
+    },
+    {
+     "q": {
+      "uz": "___ they have a car?",
+      "ru": "___ they have a car?"
+     },
+     "options": [
+      "Do",
+      "Does",
+      "Is",
+      "Are"
+     ],
+     "answer": "Do"
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "unit": "have",
+   "order": 16,
+   "title": {
+    "uz": "have / has: nimadir bor",
+    "ru": "have / has: что-то есть"
+   },
+   "theory": {
+    "uz": "«Menda bor» degani — <b>I have</b>.\n\n<code>I / you / we / they  →  have\nhe / she / it        →  has</code>\n\n<i>I have a car.</i> — Mening mashinam bor.\n<i>She has two children.</i> — Uning ikkita bolasi bor.\n\nInkor va savol — oddiy fe'l kabi, <b>do/does</b> bilan:\n<code>I don't have a car.\nDoes he have a car?</code>\n\n⚠️ O'zbekcha «bor» so'zi gap oxirida keladi, ingliz tilida esa <i>have</i> egadan keyin turadi.",
+    "ru": "«У меня есть» — это <b>I have</b>.\n\n<code>I / you / we / they  →  have\nhe / she / it        →  has</code>\n\n<i>I have a car.</i> — У меня есть машина.\n<i>She has two children.</i> — У неё двое детей.\n\nОтрицание и вопрос — как у обычного глагола, через <b>do/does</b>:\n<code>I don't have a car.\nDoes he have a car?</code>\n\n⚠️ В русском «есть» в конце, а в английском <i>have</i> стоит сразу после подлежащего."
+   },
+   "items": [
+    {
+     "en": "I have a brother.",
+     "tr_uz": "Mening akam bor.",
+     "tr_ru": "У меня есть брат."
+    },
+    {
+     "en": "She has a new phone.",
+     "tr_uz": "Uning yangi telefoni bor.",
+     "tr_ru": "У неё новый телефон."
+    },
+    {
+     "en": "We don't have time.",
+     "tr_uz": "Bizning vaqtimiz yo'q.",
+     "tr_ru": "У нас нет времени."
+    },
+    {
+     "en": "Do you have a pen?",
+     "tr_uz": "Sizda ruchka bormi?",
+     "tr_ru": "У вас есть ручка?"
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "She ___ a big house.",
+      "ru": "She ___ a big house."
+     },
+     "options": [
+      "has",
+      "have",
+      "haves",
+      "is have"
+     ],
+     "answer": "has"
+    },
+    {
+     "q": {
+      "uz": "They ___ three children.",
+      "ru": "They ___ three children."
+     },
+     "options": [
+      "have",
+      "has",
+      "haves",
+      "having"
+     ],
+     "answer": "have"
+    },
+    {
+     "q": {
+      "uz": "He doesn't ___ a car.",
+      "ru": "He doesn't ___ a car."
+     },
+     "options": [
+      "have",
+      "has",
+      "haves",
+      "having"
+     ],
+     "answer": "have"
+    },
+    {
+     "q": {
+      "uz": "___ you have a question?",
+      "ru": "___ you have a question?"
+     },
+     "options": [
+      "Do",
+      "Does",
+      "Are",
+      "Is"
+     ],
+     "answer": "Do"
+    },
+    {
+     "q": {
+      "uz": "My father ___ a good job.",
+      "ru": "My father ___ a good job."
+     },
+     "options": [
+      "has",
+      "have",
+      "haves",
+      "is has"
+     ],
+     "answer": "has"
+    },
+    {
+     "q": {
+      "uz": "Qaysi gap to'g'ri?",
+      "ru": "Какое предложение верное?"
+     },
+     "options": [
+      "Does she have a cat?",
+      "Does she has a cat?",
+      "Do she have a cat?",
+      "Is she have a cat?"
+     ],
+     "answer": "Does she have a cat?"
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "unit": "modal",
+   "order": 17,
+   "title": {
+    "uz": "can / can't: qo'limdan keladi",
+    "ru": "can / can't: умею, могу"
+   },
+   "theory": {
+    "uz": "<b>can</b> — «qila olaman», «qo'limdan keladi».\n\nBu fe'l boshqalardan oson, chunki <b>hech qanday shaxsda o'zgarmaydi</b> — he/she/it bilan ham <i>can</i>, -s qo'shilmaydi.\n\n<code>I can swim.\nHe can swim.        (❌ cans)\nShe can't cook.\nCan you help me?</code>\n\nInkor: <b>cannot</b> = <b>can't</b>.\n\n⚠️ <i>can</i> dan keyingi fe'l ham har doim asl shaklida: <i>can swim</i>, «can to swim» yoki «can swims» emas.",
+    "ru": "<b>can</b> — «могу», «умею».\n\nЭтот глагол проще других, потому что <b>не меняется ни в одном лице</b> — с he/she/it тоже <i>can</i>, без -s.\n\n<code>I can swim.\nHe can swim.        (❌ cans)\nShe can't cook.\nCan you help me?</code>\n\nОтрицание: <b>cannot</b> = <b>can't</b>.\n\n⚠️ Глагол после <i>can</i> тоже всегда в начальной форме: <i>can swim</i>, а не «can to swim» или «can swims»."
+   },
+   "items": [
+    {
+     "en": "I can speak two languages.",
+     "tr_uz": "Men ikkita tilda gapira olaman.",
+     "tr_ru": "Я говорю на двух языках."
+    },
+    {
+     "en": "He can't drive.",
+     "tr_uz": "U mashina hayday olmaydi.",
+     "tr_ru": "Он не умеет водить."
+    },
+    {
+     "en": "Can you help me?",
+     "tr_uz": "Menga yordam bera olasizmi?",
+     "tr_ru": "Вы можете мне помочь?"
+    },
+    {
+     "en": "She can play the guitar.",
+     "tr_uz": "U gitara chala oladi.",
+     "tr_ru": "Она умеет играть на гитаре."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "He ___ swim very well.",
+      "ru": "He ___ swim very well."
+     },
+     "options": [
+      "can",
+      "cans",
+      "can to",
+      "is can"
+     ],
+     "answer": "can"
+    },
+    {
+     "q": {
+      "uz": "I ___ understand you. (yo'q)",
+      "ru": "I ___ understand you. (не)"
+     },
+     "options": [
+      "can't",
+      "don't can",
+      "not can",
+      "cann't"
+     ],
+     "answer": "can't"
+    },
+    {
+     "q": {
+      "uz": "Qaysi gap to'g'ri?",
+      "ru": "Какое предложение верное?"
+     },
+     "options": [
+      "She can dance.",
+      "She cans dance.",
+      "She can dances.",
+      "She can to dance."
+     ],
+     "answer": "She can dance."
+    },
+    {
+     "q": {
+      "uz": "___ you speak English?",
+      "ru": "___ you speak English?"
+     },
+     "options": [
+      "Can",
+      "Do can",
+      "Are",
+      "Does"
+     ],
+     "answer": "Can"
+    },
+    {
+     "q": {
+      "uz": "<i>can</i> dan keyin fe'l qanday bo'ladi?",
+      "ru": "Какой глагол после <i>can</i>?"
+     },
+     "options": [
+      "asl shaklida",
+      "-s bilan",
+      "to bilan",
+      "-ing bilan"
+     ],
+     "answer": "asl shaklida"
+    },
+    {
+     "q": {
+      "uz": "They ___ come tomorrow.",
+      "ru": "They ___ come tomorrow."
+     },
+     "options": [
+      "can",
+      "cans",
+      "can to",
+      "are can"
+     ],
+     "answer": "can"
+    }
+   ]
+  },
+  {
+   "id": 18,
+   "unit": "numbers",
+   "order": 18,
+   "title": {
+    "uz": "Sonlar: 1 — 100",
+    "ru": "Числа: 1 — 100"
+   },
+   "theory": {
+    "uz": "1 dan 12 gacha alohida yodlanadi:\n<code>one two three four five six\nseven eight nine ten eleven twelve</code>\n\n13–19 — oxiriga <b>-teen</b>: <i>thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen</i>\n\nO'nliklar — oxiriga <b>-ty</b>: <i>twenty, thirty, forty, fifty, sixty, seventy, eighty, ninety</i>\n\nOraliq sonlar chiziqcha bilan: <i>21 = twenty-one, 45 = forty-five</i>\n\n⚠️ Eng ko'p adashtiradigani — <b>-teen</b> va <b>-ty</b>:\n<code>13 thirteen  ↔  30 thirty\n15 fifteen   ↔  50 fifty</code>\nFarqi urg'uda: thir<b>TEEN</b>, lekin <b>THIR</b>ty.\n\n⚠️ Yozilishi o'zgaradiganlar: 4 four → 40 <b>forty</b> (u yo'q), 5 five → 15 <b>fifteen</b>.",
+    "ru": "От 1 до 12 запоминаются отдельно:\n<code>one two three four five six\nseven eight nine ten eleven twelve</code>\n\n13–19 — окончание <b>-teen</b>: <i>thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen</i>\n\nДесятки — окончание <b>-ty</b>: <i>twenty, thirty, forty, fifty, sixty, seventy, eighty, ninety</i>\n\nСоставные — через дефис: <i>21 = twenty-one, 45 = forty-five</i>\n\n⚠️ Чаще всего путают <b>-teen</b> и <b>-ty</b>:\n<code>13 thirteen  ↔  30 thirty\n15 fifteen   ↔  50 fifty</code>\nРазница в ударении: thir<b>TEEN</b>, но <b>THIR</b>ty.\n\n⚠️ Меняется написание: 4 four → 40 <b>forty</b> (без u), 5 five → 15 <b>fifteen</b>."
+   },
+   "items": [
+    {
+     "en": "I am twenty-three years old.",
+     "tr_uz": "Men yigirma uch yoshdaman.",
+     "tr_ru": "Мне двадцать три года."
+    },
+    {
+     "en": "There are thirty students.",
+     "tr_uz": "O'ttizta talaba bor.",
+     "tr_ru": "Есть тридцать студентов."
+    },
+    {
+     "en": "It costs fifteen dollars.",
+     "tr_uz": "U o'n besh dollar turadi.",
+     "tr_ru": "Это стоит пятнадцать долларов."
+    },
+    {
+     "en": "My house number is forty-two.",
+     "tr_uz": "Mening uyim raqami qirq ikki.",
+     "tr_ru": "Номер моего дома сорок два."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "30 qanday yoziladi?",
+      "ru": "Как пишется 30?"
+     },
+     "options": [
+      "thirty",
+      "thirteen",
+      "threety",
+      "thirtty"
+     ],
+     "answer": "thirty"
+    },
+    {
+     "q": {
+      "uz": "40 qanday yoziladi?",
+      "ru": "Как пишется 40?"
+     },
+     "options": [
+      "forty",
+      "fourty",
+      "fortty",
+      "fourteen"
+     ],
+     "answer": "forty"
+    },
+    {
+     "q": {
+      "uz": "15 qanday yoziladi?",
+      "ru": "Как пишется 15?"
+     },
+     "options": [
+      "fifteen",
+      "fiveteen",
+      "fifty",
+      "fivteen"
+     ],
+     "answer": "fifteen"
+    },
+    {
+     "q": {
+      "uz": "21 qanday yoziladi?",
+      "ru": "Как пишется 21?"
+     },
+     "options": [
+      "twenty-one",
+      "twentyone",
+      "twenty one hundred",
+      "one twenty"
+     ],
+     "answer": "twenty-one"
+    },
+    {
+     "q": {
+      "uz": "<i>eighteen</i> — bu nechchi?",
+      "ru": "<i>eighteen</i> — это сколько?"
+     },
+     "options": [
+      "18",
+      "80",
+      "8",
+      "88"
+     ],
+     "answer": "18"
+    },
+    {
+     "q": {
+      "uz": "🔊 Eshiting. Qaysi son?",
+      "ru": "🔊 Послушайте. Какое число?"
+     },
+     "options": [
+      "50",
+      "15",
+      "5",
+      "55"
+     ],
+     "answer": "50",
+     "audio": "fifty"
+    }
+   ]
+  },
+  {
+   "id": 19,
+   "unit": "time",
+   "order": 19,
+   "title": {
+    "uz": "Soat necha?",
+    "ru": "Который час?"
+   },
+   "theory": {
+    "uz": "Savol: <i>What time is it?</i> yoki <i>What's the time?</i>\n\nEng oson javob — raqamlarni ketma-ket aytish:\n<code>7:00  →  seven o'clock\n7:15  →  seven fifteen\n7:30  →  seven thirty\n7:45  →  seven forty-five</code>\n\nKlassik usul ham bor:\n<code>7:15  →  quarter past seven   (chorak o'tdi)\n7:30  →  half past seven      (yarim o'tdi)\n7:45  →  quarter to eight     (chorak kam sakkiz)</code>\n\nIngliz tilida soat 12 lik: tushdan oldin <b>a.m.</b>, keyin <b>p.m.</b>\n<i>8 a.m.</i> — ertalabki 8, <i>8 p.m.</i> — kechki 20:00.\n\n⚠️ Vaqtdan oldin <b>at</b> ishlatiladi: <i>at 7 o'clock</i>, <i>at half past six</i>.",
+    "ru": "Вопрос: <i>What time is it?</i> или <i>What's the time?</i>\n\nСамый простой ответ — назвать цифры подряд:\n<code>7:00  →  seven o'clock\n7:15  →  seven fifteen\n7:30  →  seven thirty\n7:45  →  seven forty-five</code>\n\nЕсть и классический способ:\n<code>7:15  →  quarter past seven   (четверть после)\n7:30  →  half past seven      (половина после)\n7:45  →  quarter to eight     (без четверти восемь)</code>\n\nЧасы 12-часовые: до полудня <b>a.m.</b>, после — <b>p.m.</b>\n<i>8 a.m.</i> — 8 утра, <i>8 p.m.</i> — 20:00.\n\n⚠️ Перед временем ставится <b>at</b>: <i>at 7 o'clock</i>, <i>at half past six</i>."
+   },
+   "items": [
+    {
+     "en": "What time is it?",
+     "tr_uz": "Soat necha?",
+     "tr_ru": "Который час?"
+    },
+    {
+     "en": "It's half past six.",
+     "tr_uz": "Olti yarim.",
+     "tr_ru": "Половина седьмого."
+    },
+    {
+     "en": "The lesson starts at nine o'clock.",
+     "tr_uz": "Dars soat to'qqizda boshlanadi.",
+     "tr_ru": "Урок начинается в девять."
+    },
+    {
+     "en": "I get up at 7 a.m.",
+     "tr_uz": "Men ertalab soat 7 da turaman.",
+     "tr_ru": "Я встаю в 7 утра."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "8:30 qanday aytiladi?",
+      "ru": "Как сказать 8:30?"
+     },
+     "options": [
+      "half past eight",
+      "half to eight",
+      "eight half",
+      "half past nine"
+     ],
+     "answer": "half past eight"
+    },
+    {
+     "q": {
+      "uz": "5:15 qanday aytiladi?",
+      "ru": "Как сказать 5:15?"
+     },
+     "options": [
+      "quarter past five",
+      "quarter to five",
+      "five quarter",
+      "past quarter five"
+     ],
+     "answer": "quarter past five"
+    },
+    {
+     "q": {
+      "uz": "Vaqtdan oldin qaysi predlog?",
+      "ru": "Какой предлог перед временем?"
+     },
+     "options": [
+      "at",
+      "in",
+      "on",
+      "to"
+     ],
+     "answer": "at"
+    },
+    {
+     "q": {
+      "uz": "Kechki 20:00 qanday yoziladi?",
+      "ru": "Как записать 20:00?"
+     },
+     "options": [
+      "8 p.m.",
+      "8 a.m.",
+      "20 a.m.",
+      "8 o'clock a.m."
+     ],
+     "answer": "8 p.m."
+    },
+    {
+     "q": {
+      "uz": "«Soat necha?» qanday so'raladi?",
+      "ru": "Как спросить «Который час?»?"
+     },
+     "options": [
+      "What time is it?",
+      "What is time?",
+      "How time is it?",
+      "Which time it is?"
+     ],
+     "answer": "What time is it?"
+    },
+    {
+     "q": {
+      "uz": "9:45 qanday aytiladi?",
+      "ru": "Как сказать 9:45?"
+     },
+     "options": [
+      "quarter to ten",
+      "quarter past nine",
+      "quarter to nine",
+      "half past nine"
+     ],
+     "answer": "quarter to ten"
+    }
+   ]
+  },
+  {
+   "id": 20,
+   "unit": "calendar",
+   "order": 20,
+   "title": {
+    "uz": "Hafta kunlari va oylar",
+    "ru": "Дни недели и месяцы"
+   },
+   "theory": {
+    "uz": "Hafta kunlari:\n<code>Monday     dushanba\nTuesday    seshanba\nWednesday  chorshanba\nThursday   payshanba\nFriday     juma\nSaturday   shanba\nSunday     yakshanba</code>\n\nOylar: <i>January, February, March, April, May, June, July, August, September, October, November, December</i>\n\n⚠️ Hafta kunlari va oylar <b>har doim katta harf</b> bilan yoziladi — gap o'rtasida ham: <i>See you on Monday.</i>\n\n⚠️ Predloglar:\n<code>on Monday      — kun bilan\nin January     — oy bilan\nin 2026        — yil bilan</code>\n\n⚠️ <i>Wednesday</i> — «d» o'qilmaydi: «wenzdey».",
+    "ru": "Дни недели:\n<code>Monday     понедельник\nTuesday    вторник\nWednesday  среда\nThursday   четверг\nFriday     пятница\nSaturday   суббота\nSunday     воскресенье</code>\n\nМесяцы: <i>January, February, March, April, May, June, July, August, September, October, November, December</i>\n\n⚠️ Дни недели и месяцы <b>всегда с большой буквы</b> — даже в середине предложения: <i>See you on Monday.</i>\n\n⚠️ Предлоги:\n<code>on Monday      — с днём\nin January     — с месяцем\nin 2026        — с годом</code>\n\n⚠️ В <i>Wednesday</i> буква «d» не читается: «уэнзди»."
+   },
+   "items": [
+    {
+     "en": "See you on Monday.",
+     "tr_uz": "Dushanba kuni ko'rishamiz.",
+     "tr_ru": "Увидимся в понедельник."
+    },
+    {
+     "en": "My birthday is in May.",
+     "tr_uz": "Mening tug'ilgan kunim mayda.",
+     "tr_ru": "Мой день рождения в мае."
+    },
+    {
+     "en": "We work from Monday to Friday.",
+     "tr_uz": "Biz dushanbadan jumagacha ishlaymiz.",
+     "tr_ru": "Мы работаем с понедельника по пятницу."
+    },
+    {
+     "en": "It happened in 2020.",
+     "tr_uz": "Bu 2020-yilda bo'lgan.",
+     "tr_ru": "Это случилось в 2020 году."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "«Juma» qanday bo'ladi?",
+      "ru": "Как будет «пятница»?"
+     },
+     "options": [
+      "Friday",
+      "Thursday",
+      "Saturday",
+      "Sunday"
+     ],
+     "answer": "Friday"
+    },
+    {
+     "q": {
+      "uz": "«Chorshanba» qanday bo'ladi?",
+      "ru": "Как будет «среда»?"
+     },
+     "options": [
+      "Wednesday",
+      "Thursday",
+      "Tuesday",
+      "Monday"
+     ],
+     "answer": "Wednesday"
+    },
+    {
+     "q": {
+      "uz": "Qaysi yozuv to'g'ri?",
+      "ru": "Какая запись верная?"
+     },
+     "options": [
+      "See you on Monday.",
+      "See you on monday.",
+      "see you on Monday.",
+      "See You on monday."
+     ],
+     "answer": "See you on Monday."
+    },
+    {
+     "q": {
+      "uz": "___ January",
+      "ru": "___ January"
+     },
+     "options": [
+      "in",
+      "on",
+      "at",
+      "to"
+     ],
+     "answer": "in"
+    },
+    {
+     "q": {
+      "uz": "___ Sunday",
+      "ru": "___ Sunday"
+     },
+     "options": [
+      "on",
+      "in",
+      "at",
+      "to"
+     ],
+     "answer": "on"
+    },
+    {
+     "q": {
+      "uz": "Yilning oltinchi oyi qaysi?",
+      "ru": "Какой шестой месяц года?"
+     },
+     "options": [
+      "June",
+      "July",
+      "May",
+      "January"
+     ],
+     "answer": "June"
+    }
+   ]
+  },
+  {
+   "id": 21,
+   "unit": "demonstrative",
+   "order": 21,
+   "title": {
+    "uz": "this / that / these / those",
+    "ru": "this / that / these / those"
+   },
+   "theory": {
+    "uz": "Bu so'zlar narsaning <b>qayerdaligini</b> va <b>nechtaligini</b> ko'rsatadi:\n\n<code>          yaqin      uzoq\nbirlik    this       that\nko'plik   these      those</code>\n\n<i>This is my book.</i> — Bu mening kitobim. (qo'limda)\n<i>That is your car.</i> — Ana u sizning mashinangiz. (narida)\n<i>These are my friends.</i> — Bular mening do'stlarim.\n<i>Those are his shoes.</i> — Anavilar uning tuflilari.\n\n⚠️ Ko'plikda fe'l ham o'zgaradi: <i>this <b>is</b></i>, lekin <i>these <b>are</b></i>.\n\n⚠️ Telefonda o'zini tanishtirganda ham <i>this</i> ishlatiladi: <i>Hello, this is Abdumalik.</i>",
+    "ru": "Эти слова показывают, <b>где</b> предмет и <b>сколько</b> их:\n\n<code>          близко     далеко\nед.ч.     this       that\nмн.ч.     these      those</code>\n\n<i>This is my book.</i> — Это моя книга. (в руке)\n<i>That is your car.</i> — Вон та ваша машина.\n<i>These are my friends.</i> — Это мои друзья.\n<i>Those are his shoes.</i> — Вон те его туфли.\n\n⚠️ Во множественном меняется и глагол: <i>this <b>is</b></i>, но <i>these <b>are</b></i>.\n\n⚠️ По телефону тоже говорят <i>this</i>: <i>Hello, this is Abdumalik.</i>"
+   },
+   "items": [
+    {
+     "en": "This is my phone.",
+     "tr_uz": "Bu mening telefonim.",
+     "tr_ru": "Это мой телефон."
+    },
+    {
+     "en": "That is a beautiful house.",
+     "tr_uz": "Ana u chiroyli uy.",
+     "tr_ru": "Вон тот красивый дом."
+    },
+    {
+     "en": "These books are new.",
+     "tr_uz": "Bu kitoblar yangi.",
+     "tr_ru": "Эти книги новые."
+    },
+    {
+     "en": "Those people are waiting.",
+     "tr_uz": "Anavi odamlar kutyapti.",
+     "tr_ru": "Те люди ждут."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "___ is my bag. (qo'limda, bitta)",
+      "ru": "___ is my bag. (в руке, одна)"
+     },
+     "options": [
+      "This",
+      "These",
+      "Those",
+      "That is"
+     ],
+     "answer": "This"
+    },
+    {
+     "q": {
+      "uz": "___ are my shoes. (yaqin, ikkita)",
+      "ru": "___ are my shoes. (рядом, две)"
+     },
+     "options": [
+      "These",
+      "This",
+      "That",
+      "Those is"
+     ],
+     "answer": "These"
+    },
+    {
+     "q": {
+      "uz": "Qaysi gap to'g'ri?",
+      "ru": "Какое предложение верное?"
+     },
+     "options": [
+      "These are my books.",
+      "These is my books.",
+      "This are my books.",
+      "Those is my book."
+     ],
+     "answer": "These are my books."
+    },
+    {
+     "q": {
+      "uz": "<i>that</i> ning ko'pligi qaysi?",
+      "ru": "Какое множественное от <i>that</i>?"
+     },
+     "options": [
+      "those",
+      "these",
+      "thats",
+      "this"
+     ],
+     "answer": "those"
+    },
+    {
+     "q": {
+      "uz": "___ is your teacher. (narida)",
+      "ru": "___ is your teacher. (там)"
+     },
+     "options": [
+      "That",
+      "Those",
+      "These",
+      "This are"
+     ],
+     "answer": "That"
+    },
+    {
+     "q": {
+      "uz": "Telefonda: «Hello, ___ is Ali.»",
+      "ru": "По телефону: «Hello, ___ is Ali.»"
+     },
+     "options": [
+      "this",
+      "that",
+      "these",
+      "it's this"
+     ],
+     "answer": "this"
+    }
+   ]
+  },
+  {
+   "id": 22,
+   "unit": "prepositions",
+   "order": 22,
+   "title": {
+    "uz": "Predloglar: in / on / at",
+    "ru": "Предлоги: in / on / at"
+   },
+   "theory": {
+    "uz": "O'zbek tilida joy qo'shimcha bilan ko'rsatiladi («uy<b>da</b>»), ingliz tilida esa alohida so'z bilan. Uchtasi eng ko'p ishlatiladi:\n\n<b>JOY</b>\n<code>in  — ichida:   in the room, in Tashkent\non  — ustida:   on the table, on the wall\nat  — nuqtada:  at home, at school, at the door</code>\n\n<b>VAQT</b>\n<code>in  — oy, yil, fasl:  in May, in 2026, in winter\non  — kun, sana:      on Monday, on 5 May\nat  — aniq soat:      at 7 o'clock, at night</code>\n\nQoidani eslab qolish oson: <b>in</b> — kattadan, <b>at</b> — kichikdan. Yil (katta) → in, soat (aniq nuqta) → at.\n\n⚠️ Yodlab qo'yiladiganlar: <i>at home, at work, at night, in the morning</i>.",
+    "ru": "В узбекском место показывается окончанием («uyda»), а в английском — отдельным словом. Чаще всего используются три:\n\n<b>МЕСТО</b>\n<code>in  — внутри:   in the room, in Tashkent\non  — на:       on the table, on the wall\nat  — в точке:  at home, at school, at the door</code>\n\n<b>ВРЕМЯ</b>\n<code>in  — месяц, год, сезон: in May, in 2026, in winter\non  — день, дата:        on Monday, on 5 May\nat  — точное время:      at 7 o'clock, at night</code>\n\nЗапомнить легко: <b>in</b> — от большого, <b>at</b> — от точного. Год (большой) → in, час (точка) → at.\n\n⚠️ Запомнить целиком: <i>at home, at work, at night, in the morning</i>."
+   },
+   "items": [
+    {
+     "en": "The book is on the table.",
+     "tr_uz": "Kitob stol ustida.",
+     "tr_ru": "Книга на столе."
+    },
+    {
+     "en": "I live in Tashkent.",
+     "tr_uz": "Men Toshkentda yashayman.",
+     "tr_ru": "Я живу в Ташкенте."
+    },
+    {
+     "en": "She is at home.",
+     "tr_uz": "U uyda.",
+     "tr_ru": "Она дома."
+    },
+    {
+     "en": "We meet at 6 o'clock on Friday.",
+     "tr_uz": "Biz juma kuni soat 6 da uchrashamiz.",
+     "tr_ru": "Мы встречаемся в 6 часов в пятницу."
+    }
+   ],
+   "tasks": [
+    {
+     "q": {
+      "uz": "The pen is ___ the table.",
+      "ru": "The pen is ___ the table."
+     },
+     "options": [
+      "on",
+      "in",
+      "at",
+      "to"
+     ],
+     "answer": "on"
+    },
+    {
+     "q": {
+      "uz": "I live ___ Samarkand.",
+      "ru": "I live ___ Samarkand."
+     },
+     "options": [
+      "in",
+      "on",
+      "at",
+      "to"
+     ],
+     "answer": "in"
+    },
+    {
+     "q": {
+      "uz": "She is ___ home.",
+      "ru": "She is ___ home."
+     },
+     "options": [
+      "at",
+      "in",
+      "on",
+      "to"
+     ],
+     "answer": "at"
+    },
+    {
+     "q": {
+      "uz": "The lesson starts ___ 9 o'clock.",
+      "ru": "The lesson starts ___ 9 o'clock."
+     },
+     "options": [
+      "at",
+      "in",
+      "on",
+      "to"
+     ],
+     "answer": "at"
+    },
+    {
+     "q": {
+      "uz": "My birthday is ___ March.",
+      "ru": "My birthday is ___ March."
+     },
+     "options": [
+      "in",
+      "on",
+      "at",
+      "to"
+     ],
+     "answer": "in"
+    },
+    {
+     "q": {
+      "uz": "We have a meeting ___ Monday.",
+      "ru": "We have a meeting ___ Monday."
+     },
+     "options": [
+      "on",
+      "in",
+      "at",
+      "to"
+     ],
+     "answer": "on"
+    }
+   ]
+  }
+ ]
+}
