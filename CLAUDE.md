@@ -257,6 +257,15 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   chiqarishga o'rnatilmagan**, ular faqat `tools/gen_lesson_audio.py` uchun.
   Ovoz: Piper `en_US-amy-medium`. Harf yolg'iz berilsa ("A") Piper uning nomini
   o'qiydi — foydalanuvchi shu variantni tanlagan.
+- Mashq savolida javob **ko'rinib turmasligi** shart. «cat so'zi qaysi harf bilan
+  boshlanadi?» kabi savol bilimni emas, o'qishni tekshiradi — foydalanuvchi buni
+  topib bergan, shunday mashqlar almashtirilgan. Yangi mashq qo'shganda: javob
+  savol matnidagi so'zning birinchi harfi bo'lib qolmasin. Harf nomi so'ralganda
+  esa tuzoq foydali — «si» → C (S emas).
+- Mashq varianti tushunchani so'rasa (masalan «asl shaklida»), `options` va
+  `answer` `{"uz": [...], "ru": [...]}` ko'rinishida yoziladi; kodda
+  `lessons.task_options()` / `task_answer()` orqali olinadi. Harflar va
+  inglizcha so'zlar uchun oddiy ro'yxat yetarli.
 - Dars `id` si barqaror — progress (`en_lessons`) unga bog'langan.
 
 ## Ochiq ishlar

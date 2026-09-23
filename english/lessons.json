@@ -102,29 +102,29 @@
     },
     {
      "q": {
-      "uz": "<i>cat</i> so'zi qaysi harf bilan boshlanadi?",
-      "ru": "С какой буквы начинается <i>cat</i>?"
+      "uz": "Qaysi harf «si» deb ataladi?",
+      "ru": "Какая буква называется «си»?"
      },
      "options": [
       "C",
-      "K",
       "S",
-      "Q"
+      "K",
+      "Z"
      ],
      "answer": "C"
     },
     {
      "q": {
-      "uz": "<i>egg</i> so'zi qaysi harf bilan boshlanadi?",
-      "ru": "С какой буквы начинается <i>egg</i>?"
+      "uz": "Alifboda <b>C</b> dan keyin qaysi harf keladi?",
+      "ru": "Какая буква идёт после <b>C</b>?"
      },
      "options": [
+      "D",
+      "B",
       "E",
-      "A",
-      "I",
-      "Y"
+      "F"
      ],
-     "answer": "E"
+     "answer": "D"
     },
     {
      "q": {
@@ -254,42 +254,53 @@
     },
     {
      "q": {
-      "uz": "Qaysi harf «jey» deb ataladi?",
-      "ru": "Какая буква называется «джей»?"
-     },
-     "options": [
-      "J",
-      "G",
-      "Y",
-      "I"
-     ],
-     "answer": "J"
-    },
-    {
-     "q": {
-      "uz": "<i>house</i> so'zi qaysi harf bilan boshlanadi?",
-      "ru": "С какой буквы начинается <i>house</i>?"
+      "uz": "Qaysi harf «eych» deb ataladi?",
+      "ru": "Какая буква называется «эйч»?"
      },
      "options": [
       "H",
-      "X",
       "A",
-      "O"
+      "E",
+      "Y"
      ],
      "answer": "H"
     },
     {
      "q": {
-      "uz": "<i>key</i> so'zi qaysi harf bilan boshlanadi?",
-      "ru": "С какой буквы начинается <i>key</i>?"
+      "uz": "Alifboda <b>I</b> dan keyin qaysi harf keladi?",
+      "ru": "Какая буква идёт после <b>I</b>?"
      },
      "options": [
+      "J",
+      "H",
       "K",
-      "C",
-      "Q",
-      "G"
+      "L"
      ],
-     "answer": "K"
+     "answer": "J"
+    },
+    {
+     "q": {
+      "uz": "«el» va «em» — bu qaysi harflar?",
+      "ru": "«эл» и «эм» — это какие буквы?"
+     },
+     "options": {
+      "uz": [
+       "L va M",
+       "M va N",
+       "E va M",
+       "L va N"
+      ],
+      "ru": [
+       "L и M",
+       "M и N",
+       "E и M",
+       "L и N"
+      ]
+     },
+     "answer": {
+      "uz": "L va M",
+      "ru": "L и M"
+     }
     },
     {
      "q": {
@@ -411,13 +422,13 @@
     },
     {
      "q": {
-      "uz": "<i>sun</i> so'zi qaysi harf bilan boshlanadi?",
-      "ru": "С какой буквы начинается <i>sun</i>?"
+      "uz": "Qaysi harf «es» deb ataladi?",
+      "ru": "Какая буква называется «эс»?"
      },
      "options": [
       "S",
       "C",
-      "Z",
+      "E",
       "X"
      ],
      "answer": "S"
@@ -563,29 +574,40 @@
     },
     {
      "q": {
-      "uz": "<i>water</i> so'zi qaysi harf bilan boshlanadi?",
-      "ru": "С какой буквы начинается <i>water</i>?"
+      "uz": "«yu» va «way» — bu qaysi harflar?",
+      "ru": "«ю» и «уай» — это какие буквы?"
      },
-     "options": [
-      "W",
-      "V",
-      "U",
-      "Y"
-     ],
-     "answer": "W"
+     "options": {
+      "uz": [
+       "U va Y",
+       "W va Y",
+       "U va W",
+       "Y va V"
+      ],
+      "ru": [
+       "U и Y",
+       "W и Y",
+       "U и W",
+       "Y и V"
+      ]
+     },
+     "answer": {
+      "uz": "U va Y",
+      "ru": "U и Y"
+     }
     },
     {
      "q": {
-      "uz": "Qaysi so'zda X harfi bor?",
-      "ru": "В каком слове есть буква X?"
+      "uz": "Alifboning oxirgi harfi qaysi?",
+      "ru": "Какая последняя буква алфавита?"
      },
      "options": [
-      "box",
-      "book",
-      "bus",
-      "bag"
+      "Z",
+      "Y",
+      "X",
+      "W"
      ],
-     "answer": "box"
+     "answer": "Z"
     },
     {
      "q": {
@@ -645,16 +667,16 @@
    "tasks": [
     {
      "q": {
-      "uz": "<i>fish</i> so'zining oxirida qaysi tovush bor?",
-      "ru": "Какой звук в конце слова <i>fish</i>?"
+      "uz": "Qaysi so'zda <b>th</b> jarangli (ovozli) aytiladi?",
+      "ru": "В каком слове <b>th</b> произносится звонко?"
      },
      "options": [
-      "sh",
-      "ch",
-      "s",
-      "th"
+      "mother",
+      "think",
+      "three",
+      "mouth"
      ],
-     "answer": "sh"
+     "answer": "mother"
     },
     {
      "q": {
@@ -671,42 +693,64 @@
     },
     {
      "q": {
-      "uz": "<i>teacher</i> so'zida qaysi tovush bor?",
-      "ru": "Какой звук есть в слове <i>teacher</i>?"
+      "uz": "Qaysi so'zda <b>ch</b> «ч» deb <b>o'qilmaydi</b>?",
+      "ru": "В каком слове <b>ch</b> читается <b>не</b> как «ч»?"
      },
      "options": [
-      "ch",
-      "sh",
-      "th",
-      "ng"
+      "school",
+      "chair",
+      "teacher",
+      "much"
      ],
-     "answer": "ch"
+     "answer": "school"
     },
     {
      "q": {
-      "uz": "<i>morning</i> so'zi qaysi tovush bilan tugaydi?",
-      "ru": "Каким звуком заканчивается <i>morning</i>?"
+      "uz": "<b>ng</b> — bu nechta tovush?",
+      "ru": "<b>ng</b> — это сколько звуков?"
      },
-     "options": [
-      "ng",
-      "n",
-      "g",
-      "nk"
-     ],
-     "answer": "ng"
+     "options": {
+      "uz": [
+       "bitta",
+       "ikkita",
+       "uchta",
+       "nol"
+      ],
+      "ru": [
+       "один",
+       "два",
+       "три",
+       "ноль"
+      ]
+     },
+     "answer": {
+      "uz": "bitta",
+      "ru": "один"
+     }
     },
     {
      "q": {
       "uz": "<i>this</i> so'zi qanday aytiladi?",
       "ru": "Как произносится <i>this</i>?"
      },
-     "options": [
-      "til tishlar orasida",
-      "«zis»",
-      "«dis»",
-      "«tis»"
-     ],
-     "answer": "til tishlar orasida"
+     "options": {
+      "uz": [
+       "til tishlar orasida",
+       "«zis»",
+       "«dis»",
+       "«tis»"
+      ],
+      "ru": [
+       "язык между зубами",
+       "«зис»",
+       "«дис»",
+       "«тис»"
+      ]
+     },
+     "answer": {
+      "uz": "til tishlar orasida",
+      "ru": "язык между зубами"
+     }
     },
     {
      "q": {
@@ -1294,13 +1338,24 @@
       "uz": "Qachon <b>the</b> ishlatiladi?",
       "ru": "Когда используется <b>the</b>?"
      },
-     "options": [
-      "qaysi narsa ekani aniq bo'lganda",
-      "har doim",
-      "hech qachon",
-      "faqat ko'plikda"
-     ],
-     "answer": "qaysi narsa ekani aniq bo'lganda"
+     "options": {
+      "uz": [
+       "qaysi narsa ekani aniq bo'lganda",
+       "har doim",
+       "hech qachon",
+       "faqat ko'plikda"
+      ],
+      "ru": [
+       "когда понятно, о чём речь",
+       "всегда",
+       "никогда",
+       "только во множественном"
+      ]
+     },
+     "answer": {
+      "uz": "qaysi narsa ekani aniq bo'lganda",
+      "ru": "когда понятно, о чём речь"
+     }
     }
    ]
   },
@@ -1754,13 +1809,24 @@
       "uz": "<b>doesn't</b> dan keyin fe'l qanday bo'ladi?",
       "ru": "Какой глагол после <b>doesn't</b>?"
      },
-     "options": [
-      "asl shaklida",
-      "-s bilan",
-      "-ing bilan",
-      "-ed bilan"
-     ],
-     "answer": "asl shaklida"
+     "options": {
+      "uz": [
+       "asl shaklida",
+       "-s bilan",
+       "-ing bilan",
+       "-ed bilan"
+      ],
+      "ru": [
+       "в начальной форме",
+       "с -s",
+       "с -ing",
+       "с -ed"
+      ]
+     },
+     "answer": {
+      "uz": "asl shaklida",
+      "ru": "в начальной форме"
+     }
     }
    ]
   },
@@ -2086,13 +2152,24 @@
       "uz": "<i>can</i> dan keyin fe'l qanday bo'ladi?",
       "ru": "Какой глагол после <i>can</i>?"
      },
-     "options": [
-      "asl shaklida",
-      "-s bilan",
-      "to bilan",
-      "-ing bilan"
-     ],
-     "answer": "asl shaklida"
+     "options": {
+      "uz": [
+       "asl shaklida",
+       "-s bilan",
+       "to bilan",
+       "-ing bilan"
+      ],
+      "ru": [
+       "в начальной форме",
+       "с -s",
+       "с to",
+       "с -ing"
+      ]
+     },
+     "answer": {
+      "uz": "asl shaklida",
+      "ru": "в начальной форме"
+     }
     },
     {
      "q": {

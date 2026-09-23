@@ -1455,7 +1455,8 @@ async def ask_basics_task(message: Message, state: FSMContext, lang: str,
     les = lessons.get(data["lesson"])
     i = data["i"]
     task = les["tasks"][i]
-    await state.update_data(options=task["options"], answer=task["answer"])
+    options = lessons.task_options(task, lang)
+    await state.update_data(options=options, answer=lessons.task_answer(task, lang))
     text = t(lang, "basics_q").format(i=i + 1, n=len(les["tasks"]), q=task["q"][lang])
     if prefix:
         text = f"{prefix}\n\n{text}"
@@ -1463,7 +1464,7 @@ async def ask_basics_task(message: Message, state: FSMContext, lang: str,
         clip = lessons.task_audio(les["id"], i + 1)
         if clip:
             await message.answer_voice(FSInputFile(clip))
-    await message.answer(text, reply_markup=question_keyboard(lang, task["options"]))
+    await message.answer(text, reply_markup=question_keyboard(lang, options))
 
 
 @router.message(F.text.in_(btn_variants("btn_en_basics")))

@@ -61,6 +61,19 @@ def passed(score: int, task_count: int) -> bool:
     return score >= need_correct(task_count)
 
 
+def task_options(task: dict, lang: str) -> list[str]:
+    """Variantlar odatda tildan mustaqil (harflar, inglizcha so'zlar), lekin
+    tushunchani so'raydigan mashqlarda tarjima kerak — u holda {"uz": [...],
+    "ru": [...]} ko'rinishida yoziladi."""
+    o = task["options"]
+    return list(o[lang]) if isinstance(o, dict) else list(o)
+
+
+def task_answer(task: dict, lang: str) -> str:
+    a = task["answer"]
+    return a[lang] if isinstance(a, dict) else a
+
+
 def lesson_audio(lesson_id: int) -> Path | None:
     p = AUDIO_DIR / f"lesson_{lesson_id}.ogg"
     return p if p.exists() else None
