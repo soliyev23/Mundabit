@@ -156,7 +156,8 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   (`sg:reply:<user_id>`) saqlanadi. Kod ichidagi nomlar (`Suggest`,
   `btn_suggest`, `sg:`) o'zgarmagan. Tugma nomi o'zgarsa eski matni
   `texts.LEGACY_BUTTONS` ga qo'shiladi — eski klaviaturali foydalanuvchi uchun.
-- Admin panel faqat egasiga (`000000000`, `config.py` dagi standart). Boshqa
+- Admin panel faqat `.env` dagi `ADMIN_IDS` ichidagilarga. Kodda standart qiymat
+  **yo'q** (repo ochiq). Boshqa
   admin kerak bo'lsa faqat `.env` dagi `ADMIN_IDS` orqali — kodga qattiq
   yozilmaydi (bir marta boshqa foydalanuvchi ID'si standartda qolib, unga
   admin panel ko'ringan).

@@ -48,9 +48,10 @@ BROADCAST_WINDOW_MINUTES = int(os.getenv("BROADCAST_WINDOW_MINUTES", "60"))
 # .env dagi ADMIN_IDS orqali, kodga qattiq yozilmaydi.
 # Birinchisi — asosiy: yangi user haqida xabar unga boradi.
 ADMIN_IDS = [
-    int(x) for x in os.getenv("ADMIN_IDS", "000000000").split(",") if x.strip()
+    int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip()
 ]
-ADMIN_ID = ADMIN_IDS[0]
+# Bo'sh bo'lsa admin yo'q: panel hech kimga ochilmaydi, xabar yuborilmaydi.
+ADMIN_ID = ADMIN_IDS[0] if ADMIN_IDS else 0
 
 DB_PATH = os.getenv("DB_PATH", "mundabit.db")
 

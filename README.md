@@ -108,7 +108,7 @@ chatda menyu tugmasi paydo bo'ladi. Bo'sh qolsa, bot Mini App'siz ishlayveradi.
 
 Brauzerda tez ko'rish (namunaviy ma'lumot bilan): `http://localhost:8080/`
 
-## Serverda (Oracle, Oracle Cloud)
+## Serverda (Oracle Cloud)
 
 Bot `/opt/mundabit` da systemd xizmati sifatida ishlaydi:
 

@@ -1902,6 +1902,8 @@ def users_table(page: int, lang: str) -> tuple[str, InlineKeyboardMarkup | None]
 
 
 async def notify_admin_new_user(bot: Bot, user: dict, username: str | None) -> None:
+    if not ADMIN_ID:                                 # .env da ADMIN_IDS yo'q
+        return
     lang = user_lang(db.get_user(ADMIN_ID))          # xabar admin tilida yoziladi
     text = t(lang, "new_user").format(
         name=esc(user["name"]),
