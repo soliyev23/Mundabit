@@ -7,9 +7,11 @@ Foydalanuvchilar asosan O'zbekistonda.
 ## Eng muhimi: deploy git orqali, rsync ISHLATILMAYDI
 
 Bot Oracle serverida `/opt/mundabit` da systemd xizmati sifatida ishlaydi va
-o'sha papkaning o'zi git ish nusxasi. Markaziy bare repo ham shu serverda:
-`/home/opc/git/mundabit.git` (GitHub yo'q). Mac va server ikkalasi shunga
-ulanadi: `oracle-test:git/mundabit.git`.
+o'sha papkaning o'zi git ish nusxasi. Markaziy repo — **GitHub**:
+`github.com/soliyev23/Mundabit` (ochiq). Server va Mac ikkalasi shunga ulanadi.
+Serverdan push SSH deploy key bilan (`~/.ssh/github_mundabit`, faqat shu repoga
+yozish huquqi). Serverdagi eski bare repo (`/home/opc/git/mundabit.git`,
+`local-bare` remote) endi ishlatilmaydi, zaxira sifatida qolgan.
 
 > **`rsync -az --delete ... oracle-test:/opt/mundabit/` buyrug'ini HECH QACHON
 > ishlatmang.** Uning exclude ro'yxatida `.git` yo'q — u serverdagi repo'ni
@@ -28,6 +30,17 @@ Serverda, bot kodi o'zgargan bo'lsa — `sudo systemctl restart mundabit`, keyin
 `journalctl -u mundabit -n 20` bilan xatosiz ko'tarilganini tekshirish.
 Foydalanuvchi buning uchun doimiy ruxsat bergan, har safar so'rash shart emas.
 Mac'da restart qilib bo'lmaydi — u yerdan faqat push qilinadi.
+
+## Repo ochiq — shaxsiy ma'lumot kodga yozilmaydi
+
+Repo GitHub'da **ochiq**, shuning uchun kodda server IP, Telegram ID, kalit
+yoki pochta bo'lmasligi kerak. Admin ID'lar faqat `.env` dagi `ADMIN_IDS` da;
+`config.py` da standart qiymat yo'q (bo'sh bo'lsa admin ham yo'q). Commit
+mualliflari GitHub noreply pochtasi bilan yoziladi.
+
+2026-09-24 da tarix `filter-branch` bilan tozalangan: server IP, admin ID'lar
+va shaxsiy pochta barcha commitlardan olib tashlangan. Shu sababli o'sha
+sanadan oldingi klonlar yaroqsiz — yangidan klon qilish kerak.
 
 ## Git'ga hech qachon kirmasligi kerak
 

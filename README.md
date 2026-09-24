@@ -125,13 +125,12 @@ qoladi. Doimiy domen ulangach, tunnel o'rniga nginx/Caddy + Let's Encrypt.
 
 ## Kod yuklash — git orqali
 
-Markaziy (bare) repo shu serverning o'zida: `/home/opc/git/mundabit.git`.
-Server va Mac shunga ulanadi, GitHub ishlatilmaydi.
+Markaziy repo: **https://github.com/soliyev23/Mundabit**
 
 ```bash
-# Mac'ni birinchi marta ulash
-git remote add origin oracle-test:git/mundabit.git
-git fetch origin && git checkout -b main --track origin/main
+# Birinchi marta klon qilish
+git clone https://github.com/soliyev23/Mundabit.git
+cd Mundabit && cp .env.example .env    # keyin .env ni to'ldiring
 ```
 
 Ish tartibi (ikkala tomonda ham):
