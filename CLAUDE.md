@@ -324,6 +324,11 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   eslatmalar **o'z-o'zidan to'xtaydi** — vazifalarni o'chirish kerak emas.
 - Matnlar `texts.DEVCAMP` da — faqat o'zbekcha, `BOT` lug'atidan tashqarida
   (modul admin uchun, tarjima kerak emas; `BOT` ning uz/ru juftligi buzilmaydi).
+- **Mini App'da ikkinchi sahifa:** hayot kalendaridan chapga surilsa Dev Camp
+  ro'yxati (progress chizig'i, hisob, 18 kun). Gorizontal surish CSS
+  scroll-snap bilan — JS imo-ishora yozilmagan. `webserver.devcamp_payload()`
+  ma'lumotni **faqat `ADMIN_IDS`** uchun qaytaradi; boshqa foydalanuvchining
+  javobida `devcamp` maydoni umuman bo'lmaydi va ikkinchi sahifa ko'rsatilmaydi.
 - `/dctest` — **vaqtinchalik** sinov buyrug'i: uchala eslatmani darhol yuboradi.
   Kerak bo'lmasa handlerni butunlay o'chirib tashlash mumkin.
 
