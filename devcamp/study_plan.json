@@ -1,0 +1,160 @@
+{
+  "meta": {
+    "title": "Dev Camp o'quv rejasi",
+    "timezone": "Asia/Tashkent",
+    "daily_note": "Har masaladan keyin bitta jumla yoz: qaysi pattern va uni qaysi belgidan tanidim. Qotib qolsang — 20–25 daqiqa kut, keyin faqat ishora ol. Backend tushunchalari: 20–30 daqiqa (HTTP, REST, indeks, kesh).",
+    "report_question": "Bugungi hisobotni Claude chatiga topshirdingmi?"
+  },
+  "days": [
+    {
+      "date": "2026-10-03",
+      "topic": "0-qadam: Asos",
+      "study": "Big-O: O(1), O(log n), O(n), O(n log n), O(n²).\nPython vositalari: dict, set, Counter, defaultdict, deque, sorted(key=...), enumerate, zip.",
+      "problems": [],
+      "events": []
+    },
+    {
+      "date": "2026-10-04",
+      "topic": "Hash map / set",
+      "study": "Hash map va set bilan qidiruvni O(n) ga tushirish.",
+      "problems": ["Two Sum", "Contains Duplicate", "Valid Anagram", "Group Anagrams"],
+      "events": []
+    },
+    {
+      "date": "2026-10-05",
+      "topic": "Two pointers",
+      "study": "Ikki ko'rsatkich: saralangan massiv va satrlarda.",
+      "problems": ["Valid Palindrome", "Two Sum II", "3Sum", "Container With Most Water"],
+      "events": []
+    },
+    {
+      "date": "2026-10-06",
+      "topic": "Sliding window",
+      "study": "Siljuvchi oyna: o'zgaruvchan va qat'iy uzunlikdagi.",
+      "problems": ["Best Time to Buy and Sell Stock", "Longest Substring Without Repeating Characters", "Minimum Size Subarray Sum"],
+      "events": []
+    },
+    {
+      "date": "2026-10-07",
+      "topic": "Prefix sum",
+      "study": "Prefiks yig'indi va uni hash map bilan birga ishlatish.",
+      "problems": ["Range Sum Query", "Subarray Sum Equals K", "Product of Array Except Self"],
+      "events": []
+    },
+    {
+      "date": "2026-10-08",
+      "topic": "Binary search",
+      "study": "Ikkilik qidiruv: chegaralar va aylantirilgan massiv.",
+      "problems": ["Binary Search", "Search Insert Position", "Find Minimum in Rotated Sorted Array"],
+      "events": []
+    },
+    {
+      "date": "2026-10-09",
+      "topic": "Stack",
+      "study": "Stek va monoton stek.",
+      "problems": ["Valid Parentheses", "Min Stack", "Daily Temperatures"],
+      "events": []
+    },
+    {
+      "date": "2026-10-10",
+      "topic": "Sorting va intervallar",
+      "study": "Saralash va intervallarni birlashtirish.",
+      "problems": ["Merge Intervals", "Meeting Rooms"],
+      "events": [
+        {
+          "time": "12:15",
+          "title": "Dev Camp ochilishi — \"AI in Product Development\"",
+          "place": "Yandex Uzbekistan ofisi",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "date": "2026-10-11",
+      "topic": "Linked list",
+      "study": "Bog'langan ro'yxat: ko'rsatkichlarni almashtirish.",
+      "problems": ["Reverse Linked List", "Merge Two Sorted Lists"],
+      "events": []
+    },
+    {
+      "date": "2026-10-12",
+      "topic": "Linked list (davomi)",
+      "study": "Sikl aniqlash va o'tgan mavzularni takrorlash.",
+      "problems": ["Linked List Cycle", "Takrorlash"],
+      "events": [
+        {
+          "time": "19:00",
+          "title": "Yandex stajirovkasiga tayyorgarlik",
+          "place": "",
+          "note": "Rekruterga maosh va bosqichlar haqida savol ber."
+        }
+      ]
+    },
+    {
+      "date": "2026-10-13",
+      "topic": "Rekursiya va daraxtlar (DFS)",
+      "study": "Rekursiya, daraxtni chuqurlik bo'yicha aylanish.",
+      "problems": ["Maximum Depth of Binary Tree", "Invert Binary Tree"],
+      "events": []
+    },
+    {
+      "date": "2026-10-14",
+      "topic": "Daraxtlar (davomi)",
+      "study": "Daraxtlarni taqqoslash va takrorlash.",
+      "problems": ["Same Tree", "Takrorlash"],
+      "events": []
+    },
+    {
+      "date": "2026-10-15",
+      "topic": "BFS (deque)",
+      "study": "Kenglik bo'yicha aylanish, deque bilan navbat.",
+      "problems": ["Binary Tree Level Order Traversal", "Number of Islands"],
+      "events": []
+    },
+    {
+      "date": "2026-10-16",
+      "topic": "Heap (heapq)",
+      "study": "Uyum (heap) va heapq moduli.",
+      "problems": ["Kth Largest Element", "Top K Frequent Elements"],
+      "events": []
+    },
+    {
+      "date": "2026-10-17",
+      "topic": "Yengil takrorlash",
+      "study": "Og'ir yangi mavzu yo'q — o'tganlarni yengil takrorlash.",
+      "problems": [],
+      "events": [
+        {"time": "11:30", "title": "The Cost of Data", "place": "", "note": ""},
+        {"time": "13:15", "title": "Just Add a Cache?", "place": "", "note": ""}
+      ]
+    },
+    {
+      "date": "2026-10-18",
+      "topic": "Takrorlash",
+      "study": "Yechilgan 8–10 masalani yechimga qaramay qayta yozish.",
+      "problems": [],
+      "events": []
+    },
+    {
+      "date": "2026-10-19",
+      "topic": "O'z-o'ziga mock",
+      "study": "45 daqiqa taymer, ovoz chiqarib yechish. Yandex CodeRun'dan 2–3 masala.",
+      "problems": [],
+      "events": []
+    },
+    {
+      "date": "2026-10-20",
+      "topic": "Yengil takrorlash, dam olish",
+      "study": "Yangi mavzu yo'q. Dam ol, mock intervyuga tayyorlan.",
+      "problems": [],
+      "events": [
+        {
+          "time": "19:00",
+          "title": "MOCK INTERVYU",
+          "place": "",
+          "note": "Tartib: masalani qayta aytish → savol → sodda yechim → optimallashtirish → kod → chegaraviy holatlar → murakkablik."
+        }
+      ]
+    }
+  ]
+}

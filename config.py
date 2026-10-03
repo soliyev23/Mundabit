@@ -53,6 +53,14 @@ ADMIN_IDS = [
 # Bo'sh bo'lsa admin yo'q: panel hech kimga ochilmaydi, xabar yuborilmaydi.
 ADMIN_ID = ADMIN_IDS[0] if ADMIN_IDS else 0
 
+# Dev Camp o'quv rejasi (faqat admin). Reja — devcamp/study_plan.json da.
+DEVCAMP_MORNING_HOUR = int(os.getenv("DEVCAMP_MORNING_HOUR", "6"))
+DEVCAMP_MORNING_MINUTE = int(os.getenv("DEVCAMP_MORNING_MINUTE", "0"))
+DEVCAMP_EVENING_HOUR = int(os.getenv("DEVCAMP_EVENING_HOUR", "21"))
+DEVCAMP_EVENING_MINUTE = int(os.getenv("DEVCAMP_EVENING_MINUTE", "0"))
+# Tadbirdan necha daqiqa oldin qo'shimcha eslatma yuborilsin
+DEVCAMP_EVENT_LEAD_MINUTES = int(os.getenv("DEVCAMP_EVENT_LEAD_MINUTES", "60"))
+
 DB_PATH = os.getenv("DB_PATH", "mundabit.db")
 
 # Mini App: HTTPS manzil (tunnel yoki hosting). Bo'sh bo'lsa tugma ko'rsatilmaydi.

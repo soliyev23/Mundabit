@@ -93,6 +93,17 @@ def init_db() -> None:
         c.execute("CREATE INDEX IF NOT EXISTS idx_en_words_added ON en_words(user_id, added)")
         c.execute(
             """
+            CREATE TABLE IF NOT EXISTS devcamp_days (
+                user_id INTEGER NOT NULL,
+                day     TEXT NOT NULL,            -- ISO sana, study_plan.json dagi
+                status  TEXT NOT NULL CHECK (status IN ('done', 'partial', 'missed')),
+                updated TEXT NOT NULL DEFAULT (datetime('now')),
+                PRIMARY KEY (user_id, day)
+            )
+            """
+        )
+        c.execute(
+            """
             CREATE TABLE IF NOT EXISTS en_lessons (
                 user_id   INTEGER NOT NULL,
                 lesson_id INTEGER NOT NULL,      -- english/lessons.json dagi id
@@ -459,6 +470,30 @@ def en_set_box(user_id: int, word_id: int, box: int, due: date | None) -> None:
             "UPDATE en_words SET box = ?, due = ? WHERE user_id = ? AND word_id = ?",
             (box, due.isoformat() if due else None, user_id, word_id),
         )
+
+
+def devcamp_set(user_id: int, day: str, status: str) -> None:
+    """Kun holatini saqlaydi (qayta bosilsa yangisi qoladi)."""
+    with _conn() as c:
+        c.execute(
+            """
+            INSERT INTO devcamp_days (user_id, day, status)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id, day) DO UPDATE SET
+                status = excluded.status,
+                updated = datetime('now')
+            """,
+            (user_id, day, status),
+        )
+
+
+def devcamp_statuses(user_id: int) -> dict[str, str]:
+    """{ISO sana: holat} — belgilanmagan kunlar ro'yxatda bo'lmaydi."""
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT day, status FROM devcamp_days WHERE user_id = ?", (user_id,)
+        ).fetchall()
+        return {r["day"]: r["status"] for r in rows}
 
 
 def en_lessons_progress(user_id: int) -> dict[int, dict]:

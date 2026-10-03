@@ -35,8 +35,10 @@ from aiogram.types import (
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
 
 import db
+import devcamp
 import english
 import lessons
 import grammar
@@ -45,6 +47,11 @@ from config import (
     ADMIN_IDS,
     BOT_TOKEN,
     BROADCAST_WINDOW_MINUTES,
+    DEVCAMP_EVENING_HOUR,
+    DEVCAMP_EVENING_MINUTE,
+    DEVCAMP_EVENT_LEAD_MINUTES,
+    DEVCAMP_MORNING_HOUR,
+    DEVCAMP_MORNING_MINUTE,
     CALENDAR_DAY_OF_WEEK,
     CALENDAR_HOUR,
     CALENDAR_MINUTE,
@@ -57,7 +64,7 @@ from config import (
     WEBAPP_URL,
     expectancy_for,
 )
-from texts import (BOT, LEGACY_BUTTONS, POS_NAMES, WEEKDAYS_EVERY, WEEKDAYS_FULL,
+from texts import (BOT, DEVCAMP, LEGACY_BUTTONS, POS_NAMES, WEEKDAYS_EVERY, WEEKDAYS_FULL,
                    fmt_date, fmt_day_month, t)
 from visual import life_stats, render_life_poster, stats_caption
 from webserver import start_webserver
@@ -2187,6 +2194,208 @@ async def english_sentence(message: Message, state: FSMContext) -> None:
     await message.answer(text)
 
 
+# ── Dev Camp o'quv rejasi (faqat admin) ──────────────────────────────────────
+# Reja devcamp/study_plan.json da, mantiq devcamp.py da. Buyruqlar buyruqlar
+# ro'yxatida ko'rsatilmaydi va admin bo'lmaganlar uchun umuman mos kelmaydi —
+# ular oddiy "tushunmadim" javobini oladi, modul borligi bilinmaydi.
+# Reja tugagach devcamp.day_for() None qaytaradi va eslatmalar o'zi to'xtaydi.
+
+
+def devcamp_day_text(d: date, title: str) -> str:
+    """Bir kunning to'liq matni. Reja bu sanani qamramasa — bo'sh satr."""
+    day = devcamp.day_for(d)
+    if not day:
+        return ""
+    n, total = devcamp.position(d)
+    out = DEVCAMP["day_header"].format(
+        title=title, weekday=devcamp.weekday_name(d),
+        date=fmt_day_month(d, "uz"), n=n, total=total)
+    out += DEVCAMP["topic"].format(topic=esc(day["topic"]))
+    if day.get("study"):
+        out += DEVCAMP["study"].format(study=esc(day["study"]))
+    if day.get("problems"):
+        rows = "\n".join(f"{i}. {esc(p)}" for i, p in enumerate(day["problems"], 1))
+        out += DEVCAMP["problems"].format(problems=rows)
+    for ev in day.get("events", []):
+        out += DEVCAMP["event"].format(time=esc(ev["time"]), title=esc(ev["title"]))
+        if ev.get("place"):
+            out += DEVCAMP["event_place"].format(place=esc(ev["place"]))
+        if ev.get("note"):
+            out += DEVCAMP["event_note"].format(note=esc(ev["note"]))
+    note = devcamp.meta().get("daily_note")
+    if note:
+        out += DEVCAMP["note"].format(note=esc(note))
+    return out
+
+
+def devcamp_missing_text(d: date) -> str:
+    """Reja bu sanani qamramaganda nima deyish kerak."""
+    if d < devcamp.first_date():
+        return DEVCAMP["not_started"].format(date=fmt_day_month(devcamp.first_date(), "uz"))
+    if devcamp.finished(d):
+        return DEVCAMP["finished"].format(date=fmt_day_month(devcamp.last_date(), "uz"))
+    return DEVCAMP["no_day"]
+
+
+def devcamp_report_keyboard(d: date) -> InlineKeyboardMarkup:
+    day = d.isoformat()
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=DEVCAMP["btn_done"], callback_data=f"dc:done:{day}"),
+        InlineKeyboardButton(text=DEVCAMP["btn_partial"], callback_data=f"dc:partial:{day}"),
+        InlineKeyboardButton(text=DEVCAMP["btn_missed"], callback_data=f"dc:missed:{day}"),
+    ]])
+
+
+def devcamp_progress_text(user_id: int, today: date) -> str:
+    statuses = db.devcamp_statuses(user_id)
+    rows, counts, pending, left = [], {s: 0 for s in devcamp.STATUSES}, 0, 0
+    for day in devcamp.days():
+        d = date.fromisoformat(day["date"])
+        st = statuses.get(day["date"])
+        if st in counts:
+            counts[st] += 1
+            icon = devcamp.STATUS_ICON[st]
+        elif d > today:
+            left += 1
+            icon = "🔜"
+        else:
+            pending += 1
+            icon = devcamp.PENDING_ICON
+        rows.append(DEVCAMP["progress_row"].format(
+            icon=icon, date=fmt_day_month(d, "uz"), topic=esc(day["topic"])))
+    head = DEVCAMP["progress_counts"].format(
+        done=counts["done"], partial=counts["partial"], missed=counts["missed"],
+        pending=pending, left=left)
+    return (f"{DEVCAMP['progress_title']}\n\n{head}\n\n" + "\n".join(rows)
+            + f"\n\n{DEVCAMP['progress_hint']}")
+
+
+@router.message(Command("reja"), F.from_user.id.in_(ADMIN_IDS))
+async def devcamp_today(message: Message) -> None:
+    today = now_local().date()
+    text = devcamp_day_text(today, DEVCAMP["today_title"])
+    await message.answer(text or devcamp_missing_text(today))
+
+
+@router.message(Command("ertaga"), F.from_user.id.in_(ADMIN_IDS))
+async def devcamp_tomorrow(message: Message) -> None:
+    tomorrow = now_local().date() + timedelta(days=1)
+    text = devcamp_day_text(tomorrow, DEVCAMP["tomorrow_title"])
+    await message.answer(text or devcamp_missing_text(tomorrow))
+
+
+@router.message(Command("progress"), F.from_user.id.in_(ADMIN_IDS))
+async def devcamp_progress(message: Message) -> None:
+    await message.answer(devcamp_progress_text(message.from_user.id, now_local().date()))
+
+
+@router.callback_query(F.data.startswith("dc:"))
+async def devcamp_report_answer(callback: CallbackQuery) -> None:
+    if callback.from_user.id not in ADMIN_IDS:
+        await callback.answer()
+        return
+    try:
+        _, status, day = callback.data.split(":")
+        assert status in devcamp.STATUSES
+        date.fromisoformat(day)
+    except (ValueError, AssertionError):
+        await callback.answer()
+        return
+    db.devcamp_set(callback.from_user.id, day, status)
+    await callback.answer(DEVCAMP["saved"].format(word=devcamp.STATUS_WORD[status]))
+    # Tanlov xabarda ham ko'rinib tursin, tugmalar olib tashlanadi
+    try:
+        await callback.message.edit_text(
+            f"{callback.message.html_text}\n\n"
+            f"{devcamp.STATUS_ICON[status]} {devcamp.STATUS_WORD[status]}")
+    except Exception:
+        try:
+            await callback.message.edit_reply_markup(reply_markup=None)
+        except Exception:
+            pass
+
+
+async def devcamp_morning(bot: Bot) -> None:
+    """Ertalab: shu kungi vazifa. Reja tugagan bo'lsa jim o'tkaziladi."""
+    if not ADMIN_ID:
+        return
+    today = now_local().date()
+    text = devcamp_day_text(today, DEVCAMP["today_title"])
+    if text:
+        await bot.send_message(ADMIN_ID, text)
+
+
+async def devcamp_evening(bot: Bot) -> None:
+    """Kechqurun: hisobot haqida savol + holat tugmalari."""
+    if not ADMIN_ID:
+        return
+    today = now_local().date()
+    day = devcamp.day_for(today)
+    if not day:
+        return
+    text = DEVCAMP["report_q"].format(
+        question=esc(devcamp.meta()["report_question"]),
+        weekday=devcamp.weekday_name(today), date=fmt_day_month(today, "uz"),
+        topic=esc(day["topic"]))
+    await bot.send_message(ADMIN_ID, text, reply_markup=devcamp_report_keyboard(today))
+
+
+async def devcamp_event_alert(bot: Bot, ev: dict, minutes: int) -> None:
+    """Tadbirdan `minutes` daqiqa oldin."""
+    if not ADMIN_ID:
+        return
+    text = DEVCAMP["event_soon"].format(
+        minutes=minutes, time=esc(ev["time"]), title=esc(ev["title"]))
+    if ev.get("place"):
+        text += DEVCAMP["event_place"].format(place=esc(ev["place"]))
+    if ev.get("note"):
+        text += DEVCAMP["event_note"].format(note=esc(ev["note"]))
+    await bot.send_message(ADMIN_ID, text)
+
+
+def schedule_devcamp(scheduler, bot: Bot) -> int:
+    """Kunlik ikki eslatma + har bir tadbir uchun alohida vazifa.
+
+    Tadbir eslatmalari aniq vaqtga (DateTrigger) qo'yiladi; vaqti o'tganlari
+    qo'shilmaydi, shuning uchun bot qayta ishga tushganda takrorlanmaydi.
+    Reja fayli o'zgarsa, vazifalar restartda qayta tuziladi.
+    """
+    scheduler.add_job(
+        devcamp_morning,
+        CronTrigger(hour=DEVCAMP_MORNING_HOUR, minute=DEVCAMP_MORNING_MINUTE,
+                    timezone=TIMEZONE),
+        args=[bot], misfire_grace_time=1800,
+    )
+    scheduler.add_job(
+        devcamp_evening,
+        CronTrigger(hour=DEVCAMP_EVENING_HOUR, minute=DEVCAMP_EVENING_MINUTE,
+                    timezone=TIMEZONE),
+        args=[bot], misfire_grace_time=1800,
+    )
+    planned = 0
+    now = now_local().replace(tzinfo=None)
+    for remind_at, _day, ev in devcamp.upcoming_events(now, DEVCAMP_EVENT_LEAD_MINUTES):
+        scheduler.add_job(
+            devcamp_event_alert,
+            DateTrigger(run_date=remind_at, timezone=TIMEZONE),
+            args=[bot, ev, DEVCAMP_EVENT_LEAD_MINUTES], misfire_grace_time=600,
+        )
+        planned += 1
+    return planned
+
+
+# ── VAQTINCHALIK: eslatmalarni darhol sinash uchun. Kerak bo'lmasa shu
+# handlerni butunlay o'chirib tashlang — boshqa joyda ishlatilmaydi.
+@router.message(Command("dctest"), F.from_user.id.in_(ADMIN_IDS))
+async def devcamp_test(message: Message) -> None:
+    await message.answer("🧪 Sinov: uchala eslatma ketma-ket yuboriladi.")
+    await devcamp_morning(message.bot)
+    await devcamp_evening(message.bot)
+    sample = next((ev for d in devcamp.days() for ev in d["events"]), None)
+    if sample:
+        await devcamp_event_alert(message.bot, sample, DEVCAMP_EVENT_LEAD_MINUTES)
+
+
 # ── Tushunilmagan xabarlar ─────────────────────────────────────────────────────
 # Eng oxirida turishi shart: undan yuqoridagi handlerlarning hech biri mos
 # kelmasa, shu ishlaydi. Ilgari bunday xabarga bot umuman javob bermasdi.
@@ -2406,7 +2615,10 @@ async def main() -> None:
         args=[bot],
         misfire_grace_time=55,
     )
+    events = schedule_devcamp(scheduler, bot)
     scheduler.start()
+    log.info("Dev Camp: %d kun, %d ta tadbir eslatmasi rejalashtirildi",
+             len(devcamp.days()), events)
 
     log.info("Bot ishga tushdi.")
     await bot.delete_webhook(drop_pending_updates=True)

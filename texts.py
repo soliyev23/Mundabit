@@ -564,6 +564,47 @@ BOT = {
     },
 }
 
+# ── Dev Camp o'quv rejasi ────────────────────────────────────────────────────
+# Modul faqat admin uchun va faqat o'zbek tilida (foydalanuvchi talabi),
+# shuning uchun BOT lug'atidagi uz/ru juftligidan tashqarida turadi.
+
+DEVCAMP = {
+    "day_header": "📚 <b>{title}</b>\n{weekday}, {date} · {n}/{total}-kun",
+    "topic": "\n\n<b>Mavzu:</b> {topic}",
+    "study": "\n\n📖 <b>O'qish:</b>\n{study}",
+    "problems": "\n\n🧩 <b>Masalalar:</b>\n{problems}",
+    "event": "\n\n📅 <b>{time} — {title}</b>",
+    "event_place": "\n📍 {place}",
+    "event_note": "\n💬 {note}",
+    "note": "\n\n———\n<i>{note}</i>",
+
+    "today_title": "Bugungi vazifa",
+    "tomorrow_title": "Ertangi vazifa",
+
+    "no_day": "Bu kunga reja yo'q.",
+    "not_started": "Reja {date} dan boshlanadi.",
+    "finished": "🎉 Reja tugadi ({date}). Eslatmalar to'xtatildi.\n/progress — yakuniy natija.",
+
+    "report_q": "🌙 <b>{question}</b>\n\n{weekday}, {date} — {topic}",
+    "btn_done": "✅ Bajardim",
+    "btn_partial": "⚠️ Qisman",
+    "btn_missed": "❌ Bajarmadim",
+    "saved": "Saqlandi: {word}",
+
+    "event_soon": ("⏰ <b>{minutes} daqiqadan keyin tadbir</b>\n\n"
+                   "<b>{time} — {title}</b>"),
+
+    "progress_title": "📊 <b>Dev Camp — umumiy holat</b>",
+    "progress_counts": ("✅ bajarildi: <b>{done}</b>\n"
+                        "⚠️ qisman: <b>{partial}</b>\n"
+                        "❌ bajarilmadi: <b>{missed}</b>\n"
+                        "▫️ belgilanmagan: <b>{pending}</b>\n"
+                        "Qoldi: <b>{left}</b> kun"),
+    "progress_row": "{icon} {date} · {topic}",
+    "progress_hint": "<i>Kun holati 21:00 dagi savolga javob berilganda belgilanadi.</i>",
+}
+
+
 POSTER = {
     "uz": {
         "title1": "Hayot ",

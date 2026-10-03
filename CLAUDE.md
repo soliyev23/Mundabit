@@ -58,12 +58,14 @@ klon qilish kerak.)
 | `bot.py` | handlerlar, FSM, sozlamalar menyusi, admin panel, tarqatish |
 | `visual.py` | statistika hisoblash va PNG poster (Pillow) |
 | `texts.py` | **barcha** foydalanuvchi matnlari, uz va ru |
-| `db.py` | SQLite: `users`, `week_ratings`, `reminders`, `en_words`, `en_lessons` |
+| `db.py` | SQLite: `users`, `week_ratings`, `reminders`, `en_words`, `en_lessons`, `devcamp_days` |
 | `english.py` | English: lug'at, daraja testi, kunlik so'z, takrorlash (sof mantiq) |
 | `lessons.py` | English «Asoslar»: boshlang'ich darslar mantiqi |
 | `english/lessons.json` | 22 ta dars: nazariya (uz/ru), misollar, mashqlar |
 | `english/audio/` | darslar audiosi (.ogg) — `tools/gen_lesson_audio.py` yaratgan |
 | `english/audio/words/` | 3171 ta so'z talaffuzi (`<id>.ogg`, 13 MB) — `tools/gen_word_audio.py` |
+| `devcamp.py` | Dev Camp o'quv rejasi: sana, kun, tadbirlar (sof mantiq) |
+| `devcamp/study_plan.json` | reja: kun, mavzu, o'qish, masalalar, tadbirlar |
 | `english/words.json` | English lug'ati: so'z, turkum, daraja, uz/ru tarjima, misol |
 | `grammar.py` | English: tuzilgan gapni Groq (LLM) orqali tekshirish |
 | `webserver.py` | Mini App uchun aiohttp server, initData imzosi tekshiriladi |
@@ -297,6 +299,33 @@ solishtirib, piksel-piksel bir xilligini tekshirish mumkin.
   `lessons.task_options()` / `task_answer()` orqali olinadi. Harflar va
   inglizcha so'zlar uchun oddiy ro'yxat yetarli.
 - Dars `id` si barqaror — progress (`en_lessons`) unga bog'langan.
+
+## Dev Camp o'quv rejasi (faqat admin)
+
+- Modul **faqat `ADMIN_IDS`** uchun. Buyruqlar (`/reja`, `/ertaga`,
+  `/progress`) `F.from_user.id.in_(ADMIN_IDS)` filtri bilan — admin bo'lmagan
+  odamga ular **umuman mos kelmaydi** va u oddiy "Tushunmadim" javobini oladi,
+  modul borligi bilinmaydi. Buyruqlar ro'yxatiga ham qo'shilmagan.
+- Reja kodda emas, `devcamp/study_plan.json` da: `date`, `topic`, `study`,
+  `problems[]`, `events[]` (bir kunda bir nechta tadbir bo'lishi mumkin —
+  17-oktabrda ikkita). `meta.daily_note` har kungi doimiy eslatma, u ertalabki
+  xabar oxiriga qo'shiladi. Fayl `lru_cache` bilan o'qiladi — tahrirdan keyin
+  restart kerak.
+- Eslatmalar: ertalab `DEVCAMP_MORNING_HOUR` (06:00) — kun vazifasi; kechqurun
+  `DEVCAMP_EVENING_HOUR` (21:00) — hisobot savoli va uchta **inline** tugma
+  (`dc:<status>:<sana>`). Inline tugma bu yerda ataylab: eslatmalar bo'limidagi
+  "inline yo'q" qoidasi foydalanuvchi klaviaturasiga tegishli, bu esa admin
+  moduli va foydalanuvchi shunday so'ragan.
+- Tadbir eslatmasi: `DEVCAMP_EVENT_LEAD_MINUTES` (60) daqiqa oldin, har tadbir
+  uchun alohida `DateTrigger` vazifasi. Vaqti o'tganlari qo'shilmaydi, shuning
+  uchun restartda takrorlanmaydi; reja o'zgarsa vazifalar restartda qayta
+  tuziladi.
+- Reja tugagach (oxirgi kundan keyin) `devcamp.day_for()` None qaytaradi va
+  eslatmalar **o'z-o'zidan to'xtaydi** — vazifalarni o'chirish kerak emas.
+- Matnlar `texts.DEVCAMP` da — faqat o'zbekcha, `BOT` lug'atidan tashqarida
+  (modul admin uchun, tarjima kerak emas; `BOT` ning uz/ru juftligi buzilmaydi).
+- `/dctest` — **vaqtinchalik** sinov buyrug'i: uchala eslatmani darhol yuboradi.
+  Kerak bo'lmasa handlerni butunlay o'chirib tashlash mumkin.
 
 ## Ochiq ishlar
 
