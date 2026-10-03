@@ -66,6 +66,84 @@
 
   canvas { display: block; width: 100%; }
 
+  /* Ikki sahifa: chapga surish bilan Dev Camp ro'yxatiga o'tiladi.
+     Gorizontal surish CSS scroll-snap bilan — JS imo-ishora kerak emas. */
+  main.pages {
+    height: 100dvh;
+    padding: 0;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  main.pages::-webkit-scrollbar { display: none; }
+  .page {
+    flex: 0 0 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    scroll-snap-align: start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: max(26px, env(safe-area-inset-top)) 14px
+             calc(34px + env(safe-area-inset-bottom));
+  }
+
+  .dots {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    display: flex; justify-content: center; gap: 7px;
+    pointer-events: none;
+  }
+  .dots i {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--future-edge);
+    transition: background .25s;
+  }
+  .dots i.on { background: var(--meta); }
+
+  /* ── Dev Camp sahifasi ── */
+  .bar {
+    display: flex;
+    height: 7px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--future-edge);
+    margin: 14px 0 8px;
+  }
+  .bar span { display: block; height: 100%; transition: width .4s ease; }
+  .bar .b-done { background: var(--good); }
+  .bar .b-part { background: var(--current); }
+
+  .camp-sum {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: "SF Mono", Menlo, "Courier New", monospace;
+    font-size: 13px; color: var(--meta);
+  }
+  .camp-sum b { color: var(--ink); font-weight: 700; }
+
+  .day {
+    display: flex; gap: 10px;
+    padding: 11px 10px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+  }
+  .day + .day { border-top: 1px solid var(--out-edge); border-radius: 0 0 10px 10px; }
+  .day.today {
+    background: var(--out-fill);
+    border-color: var(--future-edge);
+  }
+  .d-ic { font-size: 15px; line-height: 1.5; width: 20px; flex: none; }
+  .d-when {
+    font-family: "SF Mono", Menlo, "Courier New", monospace;
+    font-size: 12px; color: var(--meta);
+  }
+  .d-topic { font-size: 15px; font-weight: 600; margin-top: 1px; }
+  .d-probs { font-size: 13px; color: var(--meta); margin-top: 3px; line-height: 1.45; }
+  .d-ev { font-size: 13px; color: var(--accent); margin-top: 3px; }
+
   .state {
     min-height: 70vh;
     display: none;
@@ -80,11 +158,21 @@
 </style>
 </head>
 <body>
-<main id="app" hidden>
-  <div class="title" id="titleEl">Hayot <em>Kalendari</em></div>
-  <div class="stats" id="statsEl"></div>
-  <canvas id="grid"></canvas>
+<main id="app" class="pages" hidden>
+  <section class="page">
+    <div class="title" id="titleEl">Hayot <em>Kalendari</em></div>
+    <div class="stats" id="statsEl"></div>
+    <canvas id="grid"></canvas>
+  </section>
+  <section class="page" id="campPage" hidden>
+    <div class="title" id="campTitle">Dev <em>Camp</em></div>
+    <div class="bar"><span class="b-done" id="barDone"></span><span class="b-part" id="barPart"></span></div>
+    <div class="camp-sum"><span id="campCount"></span><span id="campPct"></span></div>
+    <div id="campList"></div>
+  </section>
 </main>
+
+<div class="dots" id="dots" hidden><i class="on" id="dot0"></i><i id="dot1"></i></div>
 
 <main class="state" id="state">
   <div class="glyph">🌙</div>
@@ -231,6 +319,52 @@
     }
   }
 
+  /* ── Dev Camp ro'yxati (faqat adminga keladi) ── */
+  var MONTHS_SHORT = ["yan", "fev", "mar", "apr", "may", "iyn",
+                      "iyl", "avg", "sen", "okt", "noy", "dek"];
+  var ICONS = { done: "✅", partial: "⚠️", missed: "❌" };
+
+  function esc(x) {
+    return String(x).replace(/[<>&]/g, function (c) {
+      return c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;";
+    });
+  }
+
+  function renderCamp(dc) {
+    var marked = dc.done + dc.partial;
+    $("barDone").style.width = (dc.done / dc.total * 100) + "%";
+    $("barPart").style.width = (dc.partial / dc.total * 100) + "%";
+    $("campCount").innerHTML =
+      "✅ <b>" + dc.done + "</b> · ⚠️ " + dc.partial + " · ❌ " + dc.missed +
+      " · ▫️ " + dc.pending + " · 🔜 " + dc.left;
+    $("campPct").innerHTML = "<b>" + marked + "</b> / " + dc.total + " kun";
+
+    $("campList").innerHTML = dc.days.map(function (d) {
+      var icon = ICONS[d.status] || (d.future ? "🔜" : "▫️");
+      var when = d.day + "-" + MONTHS_SHORT[d.month - 1] + " · " + esc(d.weekday);
+      var body = '<div class="d-when">' + when + "</div>" +
+                 '<div class="d-topic">' + esc(d.topic) + "</div>";
+      if (d.problems.length) {
+        body += '<div class="d-probs">' + d.problems.map(esc).join(" · ") + "</div>";
+      }
+      d.events.forEach(function (e) {
+        body += '<div class="d-ev">📅 ' + esc(e.time) + " — " + esc(e.title) + "</div>";
+      });
+      return '<div class="day' + (d.today ? " today" : "") + '">' +
+             '<div class="d-ic">' + icon + "</div><div>" + body + "</div></div>";
+    }).join("");
+
+    $("campPage").hidden = false;
+    $("dots").hidden = false;
+    // Qaysi sahifada turganimizni nuqtalar ko'rsatadi
+    var pages = $("app");
+    pages.addEventListener("scroll", function () {
+      var second = pages.scrollLeft > pages.clientWidth / 2;
+      $("dot0").className = second ? "" : "on";
+      $("dot1").className = second ? "on" : "";
+    }, { passive: true });
+  }
+
   function render(data) {
     var L = T[data.lang] || T.uz;
     document.documentElement.lang = T[data.lang] ? data.lang : "uz";
@@ -244,6 +378,7 @@
     $("state").style.display = "none";
     $("app").hidden = false;
     drawCalendar(data);
+    if (data.devcamp) { renderCamp(data.devcamp); }
 
     var resizeT = null;
     window.addEventListener("resize", function () {

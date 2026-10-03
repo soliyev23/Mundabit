@@ -3,14 +3,16 @@ import hashlib
 import hmac
 import json
 import logging
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from urllib.parse import parse_qsl
 
 from aiohttp import web
 
 import db
-from config import BOT_TOKEN, WEBAPP_PORT, expectancy_for
+import devcamp
+from config import ADMIN_IDS, BOT_TOKEN, TIMEZONE, WEBAPP_PORT, expectancy_for
 from visual import life_stats
 
 log = logging.getLogger("mundabit.web")
@@ -32,6 +34,45 @@ def validate_init_data(init_data: str) -> dict | None:
         return json.loads(parsed.get("user", ""))
     except json.JSONDecodeError:
         return None
+
+
+def devcamp_payload(user_id: int) -> dict | None:
+    """Dev Camp ro'yxati — faqat admin uchun. Boshqa foydalanuvchiga None,
+    ya'ni javobda bu bo'lim umuman bo'lmaydi va Mini App ikkinchi sahifani
+    ko'rsatmaydi."""
+    if user_id not in ADMIN_IDS:
+        return None
+    today = datetime.now(ZoneInfo(TIMEZONE)).date()
+    statuses = db.devcamp_statuses(user_id)
+    counts = {"done": 0, "partial": 0, "missed": 0}
+    pending = left = 0
+    days = []
+    for day in devcamp.days():
+        d = date.fromisoformat(day["date"])
+        status = statuses.get(day["date"])
+        if status in counts:
+            counts[status] += 1
+        elif d > today:
+            left += 1
+        else:
+            pending += 1
+        days.append({
+            "date": day["date"],
+            "day": d.day,
+            "month": d.month,
+            "weekday": devcamp.weekday_name(d),
+            "topic": day["topic"],
+            "problems": day["problems"],
+            "events": [{"time": e["time"], "title": e["title"]} for e in day["events"]],
+            "status": status,
+            "today": d == today,
+            "future": d > today,
+        })
+    return {
+        "title": devcamp.meta().get("title", "Dev Camp"),
+        "total": len(days), "pending": pending, "left": left,
+        "days": days, **counts,
+    }
 
 
 async def api_me(request: web.Request) -> web.Response:
@@ -63,6 +104,7 @@ async def api_me(request: web.Request) -> web.Response:
             "gender": user.get("gender"),
             "lang": user.get("lang") or "uz",
             "ratings": db.get_week_ratings(tg_user["id"]),
+            "devcamp": devcamp_payload(tg_user["id"]),
         }
     )
 
